@@ -23,15 +23,6 @@ namespace Wasm.Binary
         public BinaryReader Reader { get; private set; }
 
         /// <summary>
-        /// Parses a version header.
-        /// </summary>
-        /// <returns>The parsed version header.</returns>
-        public VersionHeader ParseVersionHeader()
-        {
-            return new VersionHeader(Reader.ReadUInt32(), Reader.ReadUInt32());
-        }
-
-        /// <summary>
         /// Parses an unsigned LEB128 variable-length integer, limited to 64 bits.
         /// </summary>
         /// <returns>The parsed unsigned 64-bit integer.</returns>
@@ -136,6 +127,33 @@ namespace Wasm.Binary
         public long ReadVarInt64()
         {
             return ReadVarInt(64);
+        }
+
+        /// <summary>
+        /// Parses a version header.
+        /// </summary>
+        /// <returns>The parsed version header.</returns>
+        public VersionHeader ReadVersionHeader()
+        {
+            return new VersionHeader(Reader.ReadUInt32(), Reader.ReadUInt32());
+        }
+
+        /// <summary>
+        /// Parses a section header.
+        /// </summary>
+        /// <returns>The parsed section header.</returns>
+        public SectionHeader ReadSectionHeader()
+        {
+            var code = (SectionCode)ReadVarUInt7();
+            uint payloadLength = ReadVarUInt32();
+            if (code == SectionCode.Custom)
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                return new SectionHeader(code, payloadLength);
+            }
         }
     }
 }

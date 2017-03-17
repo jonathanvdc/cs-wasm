@@ -1,5 +1,8 @@
 files = Binary/BadHeaderException.cs \
 		Binary/BinaryWasmReader.cs \
+		Binary/ByteString.cs \
+		Binary/SectionCode.cs \
+		Binary/SectionHeader.cs \
 		Binary/VersionHeader.cs
 
 warning_options = -Wall -Wextra -Wno-up-to-date -Wno-unused-option

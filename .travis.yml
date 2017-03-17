@@ -8,7 +8,7 @@ install:
   - chmod +x $(pwd)/ecsc/src/ecsc/bin/Release/*.dll
   - wget https://gist.githubusercontent.com/jonathanvdc/f2fa3b5f8d5ece27b877fae439d944d0/raw/d021752c2b9c5dfe15393028e308a6ebdcdb613b/mono-ln.sh
   - chmod +x mono-ln.sh
-  - ./mono-ln.sh $(pwd)/ecsc/src/ecsc/bin/Release/ecsc.exe $(pwd)/ecsc/src/ecsc/bin/Release/ecsc
+  - ./mono-ln.sh ecsc.exe $(pwd)/ecsc/src/ecsc/bin/Release/ecsc
   - chmod +x $(pwd)/ecsc/src/ecsc/bin/Release/ecsc
   - export PATH=$PATH:$(pwd)/ecsc/src/ecsc/bin/Release
 script:

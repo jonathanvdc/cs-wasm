@@ -53,17 +53,17 @@ namespace Wasm.Binary
         /// <summary>
         /// The WebAssembly magic number 0x6d736100 (i.e., '\0asm').
         /// </summary>
-        public static readonly uint WasmMagic = 0x6d736100;
+        public static uint WasmMagic => 0x6d736100;
 
         /// <summary>
         /// The version number from the pre-MVP era.
         /// </summary>
-        public static readonly uint PreMvpVersion = 0xd;
+        public static uint PreMvpVersion => 0xd;
 
         /// <summary>
         /// The MVP version number.
         /// </summary>
-        public static readonly uint MvpVersion = 1;
+        public static uint MvpVersion => 1;
     }
 }
 

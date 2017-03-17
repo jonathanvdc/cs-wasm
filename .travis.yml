@@ -6,7 +6,8 @@ install:
   - xbuild /p:Configuration=Release ecsc/src/ecsc.sln
   - chmod +x $(pwd)/ecsc/src/ecsc/bin/Release/*.exe
   - chmod +x $(pwd)/ecsc/src/ecsc/bin/Release/*.dll
-  - ln -s $(pwd)/ecsc/src/ecsc/bin/Release/ecsc.exe /usr/local/bin/ecsc
+  - ln -s $(pwd)/ecsc/src/ecsc/bin/Release/ecsc.exe $(pwd)/ecsc/src/ecsc/bin/Release/ecsc
+  - export PATH=$PATH:$(pwd)/ecsc/src/ecsc/bin/Release
 script:
   # Build the project
   - make

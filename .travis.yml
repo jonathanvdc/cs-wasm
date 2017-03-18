@@ -12,5 +12,7 @@ install:
   - chmod +x $(pwd)/ecsc/src/ecsc/bin/Release/ecsc
   - export PATH=$PATH:$(pwd)/ecsc/src/ecsc/bin/Release
 script:
-  # Build the project
+  # Build the project with mcs
+  - xbuild /p:Configuration=Release cs-wasm.sln
+  # Build the project with ecsc
   - make

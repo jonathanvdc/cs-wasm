@@ -6,7 +6,7 @@ namespace Wasm.Binary
     /// <summary>
     /// A reader that reads the binary WebAssembly format.
     /// </summary>
-    public sealed class BinaryWasmReader
+    public class BinaryWasmReader
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmReader"/> class.
@@ -165,6 +165,43 @@ namespace Wasm.Binary
             {
                 return new SectionHeader(code, payloadLength);
             }
+        }
+
+        /// <summary>
+        /// Reads the section with the given header.
+        /// </summary>
+        /// <param name="Header">The section header.</param>
+        /// <returns>The parsed section.</returns>
+        public Section ReadSection(SectionHeader Header)
+        {
+            if (Header.IsCustom)
+                return ReadCustomSection(Header);
+            else
+                return ReadKnownSection(Header);
+        }
+
+        /// <summary>
+        /// Reads the custom section with the given header.
+        /// </summary>
+        /// <param name="Header">The section header.</param>
+        /// <returns>The parsed section.</returns>
+        public virtual Section ReadCustomSection(SectionHeader Header)
+        {
+            return new CustomSection(
+                Header.SectionName.Utf8String,
+                Reader.ReadBytes((int)Header.PayloadLength));
+        }
+
+        /// <summary>
+        /// Reads the non-custom section with the given header.
+        /// </summary>
+        /// <param name="Header">The section header.</param>
+        /// <returns>The parsed section.</returns>
+        public Section ReadKnownSection(SectionHeader Header)
+        {
+            return new UnknownSection(
+                Header.Code,
+                Reader.ReadBytes((int)Header.PayloadLength));
         }
     }
 }

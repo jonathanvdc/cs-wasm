@@ -1,5 +1,6 @@
 files = CustomSection.cs \
 		Section.cs \
+		UnknownSection.cs \
 		WasmFile.cs \
 		Binary/BadHeaderException.cs \
 		Binary/BinaryWasmReader.cs \

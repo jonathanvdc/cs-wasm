@@ -42,4 +42,9 @@ public struct ByteString
                 return UTF8Encoding.UTF8.GetString(byteArray);
         }
     }
+
+    public override string ToString()
+    {
+        return Utf8String;
+    }
 }

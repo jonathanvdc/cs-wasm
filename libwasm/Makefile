@@ -5,12 +5,15 @@ files = Binary/BadHeaderException.cs \
 		Binary/SectionHeader.cs \
 		Binary/VersionHeader.cs
 
-warning_options = -Wall -Wextra -Wno-up-to-date -Wno-unused-option
+common_options = -Wall -Wextra -force-write
 
 all: dll flo
 
-dll:
-	ecsc $(files) -platform clr -o bin/clr/libwasm.dll -O3 $(warning_options)
+dll: bin/clr/libwasm.dll
+flo: bin/flo/libwasm.flo
 
-flo:
-	ecsc $(files) -platform ir -runtime clr -o bin/flo/libwasm.flo $(warning_options)
+bin/clr/libwasm.dll: $(files)
+	ecsc $(files) -platform clr -o $@ -O3 $(common_options)
+
+bin/flo/libwasm.flo: $(files)
+	ecsc $(files) -platform ir -runtime clr -o $@ $(common_options)

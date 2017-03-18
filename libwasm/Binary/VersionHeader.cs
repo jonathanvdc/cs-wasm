@@ -29,7 +29,7 @@ namespace Wasm.Binary
         /// Gets the version specified by this version header.
         /// </summary>
         /// <value>The version.</value>
-        public uint Version { get;  private set; }
+        public uint Version { get; private set; }
 
         /// <summary>
         /// Verifies that this version header is a WebAssembly version header for a known

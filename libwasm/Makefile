@@ -1,4 +1,7 @@
-files = Binary/BadHeaderException.cs \
+files = CustomSection.cs \
+		Section.cs \
+		WasmFile.cs \
+		Binary/BadHeaderException.cs \
 		Binary/BinaryWasmReader.cs \
 		Binary/ByteString.cs \
 		Binary/SectionCode.cs \

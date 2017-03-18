@@ -130,6 +130,16 @@ namespace Wasm.Binary
         }
 
         /// <summary>
+        /// Parses a length-prefixed bytestring.
+        /// </summary>
+        /// <returns>The parsed bytestring.</returns>
+        public ByteString ReadByteString()
+        {
+            uint length = ReadVarUInt32();
+            return new ByteString(Reader.ReadBytes((int)length));
+        }
+
+        /// <summary>
         /// Parses a version header.
         /// </summary>
         /// <returns>The parsed version header.</returns>
@@ -148,7 +158,8 @@ namespace Wasm.Binary
             uint payloadLength = ReadVarUInt32();
             if (code == SectionCode.Custom)
             {
-                throw new NotImplementedException();
+                var name = ReadByteString();
+                return new SectionHeader(name, payloadLength);
             }
             else
             {

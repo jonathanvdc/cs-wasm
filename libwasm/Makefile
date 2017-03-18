@@ -1,11 +1,11 @@
 files = CustomSection.cs \
 		Section.cs \
 		UnknownSection.cs \
+		SectionCode.cs \
+		SectionName.cs \
 		WasmFile.cs \
 		Binary/BadHeaderException.cs \
 		Binary/BinaryWasmReader.cs \
-		Binary/ByteString.cs \
-		Binary/SectionCode.cs \
 		Binary/SectionHeader.cs \
 		Binary/VersionHeader.cs
 

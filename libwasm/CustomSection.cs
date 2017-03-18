@@ -1,3 +1,5 @@
+using Wasm.Binary;
+
 namespace Wasm
 {
     /// <summary>
@@ -10,17 +12,20 @@ namespace Wasm
         /// </summary>
         /// <param name="Name">The custom section's name.</param>
         /// <param name="Payload">The custom section's payload.</param>
-        public CustomSection(string Name, byte[] Payload)
+        public CustomSection(string CustomName, byte[] Payload)
         {
-            this.Name = Name;
+            this.CustomName = CustomName;
             this.Payload = Payload;
         }
 
         /// <summary>
-        /// Gets this custom section's name.
+        /// Gets this custom section's custom name.
         /// </summary>
-        /// <returns>The name of the custom section.</returns>
-        public string Name { get; private set; }
+        /// <returns>The custom name of the custom section.</returns>
+        public string CustomName { get; private set; }
+
+        /// <inheritdoc/>
+        public override SectionName Name => new SectionName(CustomName);
 
         /// <summary>
         /// Gets this custom section's payload, as an array of bytes.

@@ -24,6 +24,9 @@ namespace Wasm
         /// <returns>The code of the unknown section.</returns>
         public SectionCode Code { get; private set; }
 
+        /// <inheritdoc/>
+        public override SectionName Name => new SectionName(Code);
+
         /// <summary>
         /// Gets this unknown section's payload, as an array of bytes.
         /// </summary>

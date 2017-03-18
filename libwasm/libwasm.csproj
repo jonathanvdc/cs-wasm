@@ -35,11 +35,11 @@
     <Compile Include="CustomSection.cs" />
     <Compile Include="Section.cs" />
     <Compile Include="UnknownSection.cs" />
+    <Compile Include="SectionCode.cs" />
+    <Compile Include="SectionName.cs" />
     <Compile Include="WasmFile.cs" />
     <Compile Include="Binary\BadHeaderException.cs" />
     <Compile Include="Binary\BinaryWasmReader.cs" />
-    <Compile Include="Binary\ByteString.cs" />
-    <Compile Include="Binary\SectionCode.cs" />
     <Compile Include="Binary\SectionHeader.cs" />
     <Compile Include="Binary\VersionHeader.cs" />
   </ItemGroup>

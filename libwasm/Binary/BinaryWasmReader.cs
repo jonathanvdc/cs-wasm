@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace Wasm.Binary
 {
@@ -11,16 +12,32 @@ namespace Wasm.Binary
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmReader"/> class.
         /// </summary>
-        /// <param name="InputStream">The binary reader for a WebAssembly file.</param>
+        /// <param name="Reader">The binary reader for a WebAssembly file.</param>
         public BinaryWasmReader(BinaryReader Reader)
+            : this(Reader, UTF8Encoding.UTF8)
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmReader"/> class.
+        /// </summary>
+        /// <param name="Reader">The binary reader for a WebAssembly file.</param>
+        /// <param name="StringEncoding">The encoding for strings in the WebAssembly file.</param>
+        public BinaryWasmReader(BinaryReader Reader, Encoding StringEncoding)
         {
             this.Reader = Reader;
+            this.StringEncoding = StringEncoding;
         }
 
         /// <summary>
         /// The binary reader for a WebAssembly file.
         /// </summary>
         public BinaryReader Reader { get; private set; }
+
+        /// <summary>
+        /// The encoding that is used to parse strings.
+        /// </summary>
+        /// <returns>The string encoding.</returns>
+        public Encoding StringEncoding { get; private set; }
 
         /// <summary>
         /// Parses an unsigned LEB128 variable-length integer, limited to 64 bits.
@@ -32,7 +49,7 @@ namespace Wasm.Binary
             // https://en.wikipedia.org/wiki/LEB128
             ulong result = 0;
             int shift = 0;
-            while (true) 
+            while (true)
             {
                 byte b = Reader.ReadByte();
                 result |= ((ulong)(b & 0x7F) << shift);
@@ -130,13 +147,14 @@ namespace Wasm.Binary
         }
 
         /// <summary>
-        /// Parses a length-prefixed bytestring.
+        /// Parses a length-prefixed string.
         /// </summary>
-        /// <returns>The parsed bytestring.</returns>
-        public ByteString ReadByteString()
+        /// <returns>The parsed string.</returns>
+        public string ReadString()
         {
             uint length = ReadVarUInt32();
-            return new ByteString(Reader.ReadBytes((int)length));
+            byte[] bytes = Reader.ReadBytes((int)length);
+            return StringEncoding.GetString(bytes);
         }
 
         /// <summary>
@@ -158,12 +176,12 @@ namespace Wasm.Binary
             uint payloadLength = ReadVarUInt32();
             if (code == SectionCode.Custom)
             {
-                var name = ReadByteString();
-                return new SectionHeader(name, payloadLength);
+                var name = ReadString();
+                return new SectionHeader(new SectionName(name), payloadLength);
             }
             else
             {
-                return new SectionHeader(code, payloadLength);
+                return new SectionHeader(new SectionName(code), payloadLength);
             }
         }
 
@@ -174,7 +192,7 @@ namespace Wasm.Binary
         /// <returns>The parsed section.</returns>
         public Section ReadSection(SectionHeader Header)
         {
-            if (Header.IsCustom)
+            if (Header.Name.IsCustom)
                 return ReadCustomSection(Header);
             else
                 return ReadKnownSection(Header);
@@ -188,7 +206,7 @@ namespace Wasm.Binary
         protected virtual Section ReadCustomSection(SectionHeader Header)
         {
             return new CustomSection(
-                Header.SectionName.Utf8String,
+                Header.Name.CustomName,
                 Reader.ReadBytes((int)Header.PayloadLength));
         }
 
@@ -200,7 +218,7 @@ namespace Wasm.Binary
         protected Section ReadKnownSection(SectionHeader Header)
         {
             return new UnknownSection(
-                Header.Code,
+                Header.Name.Code,
                 Reader.ReadBytes((int)Header.PayloadLength));
         }
     }

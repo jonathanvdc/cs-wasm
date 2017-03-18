@@ -1,4 +1,4 @@
-namespace Wasm.Binary
+namespace Wasm
 {
     /// <summary>
     /// /// Enumerates possible section codes.

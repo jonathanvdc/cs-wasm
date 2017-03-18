@@ -185,7 +185,7 @@ namespace Wasm.Binary
         /// </summary>
         /// <param name="Header">The section header.</param>
         /// <returns>The parsed section.</returns>
-        public virtual Section ReadCustomSection(SectionHeader Header)
+        protected virtual Section ReadCustomSection(SectionHeader Header)
         {
             return new CustomSection(
                 Header.SectionName.Utf8String,
@@ -197,7 +197,7 @@ namespace Wasm.Binary
         /// </summary>
         /// <param name="Header">The section header.</param>
         /// <returns>The parsed section.</returns>
-        public Section ReadKnownSection(SectionHeader Header)
+        protected Section ReadKnownSection(SectionHeader Header)
         {
             return new UnknownSection(
                 Header.Code,

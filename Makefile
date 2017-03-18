@@ -6,3 +6,6 @@ dll:
 
 flo:
 	make -C libwasm flo
+
+clean:
+	make -C libwasm clean

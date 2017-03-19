@@ -42,5 +42,13 @@ namespace Wasm
         /// </summary>
         /// <returns>The name of the section if is this a custom section; otherwise, null.</returns>
         public string CustomName { get; private set; }
+
+        public override string ToString()
+        {
+            if (IsCustom)
+                return "Custom: '" + CustomName + "'";
+            else
+                return ((object)Code).ToString();
+        }
     }
 }

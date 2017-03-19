@@ -20,6 +20,6 @@ namespace Wasm
         /// Gets a list of all sections in this file.
         /// </summary>
         /// <returns>All sections in this file.</returns>
-        public IReadOnlyList<Section> Sections { get; private set; }
+        public IEnumerable<Section> Sections { get; private set; }
     }
 }

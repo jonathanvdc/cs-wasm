@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -186,16 +187,26 @@ namespace Wasm.Binary
         }
 
         /// <summary>
+        /// Reads a section.
+        /// </summary>
+        /// <returns>The section.</returns>
+        public Section ReadSection()
+        {
+            var header = ReadSectionHeader();
+            return ReadSectionPayload(header);
+        }
+
+        /// <summary>
         /// Reads the section with the given header.
         /// </summary>
         /// <param name="Header">The section header.</param>
         /// <returns>The parsed section.</returns>
-        public Section ReadSection(SectionHeader Header)
+        public Section ReadSectionPayload(SectionHeader Header)
         {
             if (Header.Name.IsCustom)
-                return ReadCustomSection(Header);
+                return ReadCustomSectionPayload(Header);
             else
-                return ReadKnownSection(Header);
+                return ReadKnownSectionPayload(Header);
         }
 
         /// <summary>
@@ -203,7 +214,7 @@ namespace Wasm.Binary
         /// </summary>
         /// <param name="Header">The section header.</param>
         /// <returns>The parsed section.</returns>
-        protected virtual Section ReadCustomSection(SectionHeader Header)
+        protected virtual Section ReadCustomSectionPayload(SectionHeader Header)
         {
             return new CustomSection(
                 Header.Name.CustomName,
@@ -215,11 +226,27 @@ namespace Wasm.Binary
         /// </summary>
         /// <param name="Header">The section header.</param>
         /// <returns>The parsed section.</returns>
-        protected Section ReadKnownSection(SectionHeader Header)
+        protected Section ReadKnownSectionPayload(SectionHeader Header)
         {
             return new UnknownSection(
                 Header.Name.Code,
                 Reader.ReadBytes((int)Header.PayloadLength));
+        }
+
+        /// <summary>
+        /// Reads an entire WebAssembly file.
+        /// </summary>
+        /// <returns>The WebAssembly file.</returns>
+        public WasmFile ReadFile()
+        {
+            var version = ReadVersionHeader();
+            version.Verify();
+            var sections = new List<Section>();
+            while (Reader.BaseStream.Length - Reader.BaseStream.Position > 0)
+            {
+                sections.Add(ReadSection());
+            }
+            return new WasmFile(sections);
         }
     }
 }

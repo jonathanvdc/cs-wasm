@@ -28,5 +28,10 @@ namespace Wasm.Binary
         /// </summary>
         /// <returns>The length of the payload, in bytes.</returns>
         public uint PayloadLength { get; private set; }
+
+        public override string ToString()
+        {
+            return Name + ", payload size: " + PayloadLength;
+        }
     }
 }

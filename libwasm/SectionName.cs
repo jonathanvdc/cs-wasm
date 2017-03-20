@@ -46,7 +46,7 @@ namespace Wasm
         public override string ToString()
         {
             if (IsCustom)
-                return "Custom: '" + CustomName + "'";
+                return "Custom section '" + CustomName + "'";
             else
                 return ((object)Code).ToString();
         }

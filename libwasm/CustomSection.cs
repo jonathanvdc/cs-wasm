@@ -1,3 +1,4 @@
+using System.IO;
 using Wasm.Binary;
 
 namespace Wasm
@@ -32,5 +33,14 @@ namespace Wasm
         /// </summary>
         /// <returns>A byte array that defines the custom section's payload.</returns>
         public byte[] Payload { get; private set; }
+
+        /// <summary>
+        /// Writes this WebAssembly section's payload to the given binary writer.
+        /// </summary>
+        /// <param name="Writer">The writer to which the payload is written.</param>
+        public override void WritePayloadTo(BinaryWriter Writer)
+        {
+            Writer.Write(Payload);
+        }
     }
 }

@@ -1,4 +1,5 @@
 files = CustomSection.cs \
+		DumpHelpers.cs \
 		Section.cs \
 		UnknownSection.cs \
 		SectionCode.cs \

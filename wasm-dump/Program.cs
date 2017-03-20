@@ -28,7 +28,8 @@ namespace Wasm.Dump
         {
             foreach (var section in ParsedFile.Sections)
             {
-                Console.WriteLine(section.Name.ToString());
+                section.Dump(Console.Out);
+                Console.WriteLine();
             }
         }
     }

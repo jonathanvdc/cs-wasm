@@ -230,6 +230,8 @@ namespace Wasm.Binary
         {
             if (Header.Name.Code == SectionCode.Function)
                 return ReadFunctionSectionPayload(Header);
+            else if (Header.Name.Code == SectionCode.Export)
+                return ReadExportSectionPayload(Header);
             else
                 return ReadUnknownSectionPayload(Header);
         }
@@ -255,6 +257,33 @@ namespace Wasm.Binary
             // Skip any remaining bytes.
             var extraPayload = Reader.ReadBytes((int)((long)Header.PayloadLength - bytesParsed));
             return new FunctionSection(funcTypes, extraPayload);
+        }
+
+        /// <summary>
+        /// Reads the export section with the given header.
+        /// </summary>
+        /// <param name="Header">The section header.</param>
+        /// <returns>The parsed section.</returns>
+        protected Section ReadExportSectionPayload(SectionHeader Header)
+        {
+            long bytesLeft = Reader.BaseStream.Length - Reader.BaseStream.Position;
+            // Read the function indices.
+            uint count = ReadVarUInt32();
+            var exportedVals = new List<ExportedValue>();
+            for (uint i = 0; i < count; i++)
+            {
+                exportedVals.Add(
+                    new ExportedValue(
+                        ReadString(),
+                        (ExternalKind)Reader.ReadByte(),
+                        ReadVarUInt32()));
+            }
+
+            // Figure out how many bytes we've parsed.
+            long bytesParsed = bytesLeft - (Reader.BaseStream.Length - Reader.BaseStream.Position);
+            // Skip any remaining bytes.
+            var extraPayload = Reader.ReadBytes((int)((long)Header.PayloadLength - bytesParsed));
+            return new ExportSection(exportedVals, extraPayload);
         }
 
         /// <summary>

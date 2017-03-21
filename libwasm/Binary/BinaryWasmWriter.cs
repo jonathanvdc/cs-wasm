@@ -70,6 +70,17 @@ namespace Wasm.Binary
         {
             return WriteVarUInt64(Value);
         }
+
+        /// <summary>
+        /// Writes a length-prefixed string to the WebAssembly file.
+        /// </summary>
+        /// <param name="Value">The string to write to the file.</param>
+        public void WriteString(string Value)
+        {
+            byte[] buffer = StringEncoding.GetBytes(Value);
+            WriteVarUInt32((uint)buffer.Length);
+            Writer.Write(buffer);
+        }
     }
 }
 

@@ -1,5 +1,7 @@
 files = CustomSection.cs \
 		DumpHelpers.cs \
+		ExportSection.cs \
+		ExternalKind.cs \
 		FunctionSection.cs \
 		Section.cs \
 		UnknownSection.cs \

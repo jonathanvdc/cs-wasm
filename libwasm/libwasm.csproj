@@ -34,6 +34,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CustomSection.cs" />
     <Compile Include="DumpHelpers.cs" />
+    <Compile Include="ExportSection.cs" />
+    <Compile Include="ExternalKind.cs" />
     <Compile Include="FunctionSection.cs" />
     <Compile Include="Section.cs" />
     <Compile Include="UnknownSection.cs" />

@@ -21,10 +21,10 @@ namespace Wasm
         public abstract SectionName Name { get; }
 
         /// <summary>
-        /// Writes this WebAssembly section's payload to the given binary writer.
+        /// Writes this WebAssembly section's payload to the given binary WebAssembly writer.
         /// </summary>
         /// <param name="Writer">The writer to which the payload is written.</param>
-        public abstract void WritePayloadTo(BinaryWriter Writer);
+        public abstract void WritePayloadTo(BinaryWasmWriter Writer);
 
         /// <summary>
         /// Creates a memory stream and fills it with this WebAssembly section's payload.
@@ -33,7 +33,7 @@ namespace Wasm
         public MemoryStream PayloadAsMemoryStream()
         {
             var memStream = new MemoryStream();
-            WritePayloadTo(new BinaryWriter(memStream));
+            WritePayloadTo(new BinaryWasmWriter(new BinaryWriter(memStream)));
             memStream.Seek(0, SeekOrigin.Begin);
             return memStream;
         }

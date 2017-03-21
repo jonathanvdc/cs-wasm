@@ -34,6 +34,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CustomSection.cs" />
     <Compile Include="DumpHelpers.cs" />
+    <Compile Include="FunctionSection.cs" />
     <Compile Include="Section.cs" />
     <Compile Include="UnknownSection.cs" />
     <Compile Include="SectionCode.cs" />
@@ -41,6 +42,7 @@
     <Compile Include="WasmFile.cs" />
     <Compile Include="Binary\BadHeaderException.cs" />
     <Compile Include="Binary\BinaryWasmReader.cs" />
+    <Compile Include="Binary\BinaryWasmWriter.cs" />
     <Compile Include="Binary\SectionHeader.cs" />
     <Compile Include="Binary\VersionHeader.cs" />
   </ItemGroup>

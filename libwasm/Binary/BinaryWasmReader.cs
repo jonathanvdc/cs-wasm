@@ -228,6 +228,42 @@ namespace Wasm.Binary
         /// <returns>The parsed section.</returns>
         protected Section ReadKnownSectionPayload(SectionHeader Header)
         {
+            if (Header.Name.Code == SectionCode.Function)
+                return ReadFunctionSectionPayload(Header);
+            else
+                return ReadUnknownSectionPayload(Header);
+        }
+
+        /// <summary>
+        /// Reads the function section with the given header.
+        /// </summary>
+        /// <param name="Header">The section header.</param>
+        /// <returns>The parsed section.</returns>
+        protected Section ReadFunctionSectionPayload(SectionHeader Header)
+        {
+            long bytesLeft = Reader.BaseStream.Length - Reader.BaseStream.Position;
+            // Read the function indices.
+            uint count = ReadVarUInt32();
+            var funcTypes = new List<uint>();
+            for (uint i = 0; i < count; i++)
+            {
+                funcTypes.Add(ReadVarUInt32());
+            }
+
+            // Figure out how many bytes we've parsed.
+            long bytesParsed = bytesLeft - (Reader.BaseStream.Length - Reader.BaseStream.Position);
+            // Skip any remaining bytes.
+            var extraPayload = Reader.ReadBytes((int)((long)Header.PayloadLength - bytesParsed));
+            return new FunctionSection(funcTypes, extraPayload);
+        }
+
+        /// <summary>
+        /// Reads the unknown, non-custom section with the given header.
+        /// </summary>
+        /// <param name="Header">The section header.</param>
+        /// <returns>The parsed section.</returns>
+        protected virtual Section ReadUnknownSectionPayload(SectionHeader Header)
+        {
             return new UnknownSection(
                 Header.Name.Code,
                 Reader.ReadBytes((int)Header.PayloadLength));

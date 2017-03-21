@@ -1,5 +1,6 @@
 files = CustomSection.cs \
 		DumpHelpers.cs \
+		FunctionSection.cs \
 		Section.cs \
 		UnknownSection.cs \
 		SectionCode.cs \
@@ -7,6 +8,7 @@ files = CustomSection.cs \
 		WasmFile.cs \
 		Binary/BadHeaderException.cs \
 		Binary/BinaryWasmReader.cs \
+		Binary/BinaryWasmWriter.cs \
 		Binary/SectionHeader.cs \
 		Binary/VersionHeader.cs
 

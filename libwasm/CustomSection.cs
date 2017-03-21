@@ -38,9 +38,9 @@ namespace Wasm
         /// Writes this WebAssembly section's payload to the given binary writer.
         /// </summary>
         /// <param name="Writer">The writer to which the payload is written.</param>
-        public override void WritePayloadTo(BinaryWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter Writer)
         {
-            Writer.Write(Payload);
+            Writer.Writer.Write(Payload);
         }
     }
 }

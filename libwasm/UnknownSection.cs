@@ -35,12 +35,12 @@ namespace Wasm
         public byte[] Payload { get; private set; }
         
         /// <summary>
-        /// Writes this WebAssembly section's payload to the given binary writer.
+        /// Writes this WebAssembly section's payload to the given binary WebAssembly writer.
         /// </summary>
         /// <param name="Writer">The writer to which the payload is written.</param>
-        public override void WritePayloadTo(BinaryWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter Writer)
         {
-            Writer.Write(Payload);
+            Writer.Writer.Write(Payload);
         }
     }
 }

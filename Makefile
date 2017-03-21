@@ -17,3 +17,6 @@ flo:
 clean:
 	make -C libwasm clean
 	make -C wasm-dump clean
+
+test: exe
+	mono wasm-dump/bin/clr/wasm-dump.exe test/factorial.wasm

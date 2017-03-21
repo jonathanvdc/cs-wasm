@@ -58,11 +58,10 @@ namespace Wasm
         /// <remarks>This is the default 'Dump' implementation.</remarks>
         public void DumpNameAndPayload(TextWriter Writer)
         {
-            Writer.Write("Section name: ");
             Writer.Write(Name.ToString());
+            Writer.Write("; payload length: ");
             using (var memStream = PayloadAsMemoryStream())
             {
-                Writer.Write("; payload length: ");
                 Writer.Write(memStream.Length);
                 Writer.WriteLine();
                 DumpHelpers.DumpStream(memStream, Writer);

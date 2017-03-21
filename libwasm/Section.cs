@@ -41,10 +41,22 @@ namespace Wasm
         /// <summary>
         /// Writes a string representation of this section to the given text writer.
         /// </summary>
-        /// <param name="Builder">
+        /// <param name="Writer">
         /// The writer to which a representation of this section is written.
         /// </param>
         public virtual void Dump(TextWriter Writer)
+        {
+            DumpNameAndPayload(Writer);
+        }
+
+        /// <summary>
+        /// Writes a string representation of this section and its payload to the given text writer.
+        /// </summary>
+        /// <param name="Writer">
+        /// The writer to which a representation of this section is written.
+        /// </param>
+        /// <remarks>This is the default 'Dump' implementation.</remarks>
+        public void DumpNameAndPayload(TextWriter Writer)
         {
             Writer.Write("Section name: ");
             Writer.Write(Name.ToString());

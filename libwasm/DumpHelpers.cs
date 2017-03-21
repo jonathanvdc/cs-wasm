@@ -23,5 +23,19 @@ namespace Wasm
                 Writer.Write("{0:X02}", Stream.ReadByte());
             }
         }
+
+        /// <summary>
+        /// Writes the contents of the byte array to the given text writer,
+        /// as a space-delimited list of hex bytes.
+        /// </summary>
+        /// <param name="Bytes">The bytes to print.</param>
+        /// <param name="Writer">The writer to which text is written.</param>
+        public static void DumpBytes(byte[] Bytes, TextWriter Writer)
+        {
+            using (var memStream = new MemoryStream(Bytes))
+            {
+                DumpStream(memStream, Writer);
+            }
+        }
     }
 }

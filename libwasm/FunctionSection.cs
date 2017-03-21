@@ -66,5 +66,30 @@ namespace Wasm
             }
             Writer.Writer.Write(ExtraPayload);
         }
+
+        /// <inheritdoc/>
+        public override void Dump(TextWriter Writer)
+        {
+            Writer.Write(Name.ToString());
+            Writer.Write("; number of entries: ");
+            Writer.Write(FunctionTypes.Count);
+            Writer.WriteLine();
+            for (int i = 0; i < FunctionTypes.Count; i++)
+            {
+                Writer.Write("#");
+                Writer.Write(i);
+                Writer.Write(" -> type #");
+                Writer.Write(FunctionTypes[i]);
+                Writer.WriteLine();
+            }
+            if (ExtraPayload.Length > 0)
+            {
+                Writer.Write("Extra payload size: ");
+                Writer.Write(ExtraPayload.Length);
+                Writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, Writer);
+                Writer.WriteLine();
+            }
+        }
     }
 }

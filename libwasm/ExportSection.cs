@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Wasm.Binary;
 
 namespace Wasm
@@ -51,6 +52,32 @@ namespace Wasm
             }
             Writer.Writer.Write(ExtraPayload);
         }
+
+
+        /// <inheritdoc/>
+        public override void Dump(TextWriter Writer)
+        {
+            Writer.Write(Name.ToString());
+            Writer.Write("; number of entries: ");
+            Writer.Write(Exports.Count);
+            Writer.WriteLine();
+            for (int i = 0; i < Exports.Count; i++)
+            {
+                Writer.Write("#");
+                Writer.Write(i);
+                Writer.Write(" -> ");
+                Exports[i].Dump(Writer);
+                Writer.WriteLine();
+            }
+            if (ExtraPayload.Length > 0)
+            {
+                Writer.Write("Extra payload size: ");
+                Writer.Write(ExtraPayload.Length);
+                Writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, Writer);
+                Writer.WriteLine();
+            }
+        }
     }
 
     /// <summary>
@@ -98,6 +125,16 @@ namespace Wasm
             Writer.WriteString(Name);
             Writer.Writer.Write((byte)Kind);
             Writer.WriteVarUInt32(Index);
+        }
+
+        public void Dump(TextWriter Writer)
+        {
+            Writer.Write("\"");
+            Writer.Write(Name);
+            Writer.Write("\", ");
+            Writer.Write(((object)Kind).ToString().ToLower());
+            Writer.Write(" #");
+            Writer.Write(Index);
         }
     }
 }

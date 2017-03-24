@@ -38,10 +38,13 @@
     <Compile Include="ExternalKind.cs" />
     <Compile Include="FunctionSection.cs" />
     <Compile Include="Section.cs" />
-    <Compile Include="UnknownSection.cs" />
     <Compile Include="SectionCode.cs" />
     <Compile Include="SectionName.cs" />
+    <Compile Include="TypeSection.cs" />
+    <Compile Include="UnknownSection.cs" />
+    <Compile Include="WasmException.cs" />
     <Compile Include="WasmFile.cs" />
+    <Compile Include="WasmType.cs" />
     <Compile Include="Binary\BadHeaderException.cs" />
     <Compile Include="Binary\BinaryWasmReader.cs" />
     <Compile Include="Binary\BinaryWasmWriter.cs" />

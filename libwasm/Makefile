@@ -7,7 +7,10 @@ files = CustomSection.cs \
 		UnknownSection.cs \
 		SectionCode.cs \
 		SectionName.cs \
+		TypeSection.cs \
+		WasmException.cs \
 		WasmFile.cs \
+		WasmType.cs \
 		Binary/BadHeaderException.cs \
 		Binary/BinaryWasmReader.cs \
 		Binary/BinaryWasmWriter.cs \

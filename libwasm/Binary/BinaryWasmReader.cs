@@ -41,6 +41,11 @@ namespace Wasm.Binary
         public Encoding StringEncoding { get; private set; }
 
         /// <summary>
+        /// Gets the current position of the reader in the WebAssembly file.
+        /// </summary>
+        public long Position => Reader.BaseStream.Position;
+
+        /// <summary>
         /// Parses an unsigned LEB128 variable-length integer, limited to 64 bits.
         /// </summary>
         /// <returns>The parsed unsigned 64-bit integer.</returns>
@@ -90,12 +95,10 @@ namespace Wasm.Binary
         }
 
         /// <summary>
-        /// Parses a signed LEB128 variable-length integer of variable size,
-        /// which is at most 64 bits.
+        /// Parses a signed LEB128 variable-length integer, limited to 64 bits.
         /// </summary>
-        /// <param name="Size">The size of the variable-length integer, in bits.</param>
         /// <returns>The parsed signed 64-bit integer.</returns>
-        public long ReadVarInt(int Size)
+        public long ReadVarInt64()
         {
             // C# translation of code borrowed from Wikipedia article:
             // https://en.wikipedia.org/wiki/LEB128
@@ -111,7 +114,7 @@ namespace Wasm.Binary
             } while ((b & 0x80) != 0);
 
             // Sign bit of byte is second high order bit. (0x40)
-            if ((shift < Size) && ((b & 0x40) == 1))
+            if ((shift < 64) && ((b & 0x40) == 0x40))
             {
                 // Sign extend.
                 result |= -(1L << shift);
@@ -126,7 +129,7 @@ namespace Wasm.Binary
         /// <returns>The parsed signed 7-bit integer.</returns>
         public sbyte ReadVarInt7()
         {
-            return (sbyte)ReadVarInt(7);
+            return (sbyte)ReadVarInt64();
         }
 
         /// <summary>
@@ -135,16 +138,25 @@ namespace Wasm.Binary
         /// <returns>The parsed signed 32-bit integer.</returns>
         public int ReadVarInt32()
         {
-            return (int)ReadVarInt(32);
+            return (int)ReadVarInt64();
         }
 
         /// <summary>
-        /// Parses a signed LEB128 variable-length integer, limited to 64 bits.
+        /// Reads a WebAssembly language type.
         /// </summary>
-        /// <returns>The parsed signed 64-bit integer.</returns>
-        public long ReadVarInt64()
+        /// <returns>The WebAssembly language type.</returns>
+        public WasmType ReadWasmType()
         {
-            return ReadVarInt(64);
+            return (WasmType)ReadVarInt7();
+        }
+
+        /// <summary>
+        /// Reads a WebAssembly value type.
+        /// </summary>
+        /// <returns>The WebAssembly value type.</returns>
+        public WasmValueType ReadWasmValueType()
+        {
+            return (WasmValueType)ReadVarInt7();
         }
 
         /// <summary>
@@ -210,6 +222,28 @@ namespace Wasm.Binary
         }
 
         /// <summary>
+        /// Reads the remaining payload of the section whose payload starts at the given position.
+        /// </summary>
+        /// <param name="StartPosition">The start of the section's payload.</param>
+        /// <param name="PayloadLength">The length of the section's payload, in bytes.</param>
+        /// <returns>The remaining payload of the section whose payload starts at the given position.</returns>
+        public byte[] ReadRemainingPayload(long StartPosition, uint PayloadLength)
+        {
+            return Reader.ReadBytes((int)(Reader.BaseStream.Position - StartPosition - PayloadLength));
+        }
+
+        /// <summary>
+        /// Reads the remaining payload of the section whose payload starts at the given position.
+        /// </summary>
+        /// <param name="StartPosition">The start of the section's payload.</param>
+        /// <param name="Header">The section's header.</param>
+        /// <returns>The remaining payload of the section whose payload starts at the given position.</returns>
+        public byte[] ReadRemainingPayload(long StartPosition, SectionHeader Header)
+        {
+            return ReadRemainingPayload(StartPosition, Header.PayloadLength);
+        }
+
+        /// <summary>
         /// Reads the custom section with the given header.
         /// </summary>
         /// <param name="Header">The section header.</param>
@@ -228,7 +262,9 @@ namespace Wasm.Binary
         /// <returns>The parsed section.</returns>
         protected Section ReadKnownSectionPayload(SectionHeader Header)
         {
-            if (Header.Name.Code == SectionCode.Function)
+            if (Header.Name.Code == SectionCode.Type)
+                return TypeSection.ReadSectionPayload(Header, this);
+            else if (Header.Name.Code == SectionCode.Function)
                 return ReadFunctionSectionPayload(Header);
             else if (Header.Name.Code == SectionCode.Export)
                 return ReadExportSectionPayload(Header);
@@ -243,7 +279,7 @@ namespace Wasm.Binary
         /// <returns>The parsed section.</returns>
         protected Section ReadFunctionSectionPayload(SectionHeader Header)
         {
-            long bytesLeft = Reader.BaseStream.Length - Reader.BaseStream.Position;
+            long startPos = Position;
             // Read the function indices.
             uint count = ReadVarUInt32();
             var funcTypes = new List<uint>();
@@ -252,10 +288,8 @@ namespace Wasm.Binary
                 funcTypes.Add(ReadVarUInt32());
             }
 
-            // Figure out how many bytes we've parsed.
-            long bytesParsed = bytesLeft - (Reader.BaseStream.Length - Reader.BaseStream.Position);
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadBytes((int)((long)Header.PayloadLength - bytesParsed));
+            var extraPayload = ReadRemainingPayload(startPos, Header);
             return new FunctionSection(funcTypes, extraPayload);
         }
 
@@ -266,7 +300,7 @@ namespace Wasm.Binary
         /// <returns>The parsed section.</returns>
         protected Section ReadExportSectionPayload(SectionHeader Header)
         {
-            long bytesLeft = Reader.BaseStream.Length - Reader.BaseStream.Position;
+            long startPos = Position;
             // Read the function indices.
             uint count = ReadVarUInt32();
             var exportedVals = new List<ExportedValue>();
@@ -279,10 +313,8 @@ namespace Wasm.Binary
                         ReadVarUInt32()));
             }
 
-            // Figure out how many bytes we've parsed.
-            long bytesParsed = bytesLeft - (Reader.BaseStream.Length - Reader.BaseStream.Position);
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadBytes((int)((long)Header.PayloadLength - bytesParsed));
+            var extraPayload = ReadRemainingPayload(startPos, Header);
             return new ExportSection(exportedVals, extraPayload);
         }
 
@@ -307,7 +339,7 @@ namespace Wasm.Binary
             var version = ReadVersionHeader();
             version.Verify();
             var sections = new List<Section>();
-            while (Reader.BaseStream.Length - Reader.BaseStream.Position > 0)
+            while (Reader.BaseStream.Length - Position > 0)
             {
                 sections.Add(ReadSection());
             }

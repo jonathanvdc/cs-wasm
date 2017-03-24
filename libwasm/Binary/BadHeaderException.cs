@@ -5,7 +5,7 @@ namespace Wasm.Binary
     /// <summary>
     /// The type of exception that is thrown when an invalid header is detected.
     /// </summary>
-    public sealed class BadHeaderException : Exception
+    public sealed class BadHeaderException : WasmException
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.Binary.BadHeaderException"/> class.

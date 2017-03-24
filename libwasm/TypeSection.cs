@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Wasm.Binary;
 
@@ -60,6 +61,31 @@ namespace Wasm
                 type.WriteTo(Writer);
 
             Writer.Writer.Write(ExtraPayload);
+        }
+
+        /// <inheritdoc/>
+        public override void Dump(TextWriter Writer)
+        {
+            Writer.Write(Name.ToString());
+            Writer.Write("; number of entries: ");
+            Writer.Write(FunctionTypes.Count);
+            Writer.WriteLine();
+            for (int i = 0; i < FunctionTypes.Count; i++)
+            {
+                Writer.Write("#");
+                Writer.Write(i);
+                Writer.Write(" -> ");
+                FunctionTypes[i].Dump(Writer);
+                Writer.WriteLine();
+            }
+            if (ExtraPayload.Length > 0)
+            {
+                Writer.Write("Extra payload size: ");
+                Writer.Write(ExtraPayload.Length);
+                Writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, Writer);
+                Writer.WriteLine();
+            }
         }
 
         /// <summary>
@@ -131,6 +157,31 @@ namespace Wasm
             Writer.WriteVarUInt32((uint)ReturnTypes.Count);
             foreach (var item in ReturnTypes)
                 Writer.WriteWasmValueType(item);
+        }
+
+        /// <summary>
+        /// Writes a textual representation of this exported value to the given writer.
+        /// </summary>
+        /// <param name="Writer">The writer to which text is written.</param>
+        public void Dump(TextWriter Writer)
+        {
+            Writer.Write("func(");
+            for (int i = 0; i < ParameterTypes.Count; i++)
+            {
+                if (i > 0)
+                    Writer.Write(", ");
+
+                DumpHelpers.DumpWasmType(ParameterTypes[i], Writer);
+            }
+            Writer.Write(") returns (");
+            for (int i = 0; i < ReturnTypes.Count; i++)
+            {
+                if (i > 0)
+                    Writer.Write(", ");
+
+                DumpHelpers.DumpWasmType(ReturnTypes[i], Writer);
+            }
+            Writer.Write(")");
         }
 
         /// <summary>

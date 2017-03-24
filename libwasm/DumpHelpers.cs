@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace Wasm
@@ -36,6 +37,36 @@ namespace Wasm
             {
                 DumpStream(memStream, Writer);
             }
+        }
+
+        /// <summary>
+        /// Creates a string representation for the given WebAssembly value type.
+        /// </summary>
+        /// <param name="Value">The WebAssembly value type to convert to a string.</param>
+        /// <returns>A string representation for a WebAssembly value type.</returns>
+        public static string WasmTypeToString(WasmValueType Value)
+        {
+            if (Value == WasmValueType.Int32)
+                return "i32";
+            else if (Value == WasmValueType.Int64)
+                return "i64";
+            else if (Value == WasmValueType.Float32)
+                return "f32";
+            else if (Value == WasmValueType.Float32)
+                return "f64";
+            else
+                return "unknown type (code: " + Value + ")";
+        }
+
+        /// <summary>
+        /// Writes a textual representation of the given WebAssembly value type to
+        /// the given text writer.
+        /// </summary>
+        /// <param name="Value">The value to print to the text writer.</param>
+        /// <param name="Writer">The writer to which the textual WebAssembly value type should be written.</param>
+        public static void DumpWasmType(WasmValueType Value, TextWriter Writer)
+        {
+            Writer.Write(WasmTypeToString(Value));
         }
     }
 }

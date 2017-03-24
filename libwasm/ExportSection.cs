@@ -127,6 +127,10 @@ namespace Wasm
             Writer.WriteVarUInt32(Index);
         }
 
+        /// <summary>
+        /// Writes a textual representation of this exported value to the given writer.
+        /// </summary>
+        /// <param name="Writer">The writer to which text is written.</param>
         public void Dump(TextWriter Writer)
         {
             Writer.Write("\"");

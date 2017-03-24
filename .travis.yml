@@ -14,5 +14,5 @@ install:
 script:
   # Build the project with mcs
   - xbuild /p:Configuration=Release cs-wasm.sln
-  # Build the project with ecsc
-  - make
+  # Build the project with ecsc and test it
+  - make test

@@ -9,7 +9,10 @@ namespace Wasm.Dump
         public static void Main(string[] args)
         {
             if (args.Length != 1)
+            {
                 Console.WriteLine("usage: wasm-dump file.wasm");
+                return;
+            }
 
             WasmFile file;
             using (var fileStream = File.OpenRead(args[0]))

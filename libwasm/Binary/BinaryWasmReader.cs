@@ -262,14 +262,17 @@ namespace Wasm.Binary
         /// <returns>The parsed section.</returns>
         protected Section ReadKnownSectionPayload(SectionHeader Header)
         {
-            if (Header.Name.Code == SectionCode.Type)
-                return TypeSection.ReadSectionPayload(Header, this);
-            else if (Header.Name.Code == SectionCode.Function)
-                return ReadFunctionSectionPayload(Header);
-            else if (Header.Name.Code == SectionCode.Export)
-                return ReadExportSectionPayload(Header);
-            else
-                return ReadUnknownSectionPayload(Header);
+            switch (Header.Name.Code)
+            {
+                case SectionCode.Type:
+                    return TypeSection.ReadSectionPayload(Header, this);
+                case SectionCode.Function:
+                    return ReadFunctionSectionPayload(Header);
+                case SectionCode.Export:
+                    return ReadExportSectionPayload(Header);
+                default:
+                    return ReadUnknownSectionPayload(Header);
+            }
         }
 
         /// <summary>

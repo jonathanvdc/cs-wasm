@@ -78,5 +78,27 @@ namespace Wasm
                 Writer.WriteLine();
             }
         }
+
+        /// <summary>
+        /// Reads the memory section with the given header.
+        /// </summary>
+        /// <param name="Header">The section header.</param>
+        /// <param name="Reader">The WebAssembly file reader.</param>
+        /// <returns>The parsed section.</returns>
+        public static MemorySection ReadSectionPayload(SectionHeader Header, BinaryWasmReader Reader)
+        {
+            long startPos = Reader.Position;
+            // Read the resizable limits.
+            uint count = Reader.ReadVarUInt32();
+            var limits = new List<ResizableLimits>();
+            for (uint i = 0; i < count; i++)
+            {
+                limits.Add(Reader.ReadResizableLimits());
+            }
+
+            // Skip any remaining bytes.
+            var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
+            return new MemorySection(limits, extraPayload);
+        }
     }
 }

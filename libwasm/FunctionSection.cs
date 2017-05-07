@@ -67,6 +67,28 @@ namespace Wasm
             Writer.Writer.Write(ExtraPayload);
         }
 
+        /// <summary>
+        /// Reads the function section with the given header.
+        /// </summary>
+        /// <param name="Header">The section header.</param>
+        /// <param name="Reader">The WebAssembly file reader.</param>
+        /// <returns>The parsed section.</returns>
+        public static FunctionSection ReadSectionPayload(SectionHeader Header, BinaryWasmReader Reader)
+        {
+            long startPos = Reader.Position;
+            // Read the function indices.
+            uint count = Reader.ReadVarUInt32();
+            var funcTypes = new List<uint>();
+            for (uint i = 0; i < count; i++)
+            {
+                funcTypes.Add(Reader.ReadVarUInt32());
+            }
+
+            // Skip any remaining bytes.
+            var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
+            return new FunctionSection(funcTypes, extraPayload);
+        }
+
         /// <inheritdoc/>
         public override void Dump(TextWriter Writer)
         {

@@ -281,81 +281,14 @@ namespace Wasm.Binary
                 case SectionCode.Type:
                     return TypeSection.ReadSectionPayload(Header, this);
                 case SectionCode.Function:
-                    return ReadFunctionSectionPayload(Header);
+                    return FunctionSection.ReadSectionPayload(Header, this);
                 case SectionCode.Memory:
-                    return ReadMemorySectionPayload(Header);
+                    return MemorySection.ReadSectionPayload(Header, this);
                 case SectionCode.Export:
-                    return ReadExportSectionPayload(Header);
+                    return ExportSection.ReadSectionPayload(Header, this);
                 default:
                     return ReadUnknownSectionPayload(Header);
             }
-        }
-
-        /// <summary>
-        /// Reads the function section with the given header.
-        /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <returns>The parsed section.</returns>
-        protected Section ReadFunctionSectionPayload(SectionHeader Header)
-        {
-            long startPos = Position;
-            // Read the function indices.
-            uint count = ReadVarUInt32();
-            var funcTypes = new List<uint>();
-            for (uint i = 0; i < count; i++)
-            {
-                funcTypes.Add(ReadVarUInt32());
-            }
-
-            // Skip any remaining bytes.
-            var extraPayload = ReadRemainingPayload(startPos, Header);
-            return new FunctionSection(funcTypes, extraPayload);
-        }
-
-        /// <summary>
-        /// Reads the memory section with the given header.
-        /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <returns>The parsed section.</returns>
-        protected Section ReadMemorySectionPayload(SectionHeader Header)
-        {
-            long startPos = Position;
-            // Read the resizable limits.
-            uint count = ReadVarUInt32();
-            var limits = new List<ResizableLimits>();
-            for (uint i = 0; i < count; i++)
-            {
-                limits.Add(ReadResizableLimits());
-            }
-
-            // Skip any remaining bytes.
-            var extraPayload = ReadRemainingPayload(startPos, Header);
-            return new MemorySection(limits, extraPayload);
-        }
-
-        /// <summary>
-        /// Reads the export section with the given header.
-        /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <returns>The parsed section.</returns>
-        protected Section ReadExportSectionPayload(SectionHeader Header)
-        {
-            long startPos = Position;
-            // Read the function indices.
-            uint count = ReadVarUInt32();
-            var exportedVals = new List<ExportedValue>();
-            for (uint i = 0; i < count; i++)
-            {
-                exportedVals.Add(
-                    new ExportedValue(
-                        ReadString(),
-                        (ExternalKind)Reader.ReadByte(),
-                        ReadVarUInt32()));
-            }
-
-            // Skip any remaining bytes.
-            var extraPayload = ReadRemainingPayload(startPos, Header);
-            return new ExportSection(exportedVals, extraPayload);
         }
 
         /// <summary>

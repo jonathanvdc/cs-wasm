@@ -28,7 +28,7 @@ namespace Wasm
         }
 
         /// <inheritdoc/>
-        public override SectionName Name => new SectionName(SectionCode.Export);
+        public override SectionName Name => new SectionName(SectionCode.Memory);
 
         /// <summary>
         /// Gets a list that contains the limits of all memories defined by this section.

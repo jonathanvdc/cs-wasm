@@ -171,6 +171,20 @@ namespace Wasm.Binary
         }
 
         /// <summary>
+        /// Reads resizable limits.
+        /// </summary>
+        /// <returns>The resizable limits.</returns>
+        public ResizableLimits ReadResizableLimits()
+        {
+            bool hasMaximum = ReadVarUInt1();
+            uint initial = ReadVarUInt32();
+            Nullable<uint> max = hasMaximum
+                ? new Nullable<uint>(ReadVarUInt32())
+                : default(Nullable<uint>);
+            return new ResizableLimits(initial, max);
+        }
+
+        /// <summary>
         /// Parses a version header.
         /// </summary>
         /// <returns>The parsed version header.</returns>
@@ -268,6 +282,8 @@ namespace Wasm.Binary
                     return TypeSection.ReadSectionPayload(Header, this);
                 case SectionCode.Function:
                     return ReadFunctionSectionPayload(Header);
+                case SectionCode.Memory:
+                    return ReadMemorySectionPayload(Header);
                 case SectionCode.Export:
                     return ReadExportSectionPayload(Header);
                 default:
@@ -294,6 +310,27 @@ namespace Wasm.Binary
             // Skip any remaining bytes.
             var extraPayload = ReadRemainingPayload(startPos, Header);
             return new FunctionSection(funcTypes, extraPayload);
+        }
+
+        /// <summary>
+        /// Reads the memory section with the given header.
+        /// </summary>
+        /// <param name="Header">The section header.</param>
+        /// <returns>The parsed section.</returns>
+        protected Section ReadMemorySectionPayload(SectionHeader Header)
+        {
+            long startPos = Position;
+            // Read the resizable limits.
+            uint count = ReadVarUInt32();
+            var limits = new List<ResizableLimits>();
+            for (uint i = 0; i < count; i++)
+            {
+                limits.Add(ReadResizableLimits());
+            }
+
+            // Skip any remaining bytes.
+            var extraPayload = ReadRemainingPayload(startPos, Header);
+            return new MemorySection(limits, extraPayload);
         }
 
         /// <summary>

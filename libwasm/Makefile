@@ -3,6 +3,7 @@ files = CustomSection.cs \
 		ExportSection.cs \
 		ExternalKind.cs \
 		FunctionSection.cs \
+		MemorySection.cs \
 		ResizableLimits.cs \
 		Section.cs \
 		UnknownSection.cs \

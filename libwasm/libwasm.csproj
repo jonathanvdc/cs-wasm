@@ -43,6 +43,7 @@
     <Compile Include="SectionCode.cs" />
     <Compile Include="SectionName.cs" />
     <Compile Include="StartSection.cs" />
+    <Compile Include="TableSection.cs" />
     <Compile Include="TypeSection.cs" />
     <Compile Include="UnknownSection.cs" />
     <Compile Include="WasmException.cs" />

@@ -40,33 +40,63 @@ namespace Wasm
         }
 
         /// <summary>
+        /// Creates a string representation for the given WebAssembly type.
+        /// </summary>
+        /// <param name="Value">The WebAssembly type to convert to a string.</param>
+        /// <returns>A string representation for a WebAssembly type.</returns>
+        public static string WasmTypeToString(WasmType Value)
+        {
+            switch (Value)
+            {
+                case WasmType.AnyFunc:
+                    return "anyfunc";
+                case WasmType.Empty:
+                    return "empty";
+                case WasmType.Float32:
+                    return "f32";
+                case WasmType.Float64:
+                    return "f64";
+                case WasmType.Func:
+                    return "funcdef";
+                case WasmType.Int32:
+                    return "i32";
+                case WasmType.Int64:
+                    return "i64";
+                default:
+                    return "unknown type (code: " + Value + ")";
+            }
+        }
+
+        /// <summary>
         /// Creates a string representation for the given WebAssembly value type.
         /// </summary>
         /// <param name="Value">The WebAssembly value type to convert to a string.</param>
         /// <returns>A string representation for a WebAssembly value type.</returns>
         public static string WasmTypeToString(WasmValueType Value)
         {
-            if (Value == WasmValueType.Int32)
-                return "i32";
-            else if (Value == WasmValueType.Int64)
-                return "i64";
-            else if (Value == WasmValueType.Float32)
-                return "f32";
-            else if (Value == WasmValueType.Float32)
-                return "f64";
-            else
-                return "unknown type (code: " + Value + ")";
+            return WasmTypeToString((WasmType)Value);
+        }
+
+        /// <summary>
+        /// Writes a textual representation of the given WebAssembly type to
+        /// the given text writer.
+        /// </summary>
+        /// <param name="Value">The type to print to the text writer.</param>
+        /// <param name="Writer">The writer to which the textual WebAssembly value type should be written.</param>
+        public static void DumpWasmType(WasmType Value, TextWriter Writer)
+        {
+            Writer.Write(WasmTypeToString(Value));
         }
 
         /// <summary>
         /// Writes a textual representation of the given WebAssembly value type to
         /// the given text writer.
         /// </summary>
-        /// <param name="Value">The value to print to the text writer.</param>
+        /// <param name="Value">The value type to print to the text writer.</param>
         /// <param name="Writer">The writer to which the textual WebAssembly value type should be written.</param>
         public static void DumpWasmType(WasmValueType Value, TextWriter Writer)
         {
-            Writer.Write(WasmTypeToString(Value));
+            DumpWasmType((WasmType)Value, Writer);
         }
     }
 }

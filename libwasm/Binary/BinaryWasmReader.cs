@@ -282,6 +282,8 @@ namespace Wasm.Binary
                     return TypeSection.ReadSectionPayload(Header, this);
                 case SectionCode.Function:
                     return FunctionSection.ReadSectionPayload(Header, this);
+                case SectionCode.Table:
+                    return TableSection.ReadSectionPayload(Header, this);
                 case SectionCode.Memory:
                     return MemorySection.ReadSectionPayload(Header, this);
                 case SectionCode.Export:

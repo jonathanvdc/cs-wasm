@@ -10,6 +10,7 @@ files = CustomSection.cs \
 		SectionCode.cs \
 		SectionName.cs \
 		StartSection.cs \
+		TableSection.cs \
 		TypeSection.cs \
 		WasmException.cs \
 		WasmFile.cs \

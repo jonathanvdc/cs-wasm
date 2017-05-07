@@ -60,5 +60,35 @@ namespace Wasm
         /// </summary>
         /// <returns>The maximum length of the resizable limits, if any.</returns>
         public Nullable<uint> Maximum { get; private set; }
+
+        /// <summary>
+        /// Writes these resizable limits to the given WebAssembly file writer.
+        /// </summary>
+        /// <param name="Writer">The WebAssembly file writer.</param>
+        public void WriteTo(BinaryWasmWriter Writer)
+        {
+            Writer.WriteVarUInt1(HasMaximum);
+            Writer.WriteVarUInt32(Initial);
+            if (HasMaximum)
+            {
+                Writer.WriteVarUInt32(Maximum.Value);
+            }
+        }
+
+        /// <summary>
+        /// Writes a textual representation of these resizable limits to the given writer.
+        /// </summary>
+        /// <param name="Writer">The writer to which text is written.</param>
+        public void Dump(TextWriter Writer)
+        {
+            Writer.Write("{initial: ");
+            Writer.Write(Initial);
+            if (HasMaximum)
+            {
+                Writer.Write(", max: ");
+                Writer.Write(Maximum.Value);
+            }
+            Writer.Write("}");
+        }
     }
 }

@@ -37,6 +37,7 @@
     <Compile Include="ExportSection.cs" />
     <Compile Include="ExternalKind.cs" />
     <Compile Include="FunctionSection.cs" />
+    <Compile Include="ResizableLimits.cs" />
     <Compile Include="Section.cs" />
     <Compile Include="SectionCode.cs" />
     <Compile Include="SectionName.cs" />

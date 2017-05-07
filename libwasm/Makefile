@@ -9,6 +9,7 @@ files = CustomSection.cs \
 		UnknownSection.cs \
 		SectionCode.cs \
 		SectionName.cs \
+		StartSection.cs \
 		TypeSection.cs \
 		WasmException.cs \
 		WasmFile.cs \

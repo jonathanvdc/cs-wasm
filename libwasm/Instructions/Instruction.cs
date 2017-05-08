@@ -16,10 +16,22 @@ namespace Wasm.Instructions
         public abstract IOperator Operator { get; }
 
         /// <summary>
-        /// Writes this instruction's data to the given WebAssembly file writer.
+        /// Writes this instruction's immediates (but not its opcode)
+        /// to the given WebAssembly file writer.
+        /// </summary>
+        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
+        public abstract void WriteImmediatesTo(BinaryWasmWriter Writer);
+
+        /// <summary>
+        /// Writes this instruction's opcode and immediates to the given
+        /// WebAssembly file writer.
         /// </summary>
         /// <param name="Writer">The writer to write this instruction to.</param>
-        public abstract void WriteTo(BinaryWasmWriter Writer);
+        public void WriteTo(BinaryWasmWriter Writer)
+        {
+            Writer.Writer.Write(Operator.OpCode);
+            WriteImmediatesTo(Writer);
+        }
 
         /// <summary>
         /// Writes a string representation of this instruction to the given text writer.

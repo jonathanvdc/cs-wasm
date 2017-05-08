@@ -36,7 +36,7 @@ namespace Wasm
         Func = -0x20,
 
         /// <summary>
-        /// A pseudo-type for for representing an empty block type.
+        /// A pseudo-type for representing an empty block type.
         /// </summary>
         Empty = -0x40
     }

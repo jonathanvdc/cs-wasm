@@ -25,6 +25,8 @@ files = CustomSection.cs \
 		Instructions/NullaryOperator.cs \
 		Instructions/Operator.cs \
 		Instructions/Operators.cs \
+		Instructions/VarInt32Instruction.cs \
+		Instructions/VarInt32Operator.cs \
 		Instructions/VarUInt32Instruction.cs \
 		Instructions/VarUInt32Operator.cs
 

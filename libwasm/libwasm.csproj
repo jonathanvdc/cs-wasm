@@ -59,6 +59,8 @@
     <Compile Include="Instructions\NullaryOperator.cs" />
     <Compile Include="Instructions\Operator.cs" />
     <Compile Include="Instructions\Operators.cs" />
+    <Compile Include="Instructions\VarInt32Instruction.cs" />
+    <Compile Include="Instructions\VarInt32Operator.cs" />
     <Compile Include="Instructions\VarUInt32Instruction.cs" />
     <Compile Include="Instructions\VarUInt32Operator.cs" />
   </ItemGroup>

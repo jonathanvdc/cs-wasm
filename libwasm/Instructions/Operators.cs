@@ -16,11 +16,15 @@ namespace Wasm.Instructions
             Return = Register(new NullaryOperator(0x0f, WasmType.Empty, "return"));
             Drop = Register(new NullaryOperator(0x1a, WasmType.Empty, "drop"));
             Select = Register(new NullaryOperator(0x1b, WasmType.Empty, "select"));
+
+            Call = Register(new VarUInt32Operator(0x10, WasmType.Empty, "call"));
             GetLocal = Register(new VarUInt32Operator(0x20, WasmType.Empty, "get_local"));
             SetLocal = Register(new VarUInt32Operator(0x21, WasmType.Empty, "set_local"));
             TeeLocal = Register(new VarUInt32Operator(0x22, WasmType.Empty, "tee_local"));
             GetGlobal = Register(new VarUInt32Operator(0x23, WasmType.Empty, "get_global"));
             SetGlobal = Register(new VarUInt32Operator(0x24, WasmType.Empty, "set_global"));
+
+            Int32Const = Register(new VarInt32Operator(0x41, WasmType.Int32, "const"));
         }
 
         /// <summary>
@@ -49,6 +53,11 @@ namespace Wasm.Instructions
         public static readonly Operator Select;
 
         /// <summary>
+        /// The 'call' operator, which calls a function by its index.
+        /// </summary>
+        public static readonly Operator Call;
+
+        /// <summary>
         /// The 'get_local' operator, which reads a local variable or parameter.
         /// </summary>
         public static readonly Operator GetLocal;
@@ -73,6 +82,11 @@ namespace Wasm.Instructions
         /// The 'set_global' operator, which reads a global variable.
         /// </summary>
         public static readonly Operator SetGlobal;
+
+        /// <summary>
+        /// The 'i32.const' operator, which loads a constant 32-bit integer onto the stack.
+        /// </summary>
+        public static readonly Operator Int32Const;
 
         /// <summary>
         /// The 'else' opcode, which begins an 'if' expression's 'else' block.

@@ -19,7 +19,9 @@ files = CustomSection.cs \
 		Binary/BinaryWasmReader.cs \
 		Binary/BinaryWasmWriter.cs \
 		Binary/SectionHeader.cs \
-		Binary/VersionHeader.cs
+		Binary/VersionHeader.cs \
+		Instructions/Instruction.cs \
+		Instructions/IOperator.cs
 
 common_options = -asm-name=libwasm -asm-version=0.1.0.0 -Wall -Wextra -force-write
 

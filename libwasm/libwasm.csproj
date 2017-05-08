@@ -54,9 +54,12 @@
     <Compile Include="Binary\BinaryWasmWriter.cs" />
     <Compile Include="Binary\SectionHeader.cs" />
     <Compile Include="Binary\VersionHeader.cs" />
+    <Compile Include="Instructions\Instruction.cs" />
+    <Compile Include="Instructions\IOperator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
     <Folder Include="Binary\" />
+    <Folder Include="Instructions\" />
   </ItemGroup>
 </Project>

@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libwasm", "libwasm\libwasm.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wasm-dump", "wasm-dump\wasm-dump.csproj", "{BEA2507C-F8CF-414E-9E18-A359FC506BB0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nullary-opcode-generator", "nullary-opcode-generator\nullary-opcode-generator.csproj", "{D7C88555-88A1-45C3-855B-F86C24A4773C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,5 +21,9 @@ Global
 		{BEA2507C-F8CF-414E-9E18-A359FC506BB0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEA2507C-F8CF-414E-9E18-A359FC506BB0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEA2507C-F8CF-414E-9E18-A359FC506BB0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7C88555-88A1-45C3-855B-F86C24A4773C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7C88555-88A1-45C3-855B-F86C24A4773C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7C88555-88A1-45C3-855B-F86C24A4773C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7C88555-88A1-45C3-855B-F86C24A4773C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

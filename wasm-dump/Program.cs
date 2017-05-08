@@ -6,12 +6,12 @@ namespace Wasm.Dump
 {
     public static class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             if (args.Length != 1)
             {
-                Console.WriteLine("usage: wasm-dump file.wasm");
-                return;
+                Console.Error.WriteLine("usage: wasm-dump file.wasm");
+                return 1;
             }
 
             WasmFile file;
@@ -25,6 +25,7 @@ namespace Wasm.Dump
                 }
             }
             DumpFile(file);
+            return 0;
         }
 
         public static void DumpFile(WasmFile ParsedFile)

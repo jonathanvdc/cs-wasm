@@ -13,6 +13,7 @@ namespace Wasm.Instructions
 
             Unreachable = Register(new NullaryOperator(0x00, WasmType.Empty, "unreachable"));
             Nop = Register(new NullaryOperator(0x01, WasmType.Empty, "nop"));
+            Return = Register(new NullaryOperator(0x0f, WasmType.Empty, "return"));
         }
 
         /// <summary>
@@ -24,6 +25,11 @@ namespace Wasm.Instructions
         /// The 'nop' operator, which does nothing.
         /// </summary>
         public static readonly Operator Nop;
+
+        /// <summary>
+        /// The 'return' operator, which returns zero or one value from a function.
+        /// </summary>
+        public static readonly Operator Return;
 
         /// <summary>
         /// The 'else' opcode, which begins an 'if' expression's 'else' block.
@@ -41,7 +47,7 @@ namespace Wasm.Instructions
         private static Dictionary<byte, Operator> opsByOpCode;
 
         /// <summary>
-        /// A map of opcodes to the operators that define them.
+        /// Gets a map of opcodes to the operators that define them.
         /// </summary>
         public static IReadOnlyDictionary<byte, Operator> OperatorsByOpCode => opsByOpCode;
 

@@ -9,11 +9,14 @@ namespace Wasm.Instructions
     /// </summary>
     public abstract class Instruction
     {
+        public Instruction()
+        { }
+
         /// <summary>
         /// Gets the operator for this instruction.
         /// </summary>
         /// <returns>The instruction's operator.</returns>
-        public abstract Operator Operator { get; }
+        public abstract Operator Op { get; }
 
         /// <summary>
         /// Writes this instruction's immediates (but not its opcode)
@@ -29,7 +32,7 @@ namespace Wasm.Instructions
         /// <param name="Writer">The writer to write this instruction to.</param>
         public void WriteTo(BinaryWasmWriter Writer)
         {
-            Writer.Writer.Write(Operator.OpCode);
+            Writer.Writer.Write(Op.OpCode);
             WriteImmediatesTo(Writer);
         }
 
@@ -41,7 +44,7 @@ namespace Wasm.Instructions
         /// </param>
         public virtual void Dump(TextWriter Writer)
         {
-            Operator.Dump(Writer);
+            Op.Dump(Writer);
         }
 
         /// <summary>

@@ -24,7 +24,9 @@ files = CustomSection.cs \
 		Instructions/NullaryInstruction.cs \
 		Instructions/NullaryOperator.cs \
 		Instructions/Operator.cs \
-		Instructions/Operators.cs
+		Instructions/Operators.cs \
+		Instructions/VarUInt32Instruction.cs \
+		Instructions/VarUInt32Operator.cs
 
 common_options = -asm-name=libwasm -asm-version=0.1.0.0 -Wall -Wextra -force-write
 

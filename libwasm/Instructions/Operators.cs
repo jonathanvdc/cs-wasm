@@ -14,6 +14,8 @@ namespace Wasm.Instructions
             Unreachable = Register(new NullaryOperator(0x00, WasmType.Empty, "unreachable"));
             Nop = Register(new NullaryOperator(0x01, WasmType.Empty, "nop"));
             Return = Register(new NullaryOperator(0x0f, WasmType.Empty, "return"));
+            Drop = Register(new NullaryOperator(0x1a, WasmType.Empty, "drop"));
+            Select = Register(new NullaryOperator(0x1b, WasmType.Empty, "select"));
         }
 
         /// <summary>
@@ -30,6 +32,16 @@ namespace Wasm.Instructions
         /// The 'return' operator, which returns zero or one value from a function.
         /// </summary>
         public static readonly Operator Return;
+
+        /// <summary>
+        /// The 'drop' operator, which pops the top-of-stack value and ignores it.
+        /// </summary>
+        public static readonly Operator Drop;
+
+        /// <summary>
+        /// The 'select' operator, which selects one of two values based on a condition.
+        /// </summary>
+        public static readonly Operator Select;
 
         /// <summary>
         /// The 'else' opcode, which begins an 'if' expression's 'else' block.

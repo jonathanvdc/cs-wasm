@@ -13,7 +13,7 @@ namespace Wasm.Instructions
         /// Gets the operator for this instruction.
         /// </summary>
         /// <returns>The instruction's operator.</returns>
-        public abstract IOperator Operator { get; }
+        public abstract Operator Operator { get; }
 
         /// <summary>
         /// Writes this instruction's immediates (but not its opcode)
@@ -41,7 +41,7 @@ namespace Wasm.Instructions
         /// </param>
         public virtual void Dump(TextWriter Writer)
         {
-            Writer.WriteLine(Operator.Mnemonic);
+            Operator.Dump(Writer);
         }
 
         /// <summary>

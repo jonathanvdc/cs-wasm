@@ -21,7 +21,7 @@ files = CustomSection.cs \
 		Binary/SectionHeader.cs \
 		Binary/VersionHeader.cs \
 		Instructions/Instruction.cs \
-		Instructions/IOperator.cs
+		Instructions/Operator.cs
 
 common_options = -asm-name=libwasm -asm-version=0.1.0.0 -Wall -Wextra -force-write
 

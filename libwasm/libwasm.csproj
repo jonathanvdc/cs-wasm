@@ -55,7 +55,7 @@
     <Compile Include="Binary\SectionHeader.cs" />
     <Compile Include="Binary\VersionHeader.cs" />
     <Compile Include="Instructions\Instruction.cs" />
-    <Compile Include="Instructions\IOperator.cs" />
+    <Compile Include="Instructions\Operator.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

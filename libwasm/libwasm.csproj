@@ -58,6 +58,7 @@
     <Compile Include="Instructions\NullaryInstruction.cs" />
     <Compile Include="Instructions\NullaryOperator.cs" />
     <Compile Include="Instructions\Operator.cs" />
+    <Compile Include="Instructions\Operators.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

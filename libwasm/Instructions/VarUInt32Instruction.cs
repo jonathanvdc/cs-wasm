@@ -39,5 +39,18 @@ namespace Wasm.Instructions
         {
             Writer.WriteVarUInt32(Immediate);
         }
+
+        /// <summary>
+        /// Writes a string representation of this instruction to the given text writer.
+        /// </summary>
+        /// <param name="Writer">
+        /// The writer to which a representation of this instruction is written.
+        /// </param>
+        public override void Dump(TextWriter Writer)
+        {
+            Op.Dump(Writer);
+            Writer.Write(" ");
+            Writer.Write(Immediate);
+        }
     }
 }

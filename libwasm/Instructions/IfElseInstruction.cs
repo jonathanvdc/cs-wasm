@@ -85,5 +85,37 @@ namespace Wasm.Instructions
             }
             Writer.Writer.Write(Operators.EndOpCode);
         }
+
+        /// <summary>
+        /// Writes a string representation of this instruction to the given text writer.
+        /// </summary>
+        /// <param name="Writer">
+        /// The writer to which a representation of this instruction is written.
+        /// </param>
+        public override void Dump(TextWriter Writer)
+        {
+            Op.Dump(Writer);
+            Writer.Write(" (result: ");
+            DumpHelpers.DumpWasmType(Type, Writer);
+            Writer.Write(")");
+            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+            foreach (var instr in IfBranch)
+            {
+                indentedWriter.WriteLine();
+                instr.Dump(indentedWriter);
+            }
+            Writer.WriteLine();
+            if (HasElseBranch)
+            {
+                Writer.Write("else");
+                foreach (var instr in ElseBranch)
+                {
+                    indentedWriter.WriteLine();
+                    instr.Dump(indentedWriter);
+                }
+                Writer.WriteLine();
+            }
+            Writer.Write("end");
+        }
     }
 }

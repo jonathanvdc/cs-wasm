@@ -23,6 +23,8 @@ files = CodeSection.cs \
 		Binary/VersionHeader.cs \
 		Instructions/BlockInstruction.cs \
 		Instructions/BlockOperator.cs \
+		Instructions/IfElseInstruction.cs \
+		Instructions/IfElseOperator.cs \
 		Instructions/Instruction.cs \
 		Instructions/NullaryInstruction.cs \
 		Instructions/NullaryOperator.cs \
@@ -31,7 +33,9 @@ files = CodeSection.cs \
 		Instructions/VarInt32Instruction.cs \
 		Instructions/VarInt32Operator.cs \
 		Instructions/VarUInt32Instruction.cs \
-		Instructions/VarUInt32Operator.cs
+		Instructions/VarUInt32Operator.cs \
+		Instructions/VarInt64Instruction.cs \
+		Instructions/VarInt64Operator.cs
 
 common_options = -asm-name=libwasm -asm-version=0.1.0.0 -Wall -Wextra -force-write
 

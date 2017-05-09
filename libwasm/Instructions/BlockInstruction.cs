@@ -50,7 +50,7 @@ namespace Wasm.Instructions
         /// Writes this instruction's child instructions to the given WebAssembly file writer,
         /// followed by an 'end' opcode.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
+        /// <param name="Writer">The writer to write this instruction's child instructions to.</param>
         public void WriteContentsTo(BinaryWasmWriter Writer)
         {
             foreach (var instr in Contents)

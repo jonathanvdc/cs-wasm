@@ -290,8 +290,8 @@ namespace Wasm.Binary
                     return ExportSection.ReadSectionPayload(Header, this);
                 case SectionCode.Start:
                     return StartSection.ReadSectionPayload(Header, this);
-                // case SectionCode.Code:
-                //     return CodeSection.ReadSectionPayload(Header, this);
+                case SectionCode.Code:
+                    return CodeSection.ReadSectionPayload(Header, this);
                 default:
                     return ReadUnknownSectionPayload(Header);
             }

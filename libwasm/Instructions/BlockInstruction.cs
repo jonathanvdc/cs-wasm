@@ -11,17 +11,20 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class BlockInstruction : Instruction
     {
-        public BlockInstruction(WasmType Type, IEnumerable<Instruction> Contents)
+        public BlockInstruction(Operator Op, WasmType Type, IEnumerable<Instruction> Contents)
         {
+            this.opValue = Op;
             this.Type = Type;
             this.Contents = new List<Instruction>(Contents);
         }
+
+        private Operator opValue;
 
         /// <summary>
         /// Gets the operator for this instruction.
         /// </summary>
         /// <returns>The instruction's operator.</returns>
-        public override Operator Op { get { return Operators.Block; } }
+        public override Operator Op { get { return opValue; } }
 
         /// <summary>
         /// Gets the type of value returned by this block.

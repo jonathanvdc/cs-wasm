@@ -24,7 +24,7 @@ namespace Wasm.Instructions
         public override Instruction ReadImmediates(BinaryWasmReader Reader)
         {
             var type = Reader.ReadWasmType();
-            return ReadBlockContents(type, Reader);
+            return ReadBlockContents(this, type, Reader);
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Wasm.Instructions
         /// <param name="BlockType">The type of value returned by the resulting block.</param>
         /// <param name="Reader">The WebAssembly file reader.</param>
         /// <returns>A WebAssembly block instruction.</returns>
-        public static BlockInstruction ReadBlockContents(WasmType BlockType, BinaryWasmReader Reader)
+        public static BlockInstruction ReadBlockContents(Operator Op, WasmType BlockType, BinaryWasmReader Reader)
         {
             var contents = new List<Instruction>();
             while (true)
@@ -41,7 +41,7 @@ namespace Wasm.Instructions
                 byte opCode = Reader.Reader.ReadByte();
                 if (opCode == Operators.EndOpCode)
                 {
-                    return new BlockInstruction(BlockType, contents);
+                    return new BlockInstruction(Op, BlockType, contents);
                 }
                 else
                 {

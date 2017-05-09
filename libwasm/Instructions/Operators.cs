@@ -14,7 +14,10 @@ namespace Wasm.Instructions
             Unreachable = Register(new NullaryOperator(0x00, WasmType.Empty, "unreachable"));
             Nop = Register(new NullaryOperator(0x01, WasmType.Empty, "nop"));
             Block = Register(new BlockOperator(0x02, WasmType.Empty, "block"));
+            Loop = Register(new BlockOperator(0x03, WasmType.Empty, "loop"));
             If = Register(new IfElseOperator(0x04, WasmType.Empty, "if"));
+            Br = Register(new VarUInt32Operator(0x0c, WasmType.Empty, "br"));
+            BrIf = Register(new VarUInt32Operator(0x0d, WasmType.Empty, "br_if"));
             Return = Register(new NullaryOperator(0x0f, WasmType.Empty, "return"));
             Drop = Register(new NullaryOperator(0x1a, WasmType.Empty, "drop"));
             Select = Register(new NullaryOperator(0x1b, WasmType.Empty, "select"));
@@ -210,9 +213,24 @@ namespace Wasm.Instructions
         public static readonly Operator Block;
 
         /// <summary>
+        /// The 'loop' operator, which begins a block which can also form control flow loops
+        /// </summary>
+        public static readonly Operator Loop;
+
+        /// <summary>
         /// The 'if' operator, which runs one of two sequences of expressions.
         /// </summary>
         public static readonly Operator If;
+
+        /// <summary>
+        /// The 'br' operator: a break that targets an outer nested block.
+        /// </summary>
+        public static readonly Operator Br;
+
+        /// <summary>
+        /// The 'br_if' operator: a conditional break that targets an outer nested block
+        /// </summary>
+        public static readonly Operator BrIf;
 
         /// <summary>
         /// The 'return' operator, which returns zero or one value from a function.

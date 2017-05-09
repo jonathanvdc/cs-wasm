@@ -226,7 +226,7 @@ namespace Wasm
             }
 
             // Read the function's body block.
-            var body = BlockOperator.ReadBlockContents(WasmType.Empty, Reader);
+            var body = BlockOperator.ReadBlockContents(Operators.Block, WasmType.Empty, Reader);
 
             // Skip any remaining bytes.
             var extraPayload = Reader.ReadRemainingPayload(startPos, funcBodyLength);

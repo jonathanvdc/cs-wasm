@@ -13,6 +13,7 @@ namespace Wasm.Instructions
 
             Unreachable = Register(new NullaryOperator(0x00, WasmType.Empty, "unreachable"));
             Nop = Register(new NullaryOperator(0x01, WasmType.Empty, "nop"));
+            Block = Register(new BlockOperator(0x02, WasmType.Empty, "block"));
             Return = Register(new NullaryOperator(0x0f, WasmType.Empty, "return"));
             Drop = Register(new NullaryOperator(0x1a, WasmType.Empty, "drop"));
             Select = Register(new NullaryOperator(0x1b, WasmType.Empty, "select"));
@@ -153,6 +154,45 @@ namespace Wasm.Instructions
         }
 
         /// <summary>
+        /// A map of opcodes to the operators that define them.
+        /// </summary>
+        private static Dictionary<byte, Operator> opsByOpCode;
+
+        /// <summary>
+        /// Gets a map of opcodes to the operators that define them.
+        /// </summary>
+        public static IReadOnlyDictionary<byte, Operator> OperatorsByOpCode => opsByOpCode;
+
+        /// <summary>
+        /// Registers the given operator.
+        /// </summary>
+        /// <param name="Op">The operator to register.</param>
+        /// <returns>The operator.</returns>
+        private static Operator Register(Operator Op)
+        {
+            opsByOpCode.Add(Op.OpCode, Op);
+            return Op;
+        }
+
+        /// <summary>
+        /// Gets the operator with the given opcode.
+        /// </summary>
+        /// <param name="OpCode">The opcode to find an operator for.</param>
+        /// <returns>The operator with the given opcode.</returns>
+        public static Operator GetOperatorByOpCode(byte OpCode)
+        {
+            Operator result;
+            if (OperatorsByOpCode.TryGetValue(OpCode, out result))
+            {
+                return result;
+            }
+            else
+            {
+                throw new WasmException(string.Format("Unknown opcode: 0x{0:X02}", OpCode));
+            }
+        }
+
+        /// <summary>
         /// The 'unreachable' operator, which traps immediately.
         /// </summary>
         public static readonly Operator Unreachable;
@@ -161,6 +201,11 @@ namespace Wasm.Instructions
         /// The 'nop' operator, which does nothing.
         /// </summary>
         public static readonly Operator Nop;
+
+        /// <summary>
+        /// The 'block' operator, which begins a sequence of expressions, yielding 0 or 1 values.
+        /// </summary>
+        public static readonly Operator Block;
 
         /// <summary>
         /// The 'return' operator, which returns zero or one value from a function.
@@ -842,26 +887,5 @@ namespace Wasm.Instructions
         public static readonly Operator Float64ReinterpretInt64;
 
         #endregion
-
-        /// <summary>
-        /// A map of opcodes to the operators that define them.
-        /// </summary>
-        private static Dictionary<byte, Operator> opsByOpCode;
-
-        /// <summary>
-        /// Gets a map of opcodes to the operators that define them.
-        /// </summary>
-        public static IReadOnlyDictionary<byte, Operator> OperatorsByOpCode => opsByOpCode;
-
-        /// <summary>
-        /// Registers the given operator.
-        /// </summary>
-        /// <param name="Op">The operator to register.</param>
-        /// <returns>The operator.</returns>
-        private static Operator Register(Operator Op)
-        {
-            opsByOpCode.Add(Op.OpCode, Op);
-            return Op;
-        }
     }
 }

@@ -28,7 +28,7 @@ namespace Wasm.Instructions
         /// Gets this instruction's immediate.
         /// </summary>
         /// <returns>The immediate value.</returns>
-        public uint Immediate { get; private set; }
+        public uint Immediate { get; set; }
 
         /// <summary>
         /// Writes this instruction's immediates (but not its opcode)

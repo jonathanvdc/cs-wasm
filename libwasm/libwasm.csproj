@@ -31,7 +31,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="CodeSection.cs" />
     <Compile Include="CustomSection.cs" />
     <Compile Include="DumpHelpers.cs" />
     <Compile Include="ExportSection.cs" />
@@ -54,6 +54,8 @@
     <Compile Include="Binary\BinaryWasmWriter.cs" />
     <Compile Include="Binary\SectionHeader.cs" />
     <Compile Include="Binary\VersionHeader.cs" />
+    <Compile Include="Instructions\BlockInstruction.cs" />
+    <Compile Include="Instructions\BlockOperator.cs" />
     <Compile Include="Instructions\Instruction.cs" />
     <Compile Include="Instructions\NullaryInstruction.cs" />
     <Compile Include="Instructions\NullaryOperator.cs" />
@@ -63,6 +65,7 @@
     <Compile Include="Instructions\VarInt32Operator.cs" />
     <Compile Include="Instructions\VarUInt32Instruction.cs" />
     <Compile Include="Instructions\VarUInt32Operator.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -1,4 +1,5 @@
-files = CustomSection.cs \
+files = CodeSection.cs \
+		CustomSection.cs \
 		DumpHelpers.cs \
 		ExportSection.cs \
 		ExternalKind.cs \
@@ -20,6 +21,8 @@ files = CustomSection.cs \
 		Binary/BinaryWasmWriter.cs \
 		Binary/SectionHeader.cs \
 		Binary/VersionHeader.cs \
+		Instructions/BlockInstruction.cs \
+		Instructions/BlockOperator.cs \
 		Instructions/Instruction.cs \
 		Instructions/NullaryInstruction.cs \
 		Instructions/NullaryOperator.cs \

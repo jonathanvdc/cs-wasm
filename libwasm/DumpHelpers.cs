@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.IO;
 
 namespace Wasm
@@ -97,6 +98,29 @@ namespace Wasm
         public static void DumpWasmType(WasmValueType Value, TextWriter Writer)
         {
             DumpWasmType((WasmType)Value, Writer);
+        }
+
+        /// <summary>
+        /// Creates a text writer that prepends the given indentation string to every line.
+        /// </summary>
+        /// <param name="Writer">The text writer to which the indented writer should write.</param>
+        /// <param name="Indentation">The indentation string.</param>
+        /// <returns>A text writer that prepends the given indentation string to every line.</returns>
+        public static TextWriter CreateIndentedTextWriter(TextWriter Writer, string Indentation)
+        {
+            var result = new IndentedTextWriter(Writer, Indentation);
+            result.Indent = 1;
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a text writer that prepends indentation string to every line.
+        /// </summary>
+        /// <param name="Writer">The text writer to which the indented writer should write.</param>
+        /// <returns>A text writer that prepends indentation to every line.</returns>
+        public static TextWriter CreateIndentedTextWriter(TextWriter Writer)
+        {
+            return CreateIndentedTextWriter(Writer, "    ");
         }
     }
 }

@@ -42,8 +42,6 @@ files = CodeSection.cs \
 		Instructions/VarInt32Operator.cs \
 		Instructions/VarInt64Instruction.cs \
 		Instructions/VarInt64Operator.cs \
-		Instructions/VarUInt1Instruction.cs \
-		Instructions/VarUInt1Operator.cs \
 		Instructions/VarUInt32Instruction.cs \
 		Instructions/VarUInt32Operator.cs
 

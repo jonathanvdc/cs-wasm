@@ -75,8 +75,6 @@
     <Compile Include="Instructions\VarInt32Operator.cs" />
     <Compile Include="Instructions\VarInt64Instruction.cs" />
     <Compile Include="Instructions\VarInt64Operator.cs" />
-    <Compile Include="Instructions\VarUInt1Instruction.cs" />
-    <Compile Include="Instructions\VarUInt1Operator.cs" />
     <Compile Include="Instructions\VarUInt32Instruction.cs" />
     <Compile Include="Instructions\VarUInt32Operator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

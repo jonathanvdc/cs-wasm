@@ -63,6 +63,8 @@
     <Compile Include="Instructions\IfElseInstruction.cs" />
     <Compile Include="Instructions\IfElseOperator.cs" />
     <Compile Include="Instructions\Instruction.cs" />
+    <Compile Include="Instructions\MemoryInstruction.cs" />
+    <Compile Include="Instructions\MemoryOperator.cs" />
     <Compile Include="Instructions\NullaryInstruction.cs" />
     <Compile Include="Instructions\NullaryOperator.cs" />
     <Compile Include="Instructions\Operator.cs" />

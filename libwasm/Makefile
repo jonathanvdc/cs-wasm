@@ -30,6 +30,8 @@ files = CodeSection.cs \
 		Instructions/IfElseInstruction.cs \
 		Instructions/IfElseOperator.cs \
 		Instructions/Instruction.cs \
+		Instructions/MemoryInstruction.cs \
+		Instructions/MemoryOperator.cs \
 		Instructions/NullaryInstruction.cs \
 		Instructions/NullaryOperator.cs \
 		Instructions/Operator.cs \

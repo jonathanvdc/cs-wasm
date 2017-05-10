@@ -18,6 +18,7 @@ namespace Wasm.Instructions
             If = Register(new IfElseOperator(0x04, WasmType.Empty, "if"));
             Br = Register(new VarUInt32Operator(0x0c, WasmType.Empty, "br"));
             BrIf = Register(new VarUInt32Operator(0x0d, WasmType.Empty, "br_if"));
+            BrTable = Register(new BrTableOperator(0x0e, WasmType.Empty, "br_table"));
             Return = Register(new NullaryOperator(0x0f, WasmType.Empty, "return"));
             Drop = Register(new NullaryOperator(0x1a, WasmType.Empty, "drop"));
             Select = Register(new NullaryOperator(0x1b, WasmType.Empty, "select"));
@@ -263,9 +264,14 @@ namespace Wasm.Instructions
         public static readonly Operator Br;
 
         /// <summary>
-        /// The 'br_if' operator: a conditional break that targets an outer nested block
+        /// The 'br_if' operator: a conditional break that targets an outer nested block.
         /// </summary>
         public static readonly Operator BrIf;
+
+        /// <summary>
+        /// The 'br_table' operator, which begins a break table.
+        /// </summary>
+        public static readonly Operator BrTable;
 
         /// <summary>
         /// The 'return' operator, which returns zero or one value from a function.

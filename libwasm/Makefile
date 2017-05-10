@@ -23,6 +23,8 @@ files = CodeSection.cs \
 		Binary/VersionHeader.cs \
 		Instructions/BlockInstruction.cs \
 		Instructions/BlockOperator.cs \
+		Instructions/BrTableInstruction.cs \
+		Instructions/BrTableOperator.cs \
 		Instructions/CallIndirectInstruction.cs \
 		Instructions/CallIndirectOperator.cs \
 		Instructions/Float32Instruction.cs \

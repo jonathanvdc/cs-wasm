@@ -32,8 +32,8 @@ namespace Wasm.Instructions
 
             Int32Const = Register(new VarInt32Operator(0x41, WasmType.Int32, "const"));
             Int64Const = Register(new VarInt64Operator(0x42, WasmType.Int64, "const"));
-            Float32Const = Register(new VarInt32Operator(0x43, WasmType.Float32, "const"));
-            Float64Const = Register(new VarInt64Operator(0x44, WasmType.Float64, "const"));
+            Float32Const = Register(new Float32Operator(0x43, WasmType.Float32, "const"));
+            Float64Const = Register(new Float64Operator(0x44, WasmType.Float64, "const"));
 
             Int32Load = Register(new MemoryOperator(0x28, WasmType.Int32, "load"));
             Int64Load = Register(new MemoryOperator(0x29, WasmType.Int64, "load"));

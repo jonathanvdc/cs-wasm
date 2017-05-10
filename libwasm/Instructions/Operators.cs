@@ -23,6 +23,7 @@ namespace Wasm.Instructions
             Select = Register(new NullaryOperator(0x1b, WasmType.Empty, "select"));
 
             Call = Register(new VarUInt32Operator(0x10, WasmType.Empty, "call"));
+            CallIndirect = Register(new CallIndirectOperator(0x11, WasmType.Empty, "call_indirect"));
 
             GetLocal = Register(new VarUInt32Operator(0x20, WasmType.Empty, "get_local"));
             SetLocal = Register(new VarUInt32Operator(0x21, WasmType.Empty, "set_local"));
@@ -285,6 +286,12 @@ namespace Wasm.Instructions
         /// The 'call' operator, which calls a function by its index.
         /// </summary>
         public static readonly Operator Call;
+
+
+        /// <summary>
+        /// The 'call_indirect' operator, which calls a function pointer.
+        /// </summary>
+        public static readonly Operator CallIndirect;
 
         /// <summary>
         /// The 'get_local' operator, which reads a local variable or parameter.

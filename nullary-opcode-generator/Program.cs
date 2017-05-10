@@ -71,7 +71,7 @@ namespace Wasm.NullaryOpCodeGenerator
                 {
                     var op = ParseMnemonic(pair.Key);
                     Console.WriteLine(
-                        "{0} = Register(new NullaryOperator({1}, WasmType.{2}, \"{3}\"));",
+                        "{0} = Register<NullaryOperator>(new NullaryOperator({1}, WasmType.{2}, \"{3}\"));",
                         GenerateFieldName(op),
                         pair.Value,
                         WasmTypeToIdentifier(op.DeclaringType),
@@ -90,7 +90,7 @@ namespace Wasm.NullaryOpCodeGenerator
                             ? opDocs[pair.Key] + "."
                             : "");
                     Console.WriteLine("/// </summary>");
-                    Console.WriteLine("public static readonly Operator {0};", GenerateFieldName(op));
+                    Console.WriteLine("public static readonly NullaryOperator {0};", GenerateFieldName(op));
                     Console.WriteLine();
                 }
             }

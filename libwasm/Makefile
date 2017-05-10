@@ -38,10 +38,12 @@ files = CodeSection.cs \
 		Instructions/Operators.cs \
 		Instructions/VarInt32Instruction.cs \
 		Instructions/VarInt32Operator.cs \
-		Instructions/VarUInt32Instruction.cs \
-		Instructions/VarUInt32Operator.cs \
 		Instructions/VarInt64Instruction.cs \
-		Instructions/VarInt64Operator.cs
+		Instructions/VarInt64Operator.cs \
+		Instructions/VarUInt1Instruction.cs \
+		Instructions/VarUInt1Operator.cs \
+		Instructions/VarUInt32Instruction.cs \
+		Instructions/VarUInt32Operator.cs
 
 common_options = -asm-name=libwasm -asm-version=0.1.0.0 -Wall -Wextra -force-write
 

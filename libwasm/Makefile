@@ -23,6 +23,10 @@ files = CodeSection.cs \
 		Binary/VersionHeader.cs \
 		Instructions/BlockInstruction.cs \
 		Instructions/BlockOperator.cs \
+		Instructions/Float32Instruction.cs \
+		Instructions/Float32Operator.cs \
+		Instructions/Float64Instruction.cs \
+		Instructions/Float64Operator.cs \
 		Instructions/IfElseInstruction.cs \
 		Instructions/IfElseOperator.cs \
 		Instructions/Instruction.cs \

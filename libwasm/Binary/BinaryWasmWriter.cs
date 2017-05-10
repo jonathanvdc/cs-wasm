@@ -128,6 +128,28 @@ namespace Wasm.Binary
         }
 
         /// <summary>
+        /// Writes a 32-bit floating-point number.
+        /// </summary>
+        /// <param name="Value">The floating-point number to write.</param>
+        /// <returns>The number of bytes used to encode the floating-point number.</returns>
+        public int WriteFloat32(float Value)
+        {
+            Writer.Write(Value);
+            return 4;
+        }
+
+        /// <summary>
+        /// Writes a 64-bit floating-point number.
+        /// </summary>
+        /// <param name="Value">The floating-point number to write.</param>
+        /// <returns>The number of bytes used to encode the floating-point number.</returns>
+        public int WriteFloat64(double Value)
+        {
+            Writer.Write(Value);
+            return 8;
+        }
+
+        /// <summary>
         /// Writes a WebAssembly language type.
         /// </summary>
         /// <param name="Value">The WebAssembly language type to write.</param>

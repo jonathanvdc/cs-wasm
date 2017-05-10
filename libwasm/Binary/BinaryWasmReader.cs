@@ -142,6 +142,24 @@ namespace Wasm.Binary
         }
 
         /// <summary>
+        /// Parses a 32-bit floating-point number.
+        /// </summary>
+        /// <returns>The parsed 32-bit floating-point number.</returns>
+        public float ReadFloat32()
+        {
+            return Reader.ReadSingle();
+        }
+
+        /// <summary>
+        /// Parses a 64-bit floating-point number.
+        /// </summary>
+        /// <returns>The parsed 64-bit floating-point number.</returns>
+        public double ReadFloat64()
+        {
+            return Reader.ReadDouble();
+        }
+
+        /// <summary>
         /// Reads a WebAssembly language type.
         /// </summary>
         /// <returns>The WebAssembly language type.</returns>

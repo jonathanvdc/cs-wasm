@@ -169,6 +169,11 @@ namespace Wasm.Instructions
         public static IReadOnlyDictionary<byte, Operator> OperatorsByOpCode => opsByOpCode;
 
         /// <summary>
+        /// Gets a sequence that contains all WebAssembly operators defined by this class.
+        /// </summary>
+        public static IEnumerable<Operator> AllOperators => opsByOpCode.Values;
+
+        /// <summary>
         /// Registers the given operator.
         /// </summary>
         /// <param name="Op">The operator to register.</param>

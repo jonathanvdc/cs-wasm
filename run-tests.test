@@ -1,0 +1,12 @@
+
+init
+{
+    input-files = $(working-directory)/tests/input-files;
+    wasm-cat = $(net-runtime) $(working-directory)/wasm-cat/bin/clr/wasm-cat.exe;
+    wasm-dump = $(net-runtime) $(working-directory)/wasm-dump/bin/clr/wasm-dump.exe;
+}
+
+tests
+{
+    tests/all.test;
+}

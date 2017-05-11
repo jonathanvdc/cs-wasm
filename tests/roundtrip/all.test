@@ -1,0 +1,19 @@
+
+init
+{
+    $mkdir-rec out;
+    template Roundtrip<filename>
+    {
+        run
+        {
+            $wasm-cat $(input-files)/$(filename) > out/$(filename);
+            $cmp $(input-files)/$(filename) out/$(filename);
+        }
+    }
+}
+
+tests
+{
+    template Roundtrip<factorial.wasm>;
+    template Roundtrip<stuff.wasm>;
+}

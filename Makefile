@@ -29,5 +29,4 @@ clean:
 	make -C wasm-dump clean
 
 test: exe
-	mono wasm-dump/bin/clr/wasm-dump.exe test/factorial.wasm
-	mono wasm-dump/bin/clr/wasm-dump.exe test/stuff.wasm
+	compare-test run-tests.test

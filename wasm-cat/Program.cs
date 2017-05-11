@@ -26,7 +26,15 @@ namespace Wasm.Cat
                         // Create a WebAssembly reader, read the file and append its
                         // sections to the resulting file.
                         var wasmReader = new BinaryWasmReader(reader);
-                        file.Sections.AddRange(wasmReader.ReadFile().Sections);
+                        var inputFile = wasmReader.ReadFile();
+                        file.Sections.AddRange(inputFile.Sections);
+
+                        // Also, set the WebAssembly version number to the max of the
+                        // input files.
+                        if (inputFile.Header.Version > file.Header.Version)
+                        {
+                            file.Header = inputFile.Header;
+                        }
                     }
                 }
             }

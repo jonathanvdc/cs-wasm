@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wasm.Binary
+namespace Wasm
 {
     /// <summary>
     /// The header of a WebAssembly binary file, which specifies the magic number and
@@ -51,19 +51,24 @@ namespace Wasm.Binary
         }
 
         /// <summary>
-        /// The WebAssembly magic number 0x6d736100 (i.e., '\0asm').
+        /// Gets the WebAssembly magic number 0x6d736100 (i.e., '\0asm').
         /// </summary>
         public static uint WasmMagic => 0x6d736100;
 
         /// <summary>
-        /// The version number from the pre-MVP era.
+        /// Gets the version number from the pre-MVP era.
         /// </summary>
         public static uint PreMvpVersion => 0xd;
 
         /// <summary>
-        /// The MVP version number.
+        /// Gets the MVP version number.
         /// </summary>
         public static uint MvpVersion => 1;
+
+        /// <summary>
+        /// Gets the MVP version header.
+        /// </summary>
+        public static VersionHeader MvpHeader => new VersionHeader(WasmMagic, MvpVersion);
     }
 }
 

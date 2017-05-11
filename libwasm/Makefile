@@ -1,4 +1,5 @@
-files = CodeSection.cs \
+files = BadHeaderException.cs \
+		CodeSection.cs \
 		CustomSection.cs \
 		DumpHelpers.cs \
 		ExportSection.cs \
@@ -8,6 +9,7 @@ files = CodeSection.cs \
 		ResizableLimits.cs \
 		Section.cs \
 		UnknownSection.cs \
+		VersionHeader.cs \
 		SectionCode.cs \
 		SectionName.cs \
 		StartSection.cs \
@@ -16,11 +18,9 @@ files = CodeSection.cs \
 		WasmException.cs \
 		WasmFile.cs \
 		WasmType.cs \
-		Binary/BadHeaderException.cs \
 		Binary/BinaryWasmReader.cs \
 		Binary/BinaryWasmWriter.cs \
 		Binary/SectionHeader.cs \
-		Binary/VersionHeader.cs \
 		Instructions/BlockInstruction.cs \
 		Instructions/BlockOperator.cs \
 		Instructions/BrTableInstruction.cs \

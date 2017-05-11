@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Wasm.Binary
+namespace Wasm
 {
     /// <summary>
     /// The type of exception that is thrown when an invalid header is detected.

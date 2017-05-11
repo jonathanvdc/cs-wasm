@@ -105,7 +105,7 @@ namespace Wasm
     /// <summary>
     /// An entry in a code section; defines a function body.
     /// </summary>
-    public struct FunctionBody
+    public class FunctionBody
     {
         /// <summary>
         /// Creates a function body from the given list of local entries
@@ -144,7 +144,7 @@ namespace Wasm
         /// the actual function body.
         /// </summary>
         /// <returns>The function body block instruction.</returns>
-        public BlockInstruction Body { get; private set; }
+        public BlockInstruction Body { get; set; }
 
         /// <summary>
         /// Gets this function body's additional payload.
@@ -153,7 +153,7 @@ namespace Wasm
         /// The additional payload, as an array of bytes.
         /// <c>null</c> indicates an empty additional payload.
         /// </returns>
-        public byte[] ExtraPayload { get; private set; }
+        public byte[] ExtraPayload { get; set; }
 
         /// <summary>
         /// Checks if this function body has at least one byte of additional payload.
@@ -166,39 +166,28 @@ namespace Wasm
         /// <param name="Writer">The WebAssembly file writer.</param>
         public void WriteTo(BinaryWasmWriter Writer)
         {
-            using (var memStream = new MemoryStream())
+            Writer.WriteLengthPrefixed(WriteContentsTo);
+        }
+
+        private void WriteContentsTo(BinaryWasmWriter Writer)
+        {
+            // Write the number of local entries to the file.
+            Writer.WriteVarUInt32((uint)Locals.Count);
+
+            // Write the local variables to the file.
+            foreach (var local in Locals)
             {
-                var innerWriter = new BinaryWasmWriter(
-                    new BinaryWriter(memStream),
-                    Writer.StringEncoding);
+                local.WriteTo(Writer);
+            }
 
-                // Write the number of local entries to the file.
-                innerWriter.WriteVarUInt32((uint)Locals.Count);
+            // Write the body to the file.
+            Body.WriteContentsTo(Writer);
 
-                // Write the local variables to the file.
-                foreach (var local in Locals)
-                {
-                    local.WriteTo(Writer);
-                }
-
-                // Write the body to the file.
-                Body.WriteContentsTo(Writer);
-
-                if (HasExtraPayload)
-                {
-                    // If we have at least one byte of additional payload,
-                    // then we should write it to the stream now.
-                    Writer.Writer.Write(ExtraPayload);
-                }
-
-                // Seek to the beginning of the memory stream.
-                memStream.Seek(0, SeekOrigin.Begin);
-
-                // Write the size of the function body to follow, in bytes.
-                Writer.WriteVarUInt32((uint)memStream.Length);
-
-                // Write the memory stream to the writer's stream.
-                memStream.WriteTo(Writer.Writer.BaseStream);
+            if (HasExtraPayload)
+            {
+                // If we have at least one byte of additional payload,
+                // then we should write it to the stream now.
+                Writer.Writer.Write(ExtraPayload);
             }
         }
 

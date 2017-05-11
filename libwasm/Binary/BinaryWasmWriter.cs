@@ -179,6 +179,66 @@ namespace Wasm.Binary
             WriteVarUInt32((uint)buffer.Length);
             Writer.Write(buffer);
         }
+
+        /// <summary>
+        /// Writes data and prefixes it with a variable-length 32-bit unsigned integer
+        /// that specifies the number of bytes written.
+        /// </summary>
+        /// <param name="WriteData">Writes data to a WebAssembly file.</param>
+        public void WriteLengthPrefixed(Action<BinaryWasmWriter> WriteData)
+        {
+            using (var memStream = new MemoryStream())
+            {
+                var innerWriter = new BinaryWasmWriter(
+                    new BinaryWriter(memStream),
+                    StringEncoding);
+
+                // Write the contents to the memory stream.
+                WriteData(innerWriter);
+
+                // Seek to the beginning of the memory stream.
+                memStream.Seek(0, SeekOrigin.Begin);
+
+                // Write the size of the contents to follow, in bytes.
+                WriteVarUInt32((uint)memStream.Length);
+
+                // Write the memory stream to the writer's stream.
+                memStream.WriteTo(Writer.BaseStream);
+            }
+        }
+
+        /// <summary>
+        /// Writes a WebAssembly version header.
+        /// </summary>
+        /// <param name="Header">The WebAssembly version header to write.</param>
+        public void WriteVersionHeader(VersionHeader Header)
+        {
+            Writer.Write(Header.Magic);
+            Writer.Write(Header.Version);
+        }
+
+        /// <summary>
+        /// Writes a WebAssembly section, including its header.
+        /// </summary>
+        /// <param name="Value">The WebAssembly section to write.</param>
+        public void WriteSection(Section Value)
+        {
+            WriteVarInt7((sbyte)Value.Name.Code);
+            WriteLengthPrefixed(Value.WriteCustomNameAndPayloadTo);
+        }
+
+        /// <summary>
+        /// Writes a WebAssembly file.
+        /// </summary>
+        /// <param name="File">The WebAssembly file to write.</param>
+        public void WriteFile(WasmFile File)
+        {
+            WriteVersionHeader(File.Header);
+            foreach (var section in File.Sections)
+            {
+                WriteSection(section);
+            }
+        }
     }
 }
 

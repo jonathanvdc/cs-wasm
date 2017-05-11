@@ -27,6 +27,20 @@ namespace Wasm
         public abstract void WritePayloadTo(BinaryWasmWriter Writer);
 
         /// <summary>
+        /// Writes this WebAssembly section's optional custom name and payload to the given
+        /// WebAssembly writer.
+        /// </summary>
+        /// <param name="Writer">The writer to which the custom name and payload are written.</param>
+        internal void WriteCustomNameAndPayloadTo(BinaryWasmWriter Writer)
+        {
+            if (Name.IsCustom)
+            {
+                Writer.WriteString(Name.CustomName);
+            }
+            WritePayloadTo(Writer);
+        }
+
+        /// <summary>
         /// Creates a memory stream and fills it with this WebAssembly section's payload.
         /// </summary>
         /// <returns>The memory stream.</returns>

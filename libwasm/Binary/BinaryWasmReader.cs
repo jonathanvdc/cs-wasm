@@ -221,8 +221,10 @@ namespace Wasm.Binary
             uint payloadLength = ReadVarUInt32();
             if (code == SectionCode.Custom)
             {
+                uint startPos = (uint)Reader.BaseStream.Position;
                 var name = ReadString();
-                return new SectionHeader(new SectionName(name), payloadLength);
+                uint nameLength = (uint)Reader.BaseStream.Position - startPos;
+                return new SectionHeader(new SectionName(name), payloadLength - nameLength);
             }
             else
             {
@@ -340,7 +342,7 @@ namespace Wasm.Binary
             {
                 sections.Add(ReadSection());
             }
-            return new WasmFile(sections);
+            return new WasmFile(version, sections);
         }
     }
 }

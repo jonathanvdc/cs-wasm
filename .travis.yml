@@ -3,7 +3,7 @@ install:
   # Clone, build and install ecsc
   - git clone --depth=5 https://github.com/jonathanvdc/ecsc
   - nuget restore ecsc/src/ecsc.sln
-  - xbuild /p:Configuration=Release ecsc/src/ecsc.sln
+  - xbuild /p:Configuration=Release /verbosity:quiet ecsc/src/ecsc.sln
   - chmod +x $(pwd)/ecsc/src/ecsc/bin/Release/*.exe
   - chmod +x $(pwd)/ecsc/src/ecsc/bin/Release/*.dll
   - wget https://gist.githubusercontent.com/jonathanvdc/f2fa3b5f8d5ece27b877fae439d944d0/raw/d021752c2b9c5dfe15393028e308a6ebdcdb613b/mono-ln.sh

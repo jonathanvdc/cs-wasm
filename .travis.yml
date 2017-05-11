@@ -15,7 +15,7 @@ install:
   # Grab a compiled version of compare-test and install it.
   - wget https://github.com/jonathanvdc/compare-test/releases/download/v0.1.3/compare-test.zip
   - unzip -d compare-test compare-test.zip
-  - ./mono-ln.sh compare-test $(pwd)/compare-test/compare-test
+  - ./mono-ln.sh compare-test.exe $(pwd)/compare-test/compare-test
   - chmod +x $(pwd)/compare-test/compare-test
   - export PATH=$PATH:$(pwd)/compare-test
 script:

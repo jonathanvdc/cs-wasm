@@ -4,7 +4,7 @@ using Wasm.Binary;
 
 namespace Wasm.Cat
 {
-    // wasm-cat concatenates the contents of WebAssembly files by merging their tables.
+    // wasm-cat takes WebAssembly files as input and concatenates their sections.
 
     public static class Program
     {

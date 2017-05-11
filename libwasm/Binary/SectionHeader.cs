@@ -1,7 +1,7 @@
 namespace Wasm.Binary
 {
     /// <summary>
-    /// /// Represents a section's header.
+    /// Represents a section's header.
     /// </summary>
     public struct SectionHeader
     {

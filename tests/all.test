@@ -1,4 +1,5 @@
 tests
 {
+    dump/all.test;
     roundtrip/all.test;
 }

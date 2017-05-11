@@ -1,0 +1,18 @@
+
+init
+{
+    template Dump<filename>
+    {
+        run
+        {
+            // Check that wasm-dump doesn't crash.
+            _ = $wasm-dump $(input-files)/$(filename);
+        }
+    }
+}
+
+tests
+{
+    template Dump<factorial.wasm>;
+    template Dump<stuff.wasm>;
+}

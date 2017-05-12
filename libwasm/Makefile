@@ -6,6 +6,7 @@ files = BadHeaderException.cs \
 		ExportSection.cs \
 		ExternalKind.cs \
 		FunctionSection.cs \
+		GlobalSection.cs \
 		MemorySection.cs \
 		ResizableLimits.cs \
 		Section.cs \

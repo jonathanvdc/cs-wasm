@@ -196,14 +196,17 @@ namespace Wasm.Binary
                 // Write the contents to the memory stream.
                 WriteData(innerWriter);
 
+                // Save the number of bytes we've written.
+                var numberOfBytes = memStream.Position;
+
                 // Seek to the beginning of the memory stream.
                 memStream.Seek(0, SeekOrigin.Begin);
 
                 // Write the size of the contents to follow, in bytes.
-                WriteVarUInt32((uint)memStream.Length);
+                WriteVarUInt32((uint)numberOfBytes);
 
-                // Write the memory stream to the writer's stream.
-                memStream.WriteTo(Writer.BaseStream);
+                // Write the memory stream's data to the writer's stream.
+                Writer.Write(memStream.GetBuffer(), 0, (int)numberOfBytes);
             }
         }
 

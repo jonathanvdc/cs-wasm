@@ -3,6 +3,7 @@ files = BadHeaderException.cs \
 		CustomSection.cs \
 		DataSection.cs \
 		DumpHelpers.cs \
+		ElementSection.cs \
 		ExportSection.cs \
 		ExternalKind.cs \
 		FunctionSection.cs \

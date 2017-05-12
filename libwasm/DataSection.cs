@@ -33,9 +33,9 @@ namespace Wasm
         public override SectionName Name => new SectionName(SectionCode.Data);
 
         /// <summary>
-        /// Gets the list of all values that are exported by this section.
+        /// Gets the list of the data segments that are defined by this section.
         /// </summary>
-        /// <returns>A list of all values exported by this section.</returns>
+        /// <returns>The data segments defined by this section.</returns>
         public List<DataSegment> Segments { get; private set; }
 
         /// <summary>
@@ -167,19 +167,19 @@ namespace Wasm
         /// Gets the linear memory index.
         /// </summary>
         /// <returns>The linear memory index.</returns>
-        public uint MemoryIndex { get; private set; }
+        public uint MemoryIndex { get; set; }
 
         /// <summary>
         /// Gets an i32 initializer expression that computes the offset at which to place the data.
         /// </summary>
         /// <returns>An i32 initializer expression.</returns>
-        public InitializerExpression Offset { get; private set; }
+        public InitializerExpression Offset { get; set; }
 
         /// <summary>
         /// Gets the data to which a segment of the linear memory is initialized.
         /// </summary>
-        /// <returns>Inital data for a segment of the linear memory.</returns>
-        public byte[] Data { get; private set; }
+        /// <returns>Initial data for a segment of the linear memory.</returns>
+        public byte[] Data { get; set; }
 
         /// <summary>
         /// Writes this exported value to the given WebAssembly file writer.

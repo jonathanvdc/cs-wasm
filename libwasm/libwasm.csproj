@@ -36,6 +36,7 @@
     <Compile Include="CodeSection.cs" />
     <Compile Include="CustomSection.cs" />
     <Compile Include="DumpHelpers.cs" />
+    <Compile Include="ElementSection.cs" />
     <Compile Include="ExportSection.cs" />
     <Compile Include="ExternalKind.cs" />
     <Compile Include="FunctionSection.cs" />

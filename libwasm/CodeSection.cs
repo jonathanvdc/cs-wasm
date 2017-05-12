@@ -319,7 +319,9 @@ namespace Wasm
         /// <returns>A local entry.</returns>
         public static LocalEntry ReadFrom(BinaryWasmReader Reader)
         {
-            return new LocalEntry(Reader.ReadWasmValueType(), Reader.ReadVarUInt32());
+            var count = Reader.ReadVarUInt32();
+            var type = Reader.ReadWasmValueType();
+            return new LocalEntry(type, count);
         }
 
         /// <summary>

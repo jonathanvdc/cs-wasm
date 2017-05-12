@@ -15,6 +15,19 @@ namespace Wasm.Instructions
         { }
 
         /// <summary>
+        /// Creates a block instruction with this operator and the given operands.
+        /// </summary>
+        /// <param name="BlockType">The resulting block instruction's type.</param>
+        /// <param name="Contents">
+        /// The resulting block instruction's contents, as a sequence of instructions.
+        /// </param>
+        /// <returns>A block instruction.</returns>
+        public BlockInstruction Create(WasmType BlockType, IEnumerable<Instruction> Contents)
+        {
+            return new BlockInstruction(this, BlockType, Contents);
+        }
+
+        /// <summary>
         /// Reads the immediates (not the opcode) of a WebAssembly instruction
         /// for this operator from the given reader and returns the result as an
         /// instruction.
@@ -24,7 +37,7 @@ namespace Wasm.Instructions
         public override Instruction ReadImmediates(BinaryWasmReader Reader)
         {
             var type = Reader.ReadWasmType();
-            return ReadBlockContents(this, type, Reader);
+            return ReadBlockContents(type, Reader);
         }
 
         /// <summary>
@@ -33,7 +46,7 @@ namespace Wasm.Instructions
         /// <param name="BlockType">The type of value returned by the resulting block.</param>
         /// <param name="Reader">The WebAssembly file reader.</param>
         /// <returns>A WebAssembly block instruction.</returns>
-        public static BlockInstruction ReadBlockContents(Operator Op, WasmType BlockType, BinaryWasmReader Reader)
+        public BlockInstruction ReadBlockContents(WasmType BlockType, BinaryWasmReader Reader)
         {
             var contents = new List<Instruction>();
             while (true)
@@ -41,7 +54,7 @@ namespace Wasm.Instructions
                 byte opCode = Reader.Reader.ReadByte();
                 if (opCode == Operators.EndOpCode)
                 {
-                    return new BlockInstruction(Op, BlockType, contents);
+                    return Create(BlockType, contents);
                 }
                 else
                 {

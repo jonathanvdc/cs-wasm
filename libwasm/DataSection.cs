@@ -107,22 +107,22 @@ namespace Wasm
     /// <summary>
     /// Defines an initializer expression.
     /// </summary>
-    public struct InitializerExpression
+    public class InitializerExpression
     {
         /// <summary>
-        /// Creates an initializer expression from the given block of instructions.
+        /// Creates an initializer expression from the given list of instructions.
         /// </summary>
-        /// <param name="Body">The block of instructions for this expression.</param>
-        public InitializerExpression(BlockInstruction Body)
+        /// <param name="Body">The list of instructions for this expression.</param>
+        public InitializerExpression(IEnumerable<Instruction> Body)
         {
-            this.Body = Body;
+            this.Body = new List<Instruction>(Body);
         }
 
         /// <summary>
-        /// Gets the body of this initializer expression as a block instruction.
+        /// Gets the body of this initializer expression as a list instruction.
         /// </summary>
         /// <returns>The initializer expression's body.</returns>
-        public BlockInstruction Body { get; private set; }
+        public List<Instruction> Body { get; private set; }
 
         /// <summary>
         /// Reads an initializer expression from the given WebAssembly reader.
@@ -132,7 +132,7 @@ namespace Wasm
         public static InitializerExpression Read(BinaryWasmReader Reader)
         {
             return new InitializerExpression(
-                BlockOperator.ReadBlockContents(Operators.Block, WasmType.Empty, Reader));
+                Operators.Block.ReadBlockContents(WasmType.Empty, Reader).Contents);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Wasm
         /// <param name="Writer">The WebAssembly writer.</param>
         public void WriteTo(BinaryWasmWriter Writer)
         {
-            Body.WriteContentsTo(Writer);
+            Operators.Block.Create(WasmType.Empty, Body).WriteContentsTo(Writer);
         }
     }
 
@@ -218,7 +218,7 @@ namespace Wasm
             Writer.WriteLine();
             Writer.Write("- Offset:");
             var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
-            foreach (var instruction in Offset.Body.Contents)
+            foreach (var instruction in Offset.Body)
             {
                 indentedWriter.WriteLine();
                 instruction.Dump(indentedWriter);

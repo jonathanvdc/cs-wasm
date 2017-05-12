@@ -17,5 +17,9 @@ tests
     template Roundtrip<elements.wasm>;
     template Roundtrip<factorial.wasm>;
     template Roundtrip<globals.wasm>;
+    template Roundtrip<import-functions.wasm>;
+    template Roundtrip<import-globals.wasm>;
+    template Roundtrip<import-memory.wasm>;
+    template Roundtrip<import-tables.wasm>;
     template Roundtrip<stuff.wasm>;
 }

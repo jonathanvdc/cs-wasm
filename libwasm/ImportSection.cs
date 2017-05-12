@@ -341,7 +341,7 @@ namespace Wasm
         public GlobalType Global { get; set; }
 
         /// <inheritdoc/>
-        public override ExternalKind Kind => ExternalKind.Memory;
+        public override ExternalKind Kind => ExternalKind.Global;
 
         /// <inheritdoc/>
         protected override void DumpContents(TextWriter Writer)

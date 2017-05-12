@@ -143,7 +143,7 @@ namespace Wasm
         /// Gets the function body's list of instructions.
         /// </summary>
         /// <returns>The list of function body instructions.</returns>
-        public List<Instruction> BodyInstructions { get; set; }
+        public List<Instruction> BodyInstructions { get; private set; }
 
         /// <summary>
         /// Gets this function body's additional payload.

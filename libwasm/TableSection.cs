@@ -111,7 +111,7 @@ namespace Wasm
     /// <summary>
     /// Describes a table in a table section.
     /// </summary>
-    public struct TableType
+    public sealed class TableType
     {
         /// <summary>
         /// Creates a table description from the given element type and limits.
@@ -128,13 +128,13 @@ namespace Wasm
         /// Gets the type of element in the table.
         /// </summary>
         /// <returns>The type of element in the table.</returns>
-        public WasmType ElementType { get; private set; }
+        public WasmType ElementType { get; set; }
 
         /// <summary>
         /// Gets the table's limits.
         /// </summary>
         /// <returns>The table's limits.</returns>
-        public ResizableLimits Limits { get; private set; }
+        public ResizableLimits Limits { get; set; }
 
         /// <summary>
         /// Writes this function type to the given binary WebAssembly file.

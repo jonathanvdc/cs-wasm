@@ -107,7 +107,7 @@ namespace Wasm
     /// <summary>
     /// Defines an initializer expression.
     /// </summary>
-    public class InitializerExpression
+    public sealed class InitializerExpression
     {
         /// <summary>
         /// Creates an initializer expression from the given list of instructions.
@@ -115,14 +115,14 @@ namespace Wasm
         /// <param name="Body">The list of instructions for this expression.</param>
         public InitializerExpression(IEnumerable<Instruction> Body)
         {
-            this.Body = new List<Instruction>(Body);
+            this.BodyInstructions = new List<Instruction>(Body);
         }
 
         /// <summary>
         /// Gets the body of this initializer expression as a list instruction.
         /// </summary>
         /// <returns>The initializer expression's body.</returns>
-        public List<Instruction> Body { get; private set; }
+        public List<Instruction> BodyInstructions { get; private set; }
 
         /// <summary>
         /// Reads an initializer expression from the given WebAssembly reader.
@@ -141,7 +141,7 @@ namespace Wasm
         /// <param name="Writer">The WebAssembly writer.</param>
         public void WriteTo(BinaryWasmWriter Writer)
         {
-            Operators.Block.Create(WasmType.Empty, Body).WriteContentsTo(Writer);
+            Operators.Block.Create(WasmType.Empty, BodyInstructions).WriteContentsTo(Writer);
         }
     }
 
@@ -218,7 +218,7 @@ namespace Wasm
             Writer.WriteLine();
             Writer.Write("- Offset:");
             var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
-            foreach (var instruction in Offset.Body)
+            foreach (var instruction in Offset.BodyInstructions)
             {
                 indentedWriter.WriteLine();
                 instruction.Dump(indentedWriter);

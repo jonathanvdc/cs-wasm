@@ -113,23 +113,23 @@ namespace Wasm
         /// </summary>
         /// <param name="Locals">The list of local entries.</param>
         /// <param name="Body">The block instruction that serves as the function's body.</param>
-        public FunctionBody(IEnumerable<LocalEntry> Locals, BlockInstruction Body)
+        public FunctionBody(IEnumerable<LocalEntry> Locals, IEnumerable<Instruction> Body)
             : this(Locals, Body, new byte[0])
         { }
 
         /// <summary>
         /// Creates a function body from the given list of local entries,
-        /// a block instruction and the specified extra payload.
+        /// a list of instructions and the specified extra payload.
         /// </summary>
         /// <param name="Locals">The list of local entries.</param>
-        /// <param name="Body">The block instruction that serves as the function's body.</param>
+        /// <param name="Body">The list of instructions that serves as the function's body.</param>
         /// <param name="ExtraPayload">
         /// The function body's extra payload, which is placed right after the function body.
         /// </param>
-        public FunctionBody(IEnumerable<LocalEntry> Locals, BlockInstruction Body, byte[] ExtraPayload)
+        public FunctionBody(IEnumerable<LocalEntry> Locals, IEnumerable<Instruction> Body, byte[] ExtraPayload)
         {
             this.Locals = new List<LocalEntry>(Locals);
-            this.Body = Body;
+            this.BodyInstructions = new List<Instruction>(Body);
             this.ExtraPayload = ExtraPayload;
         }
 
@@ -140,11 +140,10 @@ namespace Wasm
         public List<LocalEntry> Locals { get; private set; }
 
         /// <summary>
-        /// Gets the function body's block instruction, which represents
-        /// the actual function body.
+        /// Gets the function body's list of instructions.
         /// </summary>
-        /// <returns>The function body block instruction.</returns>
-        public BlockInstruction Body { get; set; }
+        /// <returns>The list of function body instructions.</returns>
+        public List<Instruction> BodyInstructions { get; set; }
 
         /// <summary>
         /// Gets this function body's additional payload.
@@ -181,7 +180,7 @@ namespace Wasm
             }
 
             // Write the body to the file.
-            Body.WriteContentsTo(Writer);
+            Operators.Block.Create(WasmType.Empty, BodyInstructions).WriteContentsTo(Writer);
 
             if (HasExtraPayload)
             {
@@ -220,7 +219,7 @@ namespace Wasm
             // Skip any remaining bytes.
             var extraPayload = Reader.ReadRemainingPayload(startPos, funcBodyLength);
 
-            return new FunctionBody(localEntries, body, extraPayload);
+            return new FunctionBody(localEntries, body.Contents, extraPayload);
         }
 
         /// <summary>
@@ -246,11 +245,11 @@ namespace Wasm
                 Writer.WriteLine("- No local entries");
             }
 
-            if (Body.Contents.Count > 0)
+            if (BodyInstructions.Count > 0)
             {
                 Writer.Write("- Function body:");
                 var instructionWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
-                foreach (var instr in Body.Contents)
+                foreach (var instr in BodyInstructions)
                 {
                     instructionWriter.WriteLine();
                     instr.Dump(instructionWriter);

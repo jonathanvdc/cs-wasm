@@ -14,6 +14,7 @@ init
 
 tests
 {
+    template Roundtrip<elements.wasm>;
     template Roundtrip<factorial.wasm>;
     template Roundtrip<globals.wasm>;
     template Roundtrip<stuff.wasm>;

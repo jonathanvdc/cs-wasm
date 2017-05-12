@@ -13,6 +13,7 @@ init
 
 tests
 {
+    template Dump<elements.wasm>;
     template Dump<factorial.wasm>;
     template Dump<globals.wasm>;
     template Dump<stuff.wasm>;

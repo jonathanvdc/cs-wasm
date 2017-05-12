@@ -12,18 +12,18 @@ namespace Wasm
     {
         public MemorySection()
         {
-            this.MemoryLimits = new List<ResizableLimits>();
+            this.Memories = new List<MemoryType>();
             this.ExtraPayload = new byte[0];
         }
 
-        public MemorySection(IEnumerable<ResizableLimits> MemoryLimits)
-            : this(MemoryLimits, new byte[0])
+        public MemorySection(IEnumerable<MemoryType> Memories)
+            : this(Memories, new byte[0])
         {
         }
 
-        public MemorySection(IEnumerable<ResizableLimits> MemoryLimits, byte[] ExtraPayload)
+        public MemorySection(IEnumerable<MemoryType> Memories, byte[] ExtraPayload)
         {
-            this.MemoryLimits = new List<ResizableLimits>(MemoryLimits);
+            this.Memories = new List<MemoryType>(Memories);
             this.ExtraPayload = ExtraPayload;
         }
 
@@ -34,7 +34,7 @@ namespace Wasm
         /// Gets a list that contains the limits of all memories defined by this section.
         /// </summary>
         /// <returns>The section's list of memory limits.</returns>
-        public List<ResizableLimits> MemoryLimits { get; private set; }
+        public List<MemoryType> Memories { get; private set; }
 
         /// <summary>
         /// Gets this memory section's additional payload.
@@ -45,8 +45,8 @@ namespace Wasm
         /// <inheritdoc/>
         public override void WritePayloadTo(BinaryWasmWriter Writer)
         {
-            Writer.WriteVarUInt32((uint)MemoryLimits.Count);
-            foreach (var limits in MemoryLimits)
+            Writer.WriteVarUInt32((uint)Memories.Count);
+            foreach (var limits in Memories)
             {
                 limits.WriteTo(Writer);
             }
@@ -59,14 +59,14 @@ namespace Wasm
         {
             Writer.Write(Name.ToString());
             Writer.Write("; number of entries: ");
-            Writer.Write(MemoryLimits.Count);
+            Writer.Write(Memories.Count);
             Writer.WriteLine();
-            for (int i = 0; i < MemoryLimits.Count; i++)
+            for (int i = 0; i < Memories.Count; i++)
             {
                 Writer.Write("#");
                 Writer.Write(i);
                 Writer.Write(" -> ");
-                MemoryLimits[i].Dump(Writer);
+                Memories[i].Dump(Writer);
                 Writer.WriteLine();
             }
             if (ExtraPayload.Length > 0)
@@ -90,15 +90,63 @@ namespace Wasm
             long startPos = Reader.Position;
             // Read the resizable limits.
             uint count = Reader.ReadVarUInt32();
-            var limits = new List<ResizableLimits>();
+            var limits = new List<MemoryType>();
             for (uint i = 0; i < count; i++)
             {
-                limits.Add(Reader.ReadResizableLimits());
+                limits.Add(MemoryType.ReadFrom(Reader));
             }
 
             // Skip any remaining bytes.
             var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
             return new MemorySection(limits, extraPayload);
+        }
+    }
+
+    /// <summary>
+    /// Describes a linear memory.
+    /// </summary>
+    public sealed class MemoryType
+    {
+        /// <summary>
+        /// Creates a new linear memory description from the given limits.
+        /// </summary>
+        /// <param name="Limits">The linear memory's limits.</param>
+        public MemoryType(ResizableLimits Limits)
+        {
+            this.Limits = Limits;
+        }
+
+        /// <summary>
+        /// Gets this memory's limits.
+        /// </summary>
+        /// <returns>This memory's limits.</returns>
+        public ResizableLimits Limits { get; set; }
+
+        /// <summary>
+        /// Writes this memory description to the given binary WebAssembly file.
+        /// </summary>
+        /// <param name="Writer">The writer for a binary WebAssembly file.</param>
+        public void WriteTo(BinaryWasmWriter Writer)
+        {
+            Limits.WriteTo(Writer);
+        }
+
+        /// <summary>
+        /// Writes a textual representation of this memory description to the given writer.
+        /// </summary>
+        /// <param name="Writer">The writer to which text is written.</param>
+        public void Dump(TextWriter Writer)
+        {
+            Limits.Dump(Writer);
+        }
+
+        /// <summary>
+        /// Reads a single memory description from the given reader.
+        /// </summary>
+        /// <returns>The memory description.</returns>
+        public static MemoryType ReadFrom(BinaryWasmReader Reader)
+        {
+            return new MemoryType(Reader.ReadResizableLimits());
         }
     }
 }

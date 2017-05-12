@@ -137,7 +137,7 @@ namespace Wasm
         public ResizableLimits Limits { get; set; }
 
         /// <summary>
-        /// Writes this function type to the given binary WebAssembly file.
+        /// Writes this table description to the given binary WebAssembly file.
         /// </summary>
         /// <param name="Writer">The writer for a binary WebAssembly file.</param>
         public void WriteTo(BinaryWasmWriter Writer)
@@ -147,7 +147,7 @@ namespace Wasm
         }
 
         /// <summary>
-        /// Writes a textual representation of this exported value to the given writer.
+        /// Writes a textual representation of this table description to the given writer.
         /// </summary>
         /// <param name="Writer">The writer to which text is written.</param>
         public void Dump(TextWriter Writer)

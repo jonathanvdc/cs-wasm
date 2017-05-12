@@ -70,7 +70,7 @@ namespace Wasm
             var exportedVals = new List<DataSegment>();
             for (uint i = 0; i < count; i++)
             {
-                exportedVals.Add(DataSegment.Read(Reader));
+                exportedVals.Add(DataSegment.ReadFrom(Reader));
             }
 
             // Skip any remaining bytes.
@@ -129,7 +129,7 @@ namespace Wasm
         /// </summary>
         /// <param name="Reader">The WebAssembly reader.</param>
         /// <returns>The parsed initializer expression.</returns>
-        public static InitializerExpression Read(BinaryWasmReader Reader)
+        public static InitializerExpression ReadFrom(BinaryWasmReader Reader)
         {
             return new InitializerExpression(
                 Operators.Block.ReadBlockContents(WasmType.Empty, Reader).Contents);
@@ -198,10 +198,10 @@ namespace Wasm
         /// </summary>
         /// <param name="Reader">The WebAssembly reader.</param>
         /// <returns>The data segment that was read from the reader.</returns>
-        public static DataSegment Read(BinaryWasmReader Reader)
+        public static DataSegment ReadFrom(BinaryWasmReader Reader)
         {
             var index = Reader.ReadVarUInt32();
-            var offset = InitializerExpression.Read(Reader);
+            var offset = InitializerExpression.ReadFrom(Reader);
             var dataLength = Reader.ReadVarUInt32();
             var data = Reader.Reader.ReadBytes((int)dataLength);
             return new DataSegment(index, offset, data);

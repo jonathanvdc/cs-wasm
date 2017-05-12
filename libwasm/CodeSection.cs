@@ -69,7 +69,7 @@ namespace Wasm
             var funcBodies = new List<FunctionBody>();
             for (uint i = 0; i < count; i++)
             {
-                funcBodies.Add(FunctionBody.Read(Reader));
+                funcBodies.Add(FunctionBody.ReadFrom(Reader));
             }
 
             // Skip any remaining bytes.
@@ -195,7 +195,7 @@ namespace Wasm
         /// </summary>
         /// <param name="Reader">The WebAssembly file reader to use.</param>
         /// <returns>A function body.</returns>
-        public static FunctionBody Read(BinaryWasmReader Reader)
+        public static FunctionBody ReadFrom(BinaryWasmReader Reader)
         {
             // Read the length of the function body definition.
             uint funcBodyLength = Reader.ReadVarUInt32();
@@ -210,7 +210,7 @@ namespace Wasm
             var localEntries = new List<LocalEntry>((int)localEntryCount);
             for (uint i = 0; i < localEntryCount; i++)
             {
-                localEntries.Add(LocalEntry.Read(Reader));
+                localEntries.Add(LocalEntry.ReadFrom(Reader));
             }
 
             // Read the function's body block.
@@ -317,7 +317,7 @@ namespace Wasm
         /// </summary>
         /// <param name="Reader">The WebAssembly file reader.</param>
         /// <returns>A local entry.</returns>
-        public static LocalEntry Read(BinaryWasmReader Reader)
+        public static LocalEntry ReadFrom(BinaryWasmReader Reader)
         {
             return new LocalEntry(Reader.ReadWasmValueType(), Reader.ReadVarUInt32());
         }

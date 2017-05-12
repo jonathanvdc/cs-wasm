@@ -8,6 +8,7 @@ files = BadHeaderException.cs \
 		ExternalKind.cs \
 		FunctionSection.cs \
 		GlobalSection.cs \
+		ImportSection.cs \
 		MemorySection.cs \
 		ResizableLimits.cs \
 		Section.cs \

@@ -41,6 +41,7 @@
     <Compile Include="ExternalKind.cs" />
     <Compile Include="FunctionSection.cs" />
     <Compile Include="GlobalSection.cs" />
+    <Compile Include="ImportSection.cs" />
     <Compile Include="MemorySection.cs" />
     <Compile Include="ResizableLimits.cs" />
     <Compile Include="Section.cs" />

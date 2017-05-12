@@ -300,6 +300,8 @@ namespace Wasm.Binary
             {
                 case SectionCode.Type:
                     return TypeSection.ReadSectionPayload(Header, this);
+                case SectionCode.Import:
+                    return ImportSection.ReadSectionPayload(Header, this);
                 case SectionCode.Function:
                     return FunctionSection.ReadSectionPayload(Header, this);
                 case SectionCode.Table:

@@ -32,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BadHeaderException.cs" />
+    <Compile Include="DataSection.cs" />
     <Compile Include="CodeSection.cs" />
     <Compile Include="CustomSection.cs" />
     <Compile Include="DumpHelpers.cs" />

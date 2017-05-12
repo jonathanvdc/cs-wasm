@@ -1,6 +1,7 @@
 files = BadHeaderException.cs \
 		CodeSection.cs \
 		CustomSection.cs \
+		DataSection.cs \
 		DumpHelpers.cs \
 		ExportSection.cs \
 		ExternalKind.cs \

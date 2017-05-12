@@ -6,7 +6,7 @@ init
     {
         run
         {
-            $wasm-cat $(input-files)/$(filename) > out/$(filename);
+            $wasm-cat $(input-files)/$(filename) -o out/$(filename);
             $cmp $(input-files)/$(filename) out/$(filename);
         }
     }
@@ -15,5 +15,6 @@ init
 tests
 {
     template Roundtrip<factorial.wasm>;
+    template Roundtrip<globals.wasm>;
     template Roundtrip<stuff.wasm>;
 }

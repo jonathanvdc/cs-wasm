@@ -2,7 +2,7 @@ version: 0.1.0.{build}
 
 install:
   # Grab a compiled version of compare-test and add it to the PATH variable.
-  - curl -L https://github.com/jonathanvdc/compare-test/releases/download/v0.1.2/compare-test.zip > compare-test.zip
+  - curl -L https://github.com/jonathanvdc/compare-test/releases/download/v0.1.3/compare-test.zip > compare-test.zip
   - mkdir compare-test
   - 7z x compare-test.zip -ocompare-test
   - set PATH=%PATH%;%cd%\compare-test

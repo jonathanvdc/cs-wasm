@@ -12,8 +12,12 @@ install:
   - msbuild /p:Configuration=Release ecsc\src\ecsc.sln
   - set PATH="%PATH%;%cd%\ecsc\src\ecsc\bin\Release"
 
-build:
+build_script:
   # Build cs-wasm with csc
   - msbuild /p:Configuration=Release cs-wasm.sln
   # Build cs-wasm with escsc
+  - C:\cygwin\bin\make all
+
+after_build:
+  # Run the tests
   - C:\cygwin\bin\make test

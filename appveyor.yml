@@ -6,7 +6,6 @@ install:
   - mkdir compare-test
   - 7z x compare-test.zip -ocompare-test
   - set PATH=%PATH%;%cd%\compare-test
-  - echo %PATH%
   # Clone ecsc, compile it and add it to the PATH variable.
   - git clone --depth=5 https://github.com/jonathanvdc/ecsc
   - nuget restore ecsc\src\ecsc.sln

@@ -5,13 +5,13 @@ install:
   - curl -L https://github.com/jonathanvdc/compare-test/releases/download/v0.1.2/compare-test.zip > compare-test.zip
   - mkdir compare-test
   - 7z x compare-test.zip -ocompare-test
-  - set PATH="%PATH%;%cd%\compare-test"
+  - set PATH=%PATH%;%cd%\compare-test
   - echo %PATH%
   # Clone ecsc, compile it and add it to the PATH variable.
   - git clone --depth=5 https://github.com/jonathanvdc/ecsc
   - nuget restore ecsc\src\ecsc.sln
   - msbuild /p:Configuration=Release ecsc\src\ecsc.sln
-  - set PATH="%PATH%;%cd%\ecsc\src\ecsc\bin\Release"
+  - set PATH=%PATH%;%cd%\ecsc\src\ecsc\bin\Release
 
 build_script:
   # Build cs-wasm with csc

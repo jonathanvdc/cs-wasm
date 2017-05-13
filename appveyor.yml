@@ -17,7 +17,7 @@ install:
 build_script:
   # Build cs-wasm with csc
   - msbuild /p:Configuration=Release cs-wasm.sln
-  # Build cs-wasm with escsc
+  # Build cs-wasm with ecsc
   - make all
 
 after_build:

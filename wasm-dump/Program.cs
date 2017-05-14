@@ -15,17 +15,9 @@ namespace Wasm.Dump
             }
 
             var file = WasmFile.ReadBinary(args[0]);
-            DumpFile(file);
+            file.Dump(Console.Out);
+            Console.WriteLine();
             return 0;
-        }
-
-        public static void DumpFile(WasmFile ParsedFile)
-        {
-            foreach (var section in ParsedFile.Sections)
-            {
-                section.Dump(Console.Out);
-                Console.WriteLine();
-            }
         }
     }
 }

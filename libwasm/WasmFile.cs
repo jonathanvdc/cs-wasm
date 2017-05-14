@@ -74,6 +74,26 @@ namespace Wasm
         }
 
         /// <summary>
+        /// Writes a textual representation of this WebAssembly file to the given text writer.
+        /// Note that this representation is intended as a human-readable debugging format that may
+        /// change at any time, not as a first-class textual WebAssembly module encoding.
+        /// </summary>
+        /// <param name="Writer">The text writer use.</param>
+        public void Dump(TextWriter Writer)
+        {
+            Writer.Write(
+                "WebAssembly module; magic number: {0}, version number: {1}",
+                Header.Magic,
+                Header.Version);
+
+            foreach (var section in Sections)
+            {
+                Writer.WriteLine();
+                section.Dump(Writer);
+            }
+        }
+
+        /// <summary>
         /// Reads a binary WebAssembly from the given stream.
         /// </summary>
         /// <param name="Source">The stream from which a WebAssembly file is to be read.</param>

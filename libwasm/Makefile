@@ -63,7 +63,7 @@ clean:
 	rm -rf obj/
 
 bin/clr/libwasm.dll: $(files)
-	ecsc $(files) -platform clr -o $@ -O3 $(common_options)
+	ecsc $(files) -platform clr -o $@ -O3 $(common_options) --docs
 
 bin/flo/libwasm.flo: $(files)
 	ecsc $(files) -platform ir -runtime clr -o $@ $(common_options)

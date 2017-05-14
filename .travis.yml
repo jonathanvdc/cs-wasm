@@ -22,4 +22,6 @@ script:
   # Build the project with mcs
   - xbuild /p:Configuration=Release cs-wasm.sln
   # Build the project with ecsc and test it
+  - make all
+  - make example-projects
   - make test

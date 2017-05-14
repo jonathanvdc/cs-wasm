@@ -49,6 +49,44 @@ namespace Wasm
         public List<Section> Sections { get; private set; }
 
         /// <summary>
+        /// Gets a list of all sections with the given section name.
+        /// </summary>
+        /// <param name="Name">The section name to look for.</param>
+        /// <returns>A list of sections with the given section name.</returns>
+        public IReadOnlyList<Section> GetSections(SectionName Name)
+        {
+            var results = new List<Section>();
+            for (int i = 0; i < Sections.Count; i++)
+            {
+                var sec = Sections[i];
+                if (sec.Name == Name)
+                {
+                    results.Add(sec);
+                }
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// Gets the first section with the given name. If no such section exists,
+        /// <c>null</c> is returned.
+        /// </summary>
+        /// <param name="Name">The section name to look for.</param>
+        /// <returns>The first section with the given name, if it exists; otherwise, <c>null</c>.</returns>
+        public Section GetFirstSectionOrNull(SectionName Name)
+        {
+            for (int i = 0; i < Sections.Count; i++)
+            {
+                var sec = Sections[i];
+                if (sec.Name == Name)
+                {
+                    return sec;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Writes this WebAssembly file to the given stream using the binary WebAssembly file encoding.
         /// </summary>
         /// <param name="Target">The stream to write to.</param>

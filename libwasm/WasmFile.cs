@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Wasm.Binary;
 
 namespace Wasm
 {
@@ -45,5 +47,37 @@ namespace Wasm
         /// </summary>
         /// <returns>All sections in this file.</returns>
         public List<Section> Sections { get; private set; }
+
+        /// <summary>
+        /// Reads a binary WebAssembly from the given stream.
+        /// </summary>
+        /// <param name="Source">The stream from which a WebAssembly file is to be read.</param>
+        /// <returns>The WebAssembly file.</returns>
+        public static WasmFile ReadBinary(Stream Source)
+        {
+            WasmFile result;
+            using (var reader = new BinaryReader(Source))
+            {
+                // Create a WebAssembly reader and read the file.
+                var wasmReader = new BinaryWasmReader(reader);
+                result = wasmReader.ReadFile();
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Reads a binary WebAssembly from the file at the given path.
+        /// </summary>
+        /// <param name="Path">A path to the file to read.</param>
+        /// <returns>The WebAssembly file.</returns>
+        public static WasmFile ReadBinary(string Path)
+        {
+            WasmFile result;
+            using (var fileStream = File.OpenRead(Path))
+            {
+                result = ReadBinary(fileStream);
+            }
+            return result;
+        }
     }
 }

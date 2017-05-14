@@ -57,23 +57,15 @@ namespace Wasm.Cat
             var file = new WasmFile();
             foreach (var path in parsedArgs.Inputs)
             {
-                using (var fileStream = File.OpenRead(path))
-                {
-                    using (var reader = new BinaryReader(fileStream))
-                    {
-                        // Create a WebAssembly reader, read the file and append its
-                        // sections to the resulting file.
-                        var wasmReader = new BinaryWasmReader(reader);
-                        var inputFile = wasmReader.ReadFile();
-                        file.Sections.AddRange(inputFile.Sections);
+                // Read the file and append its sections to the resulting file.
+                var inputFile = WasmFile.ReadBinary(path);
+                file.Sections.AddRange(inputFile.Sections);
 
-                        // Also, set the WebAssembly version number to the max of the
-                        // input files.
-                        if (inputFile.Header.Version > file.Header.Version)
-                        {
-                            file.Header = inputFile.Header;
-                        }
-                    }
+                // Also, set the WebAssembly version number to the max of the
+                // input files.
+                if (inputFile.Header.Version > file.Header.Version)
+                {
+                    file.Header = inputFile.Header;
                 }
             }
 

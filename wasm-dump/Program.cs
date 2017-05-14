@@ -14,16 +14,7 @@ namespace Wasm.Dump
                 return 1;
             }
 
-            WasmFile file;
-            using (var fileStream = File.OpenRead(args[0]))
-            {
-                using (var reader = new BinaryReader(fileStream))
-                {
-                    // Create a WebAssembly reader and read the file.
-                    var wasmReader = new BinaryWasmReader(reader);
-                    file = wasmReader.ReadFile();
-                }
-            }
+            var file = WasmFile.ReadBinary(args[0]);
             DumpFile(file);
             return 0;
         }

@@ -7,7 +7,7 @@
 
 ## Using `cs-wasm`
 
-Here are some sample code fragments for a couple of basic use cases to give you a feel of what it's like to use `cs-wasm`.
+Here are some sample code fragments to give you a feel of what it's like to use `cs-wasm`.
 
 ### Reading a WebAssembly file
 
@@ -37,7 +37,7 @@ file.WriteBinaryTo(stream);
 
 ### Inspecting a `WasmFile`
 
-`WasmFile` is modeled after the binary encoding for WebAssembly files. It contains a `Sections` property that returns a `List<Section>` which you can iterate through.
+`WasmFile` is modeled after the binary encoding for WebAssembly files. It contains a `Sections` property that returns a `List<Section>` which can be iterated through.
 
 If you're interested in a specific type of section, then you can use the `GetSections`/`GetFirstSectionOrNull` methods defined by `WasmFile`. (Or you can just throw LINQ at the `Sections` list &ndash; it's up to you.)
 

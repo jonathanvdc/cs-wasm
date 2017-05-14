@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nullary-opcode-generator", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wasm-cat", "wasm-cat\wasm-cat.csproj", "{43A86926-879D-483A-AB7B-62C8EEE0991E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "readme-example", "examples\readme-example\readme-example.csproj", "{5415B340-F74D-4ADE-96FF-9457F2BB148E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{43A86926-879D-483A-AB7B-62C8EEE0991E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{43A86926-879D-483A-AB7B-62C8EEE0991E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{43A86926-879D-483A-AB7B-62C8EEE0991E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5415B340-F74D-4ADE-96FF-9457F2BB148E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5415B340-F74D-4ADE-96FF-9457F2BB148E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5415B340-F74D-4ADE-96FF-9457F2BB148E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5415B340-F74D-4ADE-96FF-9457F2BB148E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6C27FD1D-096F-4AA9-8FC4-277964CFC390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6C27FD1D-096F-4AA9-8FC4-277964CFC390}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6C27FD1D-096F-4AA9-8FC4-277964CFC390}.Release|Any CPU.ActiveCfg = Release|Any CPU

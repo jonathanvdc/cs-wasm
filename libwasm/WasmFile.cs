@@ -110,7 +110,7 @@ namespace Wasm
         /// <c>null</c> is returned.
         /// </summary>
         /// <returns>The first section of the given type, if it exists; otherwise, <c>null</c>.</returns>
-        public T GetFirstSectionOrNull<T>(SectionName Name)
+        public T GetFirstSectionOrNull<T>()
             where T : Section
         {
             for (int i = 0; i < Sections.Count; i++)

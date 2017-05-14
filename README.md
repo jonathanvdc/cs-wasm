@@ -53,7 +53,8 @@ Console.WriteLine(
     "Memory size: {0}",
     file.GetFirstSectionOrNull<MemorySection>()
         .Memories
-        .Single<ResizableLimits>());
+        .Single<MemoryType>()
+        .Limits);
 ```
 
 ### Modifying a `WasmFile`
@@ -81,7 +82,8 @@ memSection.Memories.Clear();
 // that is initially one page (first argument) in size and
 // is capped at one page of memory (second argument), so
 // there will always be exactly one page of linear memory.
-memSection.Memories.Add(new ResizableLimits(1, 1)); 
+memSection.Memories.Add(
+    new MemoryType(new ResizableLimits(1, 1))); 
 ```
 
 ### Creating a `WasmFile` from scratch

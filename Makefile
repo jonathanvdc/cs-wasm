@@ -27,6 +27,10 @@ clean:
 	make -C nullary-opcode-generator clean
 	make -C wasm-cat clean
 	make -C wasm-dump clean
+	make -C examples clean
 
-test: exe
+example-projects:
+	make -C examples
+
+test: exe example-projects
 	compare-test run-tests.test

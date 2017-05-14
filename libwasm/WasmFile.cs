@@ -130,11 +130,9 @@ namespace Wasm
         /// <param name="Target">The stream to write to.</param>
         public void WriteBinaryTo(Stream Target)
         {
-            using (var writer = new BinaryWriter(Target))
-            {
-                var wasmWriter = new BinaryWasmWriter(writer);
-                wasmWriter.WriteFile(this);
-            }
+            var writer = new BinaryWriter(Target);
+            var wasmWriter = new BinaryWasmWriter(writer);
+            wasmWriter.WriteFile(this);
         }
 
         /// <summary>
@@ -176,14 +174,10 @@ namespace Wasm
         /// <returns>The WebAssembly file.</returns>
         public static WasmFile ReadBinary(Stream Source)
         {
-            WasmFile result;
-            using (var reader = new BinaryReader(Source))
-            {
-                // Create a WebAssembly reader and read the file.
-                var wasmReader = new BinaryWasmReader(reader);
-                result = wasmReader.ReadFile();
-            }
-            return result;
+            // Create a WebAssembly reader and read the file.
+            var reader = new BinaryReader(Source);
+            var wasmReader = new BinaryWasmReader(reader);
+            return wasmReader.ReadFile();
         }
 
         /// <summary>

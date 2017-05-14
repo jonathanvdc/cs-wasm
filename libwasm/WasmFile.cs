@@ -49,6 +49,25 @@ namespace Wasm
         public List<Section> Sections { get; private set; }
 
         /// <summary>
+        /// Gets a list of all sections of the given type.
+        /// </summary>
+        /// <returns>A list of sections with the given type.</returns>
+        public IReadOnlyList<T> GetSections<T>()
+            where T : Section
+        {
+            var results = new List<T>();
+            for (int i = 0; i < Sections.Count; i++)
+            {
+                var sec = Sections[i];
+                if (sec is T)
+                {
+                    results.Add((T)sec);
+                }
+            }
+            return results;
+        }
+
+        /// <summary>
         /// Gets a list of all sections with the given section name.
         /// </summary>
         /// <param name="Name">The section name to look for.</param>

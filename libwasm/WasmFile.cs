@@ -106,6 +106,25 @@ namespace Wasm
         }
 
         /// <summary>
+        /// Gets the first section of the given type. If no such section exists,
+        /// <c>null</c> is returned.
+        /// </summary>
+        /// <returns>The first section of the given type, if it exists; otherwise, <c>null</c>.</returns>
+        public T GetFirstSectionOrNull<T>(SectionName Name)
+            where T : Section
+        {
+            for (int i = 0; i < Sections.Count; i++)
+            {
+                var sec = Sections[i];
+                if (sec is T)
+                {
+                    return (T)sec;
+                }
+            }
+            return default(T);
+        }
+
+        /// <summary>
         /// Writes this WebAssembly file to the given stream using the binary WebAssembly file encoding.
         /// </summary>
         /// <param name="Target">The stream to write to.</param>

@@ -49,6 +49,31 @@ namespace Wasm
         public List<Section> Sections { get; private set; }
 
         /// <summary>
+        /// Writes this WebAssembly file to the given stream using the binary WebAssembly file encoding.
+        /// </summary>
+        /// <param name="Target">The stream to write to.</param>
+        public void WriteBinaryTo(Stream Target)
+        {
+            using (var writer = new BinaryWriter(Target))
+            {
+                var wasmWriter = new BinaryWasmWriter(writer);
+                wasmWriter.WriteFile(this);
+            }
+        }
+
+        /// <summary>
+        /// Writes this WebAssembly file to the given stream using the binary WebAssembly file encoding.
+        /// </summary>
+        /// <param name="Path">A path to the file to write to.</param>
+        public void WriteBinaryTo(string Path)
+        {
+            using (var fileStream = File.OpenWrite(Path))
+            {
+                WriteBinaryTo(fileStream);
+            }
+        }
+
+        /// <summary>
         /// Reads a binary WebAssembly from the given stream.
         /// </summary>
         /// <param name="Source">The stream from which a WebAssembly file is to be read.</param>

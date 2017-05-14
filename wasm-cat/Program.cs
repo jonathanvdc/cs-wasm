@@ -74,11 +74,7 @@ namespace Wasm.Cat
                 ? Console.OpenStandardOutput()
                 : File.OpenWrite(parsedArgs.Output))
             {
-                using (var writer = new BinaryWriter(outputStream))
-                {
-                    var wasmWriter = new BinaryWasmWriter(writer);
-                    wasmWriter.WriteFile(file);
-                }
+                file.WriteBinaryTo(outputStream);
             }
             return 0;
         }

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- NuGet package specification.
-     Run `nuget pack -Version %PKG_VERSION% libwasm.nuspec` to libwasm Flame.x.y.z.nupkg -->
+     Run `nuget pack -Version %PKG_VERSION% libwasm.nuspec` to create Wasm.x.y.z.nupkg -->
 <package >
   <metadata>
     <id>Wasm</id>

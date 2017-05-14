@@ -26,9 +26,31 @@ build_script:
   - make all
 
 after_build:
+  # Create a folder that contains all tools and zip it.
+  - mkdir cs-wasm-tools
+  - xcopy wasm-cat\bin\clr\wasm-cat.exe cs-wasm-tools
+  - xcopy wasm-dump\bin\clr\wasm-dump.exe cs-wasm-tools
+  - 7z a cs-wasm-tools.zip %APPVEYOR_BUILD_FOLDER%\cs-wasm-tools\*
   # Create the NuGet package
   - nuget pack -Version %PKG_VERSION% libwasm.nuspec
 
 test_script:
   # Run the tests
   - make test
+
+artifacts:
+  - path: cs-wasm-tools.zip
+    name: cs-wasm-tools
+  - path: '*.nupkg'
+    name: nupkgs
+
+deploy:
+  - provider: NuGet
+    server:
+    api_key:
+      secure: vIYC0UO8DFL2HXrIu20ZQs1NR31SvGZWioDBgXzyMwJEd5dySh5peABsrwWvKzU1
+    skip_symbols: true
+    artifact: /.*\.nupkg/
+    on:
+      branch: master # Release from master branch only.
+      appveyor_repo_tag: true # Deploy on tag push only.

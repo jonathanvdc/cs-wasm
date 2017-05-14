@@ -90,5 +90,13 @@ namespace Wasm
             }
             Writer.Write("}");
         }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            Dump(new StringWriter(builder));
+            return builder.ToString();
+        }
     }
 }

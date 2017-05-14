@@ -113,3 +113,7 @@ file.Sections.Add(typeSection);
 ### Other fun stuff
 
 There are lots of things you can do with `cs-wasm`. Drop me a GitHub issue if you'd like a chat.
+
+## Contributing
+
+Want to help out? Thanks! That's awesome! You're very welcome to open an issue or send a pull request.

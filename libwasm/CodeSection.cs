@@ -41,7 +41,7 @@ namespace Wasm
         /// Gets this function section's additional payload.
         /// </summary>
         /// <returns>The additional payload, as an array of bytes.</returns>
-        public byte[] ExtraPayload { get; private set; }
+        public byte[] ExtraPayload { get; set; }
 
         /// <inheritdoc/>
         public override void WritePayloadTo(BinaryWasmWriter Writer)

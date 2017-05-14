@@ -48,7 +48,7 @@ namespace Wasm
         /// This type section's additional payload.
         /// </summary>
         /// <returns>The additional payload, as an array of bytes.</returns>
-        public byte[] ExtraPayload { get; private set; }
+        public byte[] ExtraPayload { get; set; }
 
         /// <inheritdoc/>
         public override SectionName Name => new SectionName(SectionCode.Table);

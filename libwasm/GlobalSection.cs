@@ -50,7 +50,7 @@ namespace Wasm
         /// This global section's additional payload.
         /// </summary>
         /// <returns>The additional payload, as an array of bytes.</returns>
-        public byte[] ExtraPayload { get; private set; }
+        public byte[] ExtraPayload { get; set; }
 
         /// <summary>
         /// Writes this WebAssembly section's payload to the given binary WebAssembly writer.

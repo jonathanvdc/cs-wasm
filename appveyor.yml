@@ -29,6 +29,6 @@ after_build:
   # Create the NuGet package
   - nuget pack -Version %PKG_VERSION% libwasm.nuspec
 
-test:
+test_script:
   # Run the tests
   - make test

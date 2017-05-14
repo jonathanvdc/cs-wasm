@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<!-- NuGet package specification.
+     Run `nuget pack -Version %PKG_VERSION% libwasm.nuspec` to libwasm Flame.x.y.z.nupkg -->
+<package >
+  <metadata>
+    <id>Wasm</id>
+    <version>$version$</version>
+    <authors>Jonathan Van der Cruysse</authors>
+    <owners>Jonathan Van der Cruysse</owners>
+    <projectUrl>https://github.com/jonathanvdc/cs-wasm</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>A C# library to read and write binary WebAssembly files. </summary>
+    <description>cs-wasm is a C# library that can read and write binary WebAssembly files.
+    
+    It tries to represent WebAssembly files as faithfully as possible; reading a file into memory and writing it back to disk is byte-for-byte equivalent to a simple copy.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>WebAssembly Wasm</tags>
+  </metadata>
+  <files>
+    <file src="README.md" target="readme.txt" />
+    <file src="libwasm\bin\clr\libwasm.dll" target="lib\net45\" />
+    <file src="libwasm\bin\clr\libwasm.xml" target="lib\net45\" />
+  </files>
+</package>

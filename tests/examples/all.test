@@ -1,0 +1,16 @@
+
+init
+{
+    template RunExample<example-name>
+    {
+        run
+        {
+            _ = $(net-runtime) $(examples)/$(example-name)/bin/clr/$(example-name).exe;
+        }
+    }
+}
+
+tests
+{
+    template RunExample<readme-example>;
+}

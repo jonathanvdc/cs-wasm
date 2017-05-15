@@ -24,6 +24,8 @@ build_script:
   - msbuild /p:Configuration=Release cs-wasm.sln
   # Build cs-wasm with ecsc
   - make all
+  # Build the examples with ecsc
+  - make example-projects
 
 after_build:
   # Create a folder that contains all tools and zip it.

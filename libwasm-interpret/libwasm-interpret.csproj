@@ -36,9 +36,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\libwasm\libwasm.csproj">
+    <ProjectReference Include="..\libwasm-core\libwasm-core.csproj">
       <Project>{6C27FD1D-096F-4AA9-8FC4-277964CFC390}</Project>
-      <Name>libwasm</Name>
+      <Name>libwasm-core</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libwasm", "libwasm\libwasm.csproj", "{6C27FD1D-096F-4AA9-8FC4-277964CFC390}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libwasm-core", "libwasm-core\libwasm-core.csproj", "{6C27FD1D-096F-4AA9-8FC4-277964CFC390}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wasm-dump", "wasm-dump\wasm-dump.csproj", "{BEA2507C-F8CF-414E-9E18-A359FC506BB0}"
 EndProject

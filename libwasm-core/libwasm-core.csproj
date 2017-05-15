@@ -6,7 +6,7 @@
     <ProjectGuid>{6C27FD1D-096F-4AA9-8FC4-277964CFC390}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Wasm</RootNamespace>
-    <AssemblyName>libwasm</AssemblyName>
+    <AssemblyName>libwasm-core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

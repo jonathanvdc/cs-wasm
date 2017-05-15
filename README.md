@@ -2,7 +2,7 @@
 
 [![Build status](https://travis-ci.org/jonathanvdc/cs-wasm.svg?branch=master)](https://travis-ci.org/jonathanvdc/cs-wasm)
 [![Build status](https://ci.appveyor.com/api/projects/status/4lfpgydcssxvr56o?svg=true)](https://ci.appveyor.com/project/jonathanvdc/cs-wasm)
-[![NuGet](https://img.shields.io/nuget/v/Wasm.svg)]()
+[![NuGet](https://img.shields.io/nuget/v/Wasm.svg)](https://www.nuget.org/packages/Wasm)
 
 `cs-wasm` is a C# library that can read and write binary WebAssembly files. It tries to represent WebAssembly files as faithfully as possible; reading a file into memory and writing it back to disk is byte-for-byte equivalent to a simple copy.
 

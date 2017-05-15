@@ -123,6 +123,11 @@ namespace Wasm
         public ResizableLimits Limits { get; set; }
 
         /// <summary>
+        /// Gets the size of a single page, in bytes.
+        /// </summary>
+        public const uint PageSize = 64 * 1024;
+
+        /// <summary>
         /// Writes this memory description to the given binary WebAssembly file.
         /// </summary>
         /// <param name="Writer">The writer for a binary WebAssembly file.</param>

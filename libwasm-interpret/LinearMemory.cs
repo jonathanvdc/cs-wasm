@@ -103,7 +103,7 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsInt8
     {
-        public LinearMemoryAsInt8(List<byte> Memory)
+        internal LinearMemoryAsInt8(List<byte> Memory)
         {
             this.mem = Memory;
         }
@@ -128,7 +128,7 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsInt16
     {
-        public LinearMemoryAsInt16(List<byte> Memory)
+        internal LinearMemoryAsInt16(List<byte> Memory)
         {
             this.mem = Memory;
         }
@@ -156,7 +156,7 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsInt32
     {
-        public LinearMemoryAsInt32(List<byte> Memory)
+        internal LinearMemoryAsInt32(List<byte> Memory)
         {
             this.mem = Memory;
         }
@@ -187,7 +187,7 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsInt64
     {
-        public LinearMemoryAsInt64(List<byte> Memory)
+        internal LinearMemoryAsInt64(List<byte> Memory)
         {
             this.mem = Memory;
         }

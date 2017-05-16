@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Wasm.Interpret
 {
     /// <summary>
@@ -18,5 +21,12 @@ namespace Wasm.Interpret
         /// <param name="Description">Describes the global variable to import.</param>
         /// <returns>An imported global variable.</returns>
         Variable ImportGlobal(ImportedGlobal Description);
+
+        /// <summary>
+        /// Imports the function with the given description.
+        /// </summary>
+        /// <param name="Description">Describes the function to import.</param>
+        /// <returns>An imported function.</returns>
+        Func<IReadOnlyList<object>, object> ImportFunction(ImportedFunction Description);
     }
 }

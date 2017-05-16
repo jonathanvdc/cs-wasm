@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Wasm.Interpret
@@ -13,6 +14,7 @@ namespace Wasm.Interpret
             this.interpreter = Interpreter;
             this.definedMemories = new List<LinearMemory>();
             this.definedGlobals = new List<Variable>();
+            this.definedFuncs = new List<Func<IReadOnlyList<object>, object>>();
         }
 
         /// <summary>
@@ -22,6 +24,7 @@ namespace Wasm.Interpret
 
         private List<LinearMemory> definedMemories;
         private List<Variable> definedGlobals;
+        private List<Func<IReadOnlyList<object>, object>> definedFuncs;
 
         /// <summary>
         /// Gets a read-only list of the memories in this module.
@@ -115,6 +118,10 @@ namespace Wasm.Interpret
                     else if (import is ImportedGlobal)
                     {
                         definedGlobals.Add(Importer.ImportGlobal((ImportedGlobal)import));
+                    }
+                    else if (import is ImportedFunction)
+                    {
+                        definedFuncs.Add(Importer.ImportFunction((ImportedFunction)import));
                     }
                     else
                     {

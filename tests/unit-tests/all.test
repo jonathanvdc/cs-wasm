@@ -1,0 +1,16 @@
+
+init
+{
+    template RunUnitTests<index>
+    {
+        run
+        {
+            $(run-unit-tests) $(index);
+        }
+    }
+}
+
+tests
+{
+    template RunUnitTests<1>;
+}

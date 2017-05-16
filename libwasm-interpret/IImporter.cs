@@ -11,5 +11,12 @@ namespace Wasm.Interpret
         /// <param name="Description">Describes the memory to import.</param>
         /// <returns>An imported memory.</returns>
         LinearMemory ImportMemory(ImportedMemory Description);
+
+        /// <summary>
+        /// Imports the global variable with the given description.
+        /// </summary>
+        /// <param name="Description">Describes the global variable to import.</param>
+        /// <returns>An imported global variable.</returns>
+        Variable ImportGlobal(ImportedGlobal Description);
     }
 }

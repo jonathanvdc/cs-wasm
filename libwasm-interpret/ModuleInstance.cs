@@ -8,18 +8,12 @@ namespace Wasm.Interpret
     public sealed class ModuleInstance
     {
 
-        private ModuleInstance(WasmFile File, InstructionInterpreter Interpreter)
+        private ModuleInstance(InstructionInterpreter Interpreter)
         {
-            this.File = File;
             this.interpreter = Interpreter;
             this.definedMemories = new List<LinearMemory>();
+            this.definedGlobals = new List<Variable>();
         }
-
-        /// <summary>
-        /// Gets the file on which this module instance is based.
-        /// </summary>
-        /// <returns>The WebAssembly file.</returns>
-        public WasmFile File { get; private set; }
 
         /// <summary>
         /// The interpreter for this module instance.
@@ -27,11 +21,17 @@ namespace Wasm.Interpret
         private InstructionInterpreter interpreter; 
 
         private List<LinearMemory> definedMemories;
+        private List<Variable> definedGlobals;
 
         /// <summary>
         /// Gets a read-only list of the memories in this module.
         /// </summary>
         public IReadOnlyList<LinearMemory> Memories => definedMemories;
+
+        /// <summary>
+        /// Gets a read-only list of global variables in this module.
+        /// </summary>
+        public IReadOnlyList<Variable> Globals => definedGlobals;
 
         /// <summary>
         /// Evaluates the given initializer expression.
@@ -82,13 +82,16 @@ namespace Wasm.Interpret
             IImporter Importer,
             InstructionInterpreter Interpreter)
         {
-            var instance = new ModuleInstance(File, Interpreter);
+            var instance = new ModuleInstance(Interpreter);
 
             // Resolve all imports.
-            instance.ResolveImports(Importer);
+            instance.ResolveImports(File, Importer);
+
+            // Instantiate global variables.
+            instance.InstantiateGlobals(File);
 
             // Instantiate memories.
-            instance.InstantiateMemories();
+            instance.InstantiateMemories(File);
 
             return instance;
         }
@@ -97,7 +100,7 @@ namespace Wasm.Interpret
         /// Uses the given importer to resolve all imported values.
         /// </summary>
         /// <param name="Importer">The importer.</param>
-        private void ResolveImports(IImporter Importer)
+        private void ResolveImports(WasmFile File, IImporter Importer)
         {
             var allImportSections = File.GetSections<ImportSection>();
             for (int i = 0; i < allImportSections.Count; i++)
@@ -109,6 +112,10 @@ namespace Wasm.Interpret
                     {
                         definedMemories.Add(Importer.ImportMemory((ImportedMemory)import));
                     }
+                    else if (import is ImportedGlobal)
+                    {
+                        definedGlobals.Add(Importer.ImportGlobal((ImportedGlobal)import));
+                    }
                     else
                     {
                         throw new WasmException("Unknown import type: " + import.ToString());
@@ -117,7 +124,7 @@ namespace Wasm.Interpret
             }
         }
 
-        private void InstantiateMemories()
+        private void InstantiateMemories(WasmFile File)
         {
             // Create module-defined memories.
             var allMemorySections = File.GetSections<MemorySection>();
@@ -143,6 +150,24 @@ namespace Wasm.Interpret
                     {
                         memoryView[(uint)(evalOffset + j)] = (sbyte)segment.Data[j];
                     }
+                }
+            }
+        }
+
+        private void InstantiateGlobals(WasmFile File)
+        {
+            // Create module-defined globals.
+            var allGlobalSections = File.GetSections<GlobalSection>();
+            for (int i = 0; i < allGlobalSections.Count; i++)
+            {
+                var globalSection = allGlobalSections[i];
+                foreach (var globalSpec in globalSection.GlobalVariables)
+                {
+                    definedGlobals.Add(
+                        Variable.Create<object>(
+                            globalSpec.Type.ContentType,
+                            globalSpec.Type.IsMutable,
+                            Evaluate<object>(globalSpec.InitialValue)));
                 }
             }
         }

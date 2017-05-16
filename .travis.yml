@@ -19,6 +19,8 @@ install:
   - chmod +x $(pwd)/compare-test/compare-test
   - export PATH=$PATH:$(pwd)/compare-test
 script:
+  # Restore NuGet packages
+  - nuget restore cs-wasm.sln
   # Build the project with mcs
   - xbuild /p:Configuration=Release cs-wasm.sln
   # Build the project with ecsc and test it

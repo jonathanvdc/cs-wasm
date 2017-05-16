@@ -23,6 +23,8 @@ install:
   - set PATH=%PATH%;C:\cygwin\bin
 
 build_script:
+  # Restore NuGet packages
+  - nuget restore cs-wasm.sln
   # Build cs-wasm with csc
   - msbuild /p:Configuration=Release cs-wasm.sln
   # Build cs-wasm with ecsc

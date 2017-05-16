@@ -5,6 +5,7 @@ exe:
 	make -C nullary-opcode-generator exe
 	make -C wasm-cat exe
 	make -C wasm-dump exe
+	make -C unit-tests exe
 
 all:
 	make -C libwasm-core all
@@ -13,6 +14,7 @@ all:
 	make -C nullary-opcode-generator all
 	make -C wasm-cat all
 	make -C wasm-dump all
+	make -C unit-tests all
 
 dll:
 	make -C libwasm-core flo
@@ -21,6 +23,7 @@ dll:
 	make -C nullary-opcode-generator exe
 	make -C wasm-cat exe
 	make -C wasm-dump exe
+	make -C unit-tests exe
 
 flo:
 	make -C libwasm-core flo
@@ -29,6 +32,7 @@ flo:
 	make -C nullary-opcode-generator flo
 	make -C wasm-cat flo
 	make -C wasm-dump flo
+	make -C unit-tests flo
 
 clean:
 	make -C libwasm-core clean
@@ -37,6 +41,7 @@ clean:
 	make -C nullary-opcode-generator clean
 	make -C wasm-cat clean
 	make -C wasm-dump clean
+	make -C unit-tests clean
 	make -C examples clean
 
 example-projects:

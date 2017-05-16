@@ -11,5 +11,5 @@ clean:
 	rm -rf bin/
 	rm -rf obj/
 
-bin/flo/libwasm-interpret.flo: $(files) $(libwasm-flo)
+bin/flo/libwasm-interpret.flo: $(files) $(libraries)
 	ecsc $(files) -platform ir -runtime clr -o $@ $(common_options) --libs $(libraries)

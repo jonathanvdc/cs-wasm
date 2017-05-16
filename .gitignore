@@ -3,3 +3,4 @@ obj/
 out/
 packages/
 *.userprefs
+*.log

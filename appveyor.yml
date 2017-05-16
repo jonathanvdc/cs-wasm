@@ -1,5 +1,8 @@
 version: 0.1.0.{build}
 
+cache:
+  - C:\Users\appveyor\AppData\Local\NuGet\Cache
+
 install:
   - set VERNUM=0.1.0
   - echo %APPVEYOR_REPO_TAG%

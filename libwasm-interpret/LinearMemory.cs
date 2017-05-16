@@ -7,11 +7,15 @@ namespace Wasm.Interpret
     /// </summary>
     public sealed class LinearMemory
     {
-        public LinearMemory(MemoryType Type)
+        /// <summary>
+        /// Creates a linear memory from the given specification.
+        /// </summary>
+        /// <param name="Limits">The specification for this linear memory: a range in units of pages.</param>
+        public LinearMemory(ResizableLimits Limits)
         {
-            this.Type = Type;
+            this.Limits = Limits;
             this.memory = new List<byte>();
-            GrowToSize(Type.Limits.Initial);
+            GrowToSize(Limits.Initial);
         }
 
         private List<byte> memory;
@@ -20,7 +24,7 @@ namespace Wasm.Interpret
         /// Gets the specification for this linear memory.
         /// </summary>
         /// <returns>The specification for this linear memory/</returns>
-        public MemoryType Type { get; private set; }
+        public ResizableLimits Limits { get; private set; }
 
         /// <summary>
         /// Gets the size of the linear memory in units of pages.
@@ -36,7 +40,7 @@ namespace Wasm.Interpret
         /// <returns>The previous memory size in units of pages or -1 on failure.</returns>
         private int GrowToSize(uint NewSize)
         {
-            if (Type.Limits.HasMaximum && NewSize > Type.Limits.Maximum.Value)
+            if (Limits.HasMaximum && NewSize > Limits.Maximum.Value)
             {
                 return -1;
             }

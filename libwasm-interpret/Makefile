@@ -1,4 +1,12 @@
-files = LinearMemory.cs
+files = \
+	DefaultInstructionInterpreter.cs \
+	IImporter.cs \
+	InstructionInterpreter.cs \
+	InterpreterContext.cs \
+	LinearMemory.cs \
+	ModuleInstance.cs \
+	Variable.cs
+
 libraries = ../libwasm-core/bin/flo/libwasm-core.flo
 
 common_options = -asm-name=libwasm-interpret -asm-version=0.1.0.0 -Wall -Wextra

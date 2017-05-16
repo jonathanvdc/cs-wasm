@@ -1,7 +1,7 @@
 files = LinearMemory.cs
 libraries = ../libwasm-core/bin/flo/libwasm-core.flo
 
-common_options = -asm-name=libwasm-interpret -asm-version=0.1.0.0 -Wall -Wextra -force-write
+common_options = -asm-name=libwasm-interpret -asm-version=0.1.0.0 -Wall -Wextra
 
 all: flo
 

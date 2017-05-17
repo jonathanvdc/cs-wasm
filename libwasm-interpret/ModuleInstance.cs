@@ -60,6 +60,17 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Runs the function at the given index with the given sequence of arguments.
+        /// </summary>
+        /// <param name="Index">The index of the function to run.</param>
+        /// <param name="Arguments">The function's argument list.</param>
+        /// <returns>The function's return value.</returns>
+        public T RunFunction<T>(uint Index, IReadOnlyList<object> Arguments)
+        {
+            return (T)definedFuncs[(int)Index](Arguments);
+        }
+
+        /// <summary>
         /// Instantiates the given WebAssembly file. An importer is used to
         /// resolve module imports.
         /// </summary>

@@ -106,6 +106,31 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes a 'br' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Br(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Br.CastInstruction(Value);
+            Context.BreakDepth = (int)instr.Immediate;
+        }
+
+        /// <summary>
+        /// Executes a 'br_if' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void BrIf(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.BrIf.CastInstruction(Value);
+            if (Context.Pop<int>() != 0)
+            {
+                Context.BreakDepth = (int)instr.Immediate;
+            }
+        }
+
+        /// <summary>
         /// Executes a 'drop' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

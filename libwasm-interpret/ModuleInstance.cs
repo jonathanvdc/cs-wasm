@@ -20,7 +20,7 @@ namespace Wasm.Interpret
         /// <summary>
         /// The interpreter for this module instance.
         /// </summary>
-        internal InstructionInterpreter Interpreter { get; private set; }
+        public InstructionInterpreter Interpreter { get; private set; }
 
         private List<LinearMemory> definedMemories;
         private List<Variable> definedGlobals;

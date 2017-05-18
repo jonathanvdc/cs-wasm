@@ -27,6 +27,62 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes a 'block' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Block(Instruction Value, InterpreterContext Context)
+        {
+            var contents = Operators.Block.CastInstruction(Value).Contents;
+            var interpreter = Context.Module.Interpreter;
+            for (int i = 0; i < contents.Count; i++)
+            {
+                interpreter.Interpret(contents[i], Context);
+                if (Context.BreakRequested)
+                {
+                    Context.BreakDepth--;
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes a 'loop' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Loop(Instruction Value, InterpreterContext Context)
+        {
+            var contents = Operators.Loop.CastInstruction(Value).Contents;
+            var interpreter = Context.Module.Interpreter;
+            for (int i = 0; i < contents.Count;)
+            {
+                interpreter.Interpret(contents[i], Context);
+                if (Context.BreakRequested)
+                {
+                    if (Context.BreakDepth > 0)
+                    {
+                        // This loop is the break's target. We should decrement the
+                        // break depth to terminate the break request and then re-start
+                        // the loop.
+                        Context.BreakDepth--;
+                        i = 0;
+                    }
+                    else
+                    {
+                        // This loop is not the break's target. We should terminate the loop.
+                        Context.BreakDepth--;
+                        return;
+                    }
+                }
+                else
+                {
+                    i++;
+                }
+            }
+        }
+
+        /// <summary>
         /// Executes a 'drop' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

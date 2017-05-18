@@ -27,6 +27,7 @@ namespace Wasm.Interpret
             this.Locals = Locals;
             this.valStack = new Stack<object>();
             this.ReturnValues = null;
+            this.BreakDepth = -1;
         }
 
         /// <summary>
@@ -63,6 +64,19 @@ namespace Wasm.Interpret
         /// Tests if this interpreter context has returned.
         /// </summary>
         public bool HasReturned => ReturnValues != null;
+
+        /// <summary>
+        /// Gets or sets the depth of the break that is currently being handled.
+        /// </summary>
+        /// <returns>The depth of the break that is currently being handled.
+        /// A negative value means that no break is currently being handled.</returns>
+        public int BreakDepth { get; set; }
+
+        /// <summary>
+        /// Gets a flag that tells if a break has been requested.
+        /// </summary>
+        /// <returns>A flag that tells if a break has been requested.</returns>
+        public bool BreakRequested => BreakDepth < 0;
 
         /// <summary>
         /// Pops a value of the given type from the value stack.

@@ -105,7 +105,7 @@ namespace Wasm
     /// <summary>
     /// An entry in a code section; defines a function body.
     /// </summary>
-    public class FunctionBody
+    public sealed class FunctionBody
     {
         /// <summary>
         /// Creates a function body from the given list of local entries

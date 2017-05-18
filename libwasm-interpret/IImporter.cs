@@ -27,6 +27,6 @@ namespace Wasm.Interpret
         /// </summary>
         /// <param name="Description">Describes the function to import.</param>
         /// <returns>An imported function.</returns>
-        Func<IReadOnlyList<object>, object> ImportFunction(ImportedFunction Description);
+        FunctionDefinition ImportFunction(ImportedFunction Description);
     }
 }

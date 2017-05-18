@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Wasm.Interpret
@@ -11,20 +10,20 @@ namespace Wasm.Interpret
 
         private ModuleInstance(InstructionInterpreter Interpreter)
         {
-            this.interpreter = Interpreter;
+            this.Interpreter = Interpreter;
             this.definedMemories = new List<LinearMemory>();
             this.definedGlobals = new List<Variable>();
-            this.definedFuncs = new List<Func<IReadOnlyList<object>, object>>();
+            this.definedFuncs = new List<FunctionDefinition>();
         }
 
         /// <summary>
         /// The interpreter for this module instance.
         /// </summary>
-        private InstructionInterpreter interpreter; 
+        internal InstructionInterpreter Interpreter { get; private set; }
 
         private List<LinearMemory> definedMemories;
         private List<Variable> definedGlobals;
-        private List<Func<IReadOnlyList<object>, object>> definedFuncs;
+        private List<FunctionDefinition> definedFuncs;
 
         /// <summary>
         /// Gets a read-only list of the memories in this module.
@@ -46,7 +45,7 @@ namespace Wasm.Interpret
             var context = new InterpreterContext(this);
             foreach (var instruction in Expression.BodyInstructions)
             {
-                interpreter.Interpret(instruction, context);
+                Interpreter.Interpret(instruction, context);
             }
             var result = context.Pop<T>();
             if (context.StackDepth > 0)
@@ -67,7 +66,7 @@ namespace Wasm.Interpret
         /// <returns>The function's return value.</returns>
         public T RunFunction<T>(uint Index, IReadOnlyList<object> Arguments)
         {
-            return (T)definedFuncs[(int)Index](Arguments);
+            return (T)definedFuncs[(int)Index].Invoke(Arguments);
         }
 
         /// <summary>
@@ -106,6 +105,9 @@ namespace Wasm.Interpret
 
             // Instantiate memories.
             instance.InstantiateMemories(File);
+
+            // Instantiate function definitions.
+            instance.InstantiateFunctionDefs(File);
 
             return instance;
         }
@@ -188,6 +190,60 @@ namespace Wasm.Interpret
                             Evaluate<object>(globalSpec.InitialValue)));
                 }
             }
+        }
+
+        /// <summary>
+        /// Instantiates all function definitions from the given WebAssembly file.
+        /// </summary>
+        /// <param name="File">A WebAssembly file.</param>
+        private void InstantiateFunctionDefs(WasmFile File)
+        {
+            var allFuncTypes = new List<FunctionType>();
+            var allTypeSections = File.GetSections<TypeSection>();
+            for (int i = 0; i < allTypeSections.Count; i++)
+            {
+                allFuncTypes.AddRange(allTypeSections[i].FunctionTypes);
+            }
+
+            var funcSignatures = new List<FunctionType>();
+            var funcBodies = new List<FunctionBody>();
+
+            var allFuncSections = File.GetSections<FunctionSection>();
+            for (int i = 0; i < allFuncSections.Count; i++)
+            {
+                foreach (var funcSpec in allFuncSections[i].FunctionTypes)
+                {
+                    funcSignatures.Add(allFuncTypes[(int)funcSpec]);
+                }
+            }
+
+            var allCodeSections = File.GetSections<CodeSection>();
+            for (int i = 0; i < allCodeSections.Count; i++)
+            {
+                funcBodies.AddRange(allCodeSections[i].Bodies);
+            }
+
+            if (funcSignatures.Count != funcBodies.Count)
+            {
+                throw new WasmException(
+                    "Function declaration/definition count mismatch: module declares " +
+                    funcSignatures.Count + " functions and defines " + funcBodies.Count + ".");
+            }
+
+            for (int i = 0; i < funcSignatures.Count; i++)
+            {
+                DefineFunction(funcSignatures[i], funcBodies[i]);
+            }
+        }
+
+        /// <summary>
+        /// Defines a function with the given signature and function body.
+        /// </summary>
+        /// <param name="Signature">The function's signature.</param>
+        /// <param name="Body">The function's body.</param>
+        private void DefineFunction(FunctionType Signature, FunctionBody Body)
+        {
+            definedFuncs.Add(new WasmFunctionDefinition(Signature, Body, this));
         }
     }
 }

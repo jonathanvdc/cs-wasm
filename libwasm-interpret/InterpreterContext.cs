@@ -26,6 +26,7 @@ namespace Wasm.Interpret
             this.Module = Module;
             this.Locals = Locals;
             this.valStack = new Stack<object>();
+            this.ReturnValues = null;
         }
 
         /// <summary>
@@ -46,9 +47,22 @@ namespace Wasm.Interpret
         private Stack<object> valStack;
 
         /// <summary>
+        /// Gets the list of values that have been returned, or <c>null</c> if nothing
+        /// has been returned yet.
+        /// </summary>
+        /// <returns>The list of values that have been returned, or <c>null</c> if nothing
+        /// has been returned yet.</returns>
+        public IReadOnlyList<object> ReturnValues { get; private set; }
+
+        /// <summary>
         /// Gets the number of items that are currently on the evaluation stack.
         /// </summary>
         public int StackDepth => valStack.Count;
+
+        /// <summary>
+        /// Tests if this interpreter context has returned.
+        /// </summary>
+        public bool HasReturned => ReturnValues != null;
 
         /// <summary>
         /// Pops a value of the given type from the value stack.
@@ -57,6 +71,41 @@ namespace Wasm.Interpret
         public T Pop<T>()
         {
             return (T)valStack.Pop();
+        }
+
+        /// <summary>
+        /// Pops an array of values of the given type from the value stack.
+        /// </summary>
+        /// <returns>The popped values.</returns>
+        public T[] Pop<T>(int Count)
+        {
+            var results = new T[Count];
+            for (int i = Count - 1; i >= 0; i--)
+            {
+                results[i] = Pop<T>();
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// Sets the list of return values to the contents of the value stack,
+        /// if nothing has been returned already.
+        /// </summary>
+        /// <returns>
+        /// <c>true</c> if the contents of the value stack have been promoted
+        /// to return values; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Return()
+        {
+            if (HasReturned)
+            {
+                return false;
+            }
+            else
+            {
+                ReturnValues = valStack.ToArray();
+                return true;
+            }
         }
 
         /// <summary>

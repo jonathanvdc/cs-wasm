@@ -1,11 +1,13 @@
 files = \
 	DefaultInstructionInterpreter.cs \
+	FunctionDefinition.cs \
 	IImporter.cs \
 	InstructionInterpreter.cs \
 	InterpreterContext.cs \
 	LinearMemory.cs \
 	ModuleInstance.cs \
-	Variable.cs
+	Variable.cs \
+	WasmFunctionDefinition.cs
 
 libraries = ../libwasm-core/bin/flo/libwasm-core.flo
 

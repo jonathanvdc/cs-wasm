@@ -73,6 +73,9 @@ namespace Wasm.Interpret
         static DefaultInstructionInterpreter()
         {
             Default = new DefaultInstructionInterpreter();
+            Default.ImplementOperator(Operators.Unreachable, OperatorImpls.Unreachable);
+            Default.ImplementOperator(Operators.Nop, OperatorImpls.Nop);
+            Default.ImplementOperator(Operators.Drop, OperatorImpls.Drop);
         }
     }
 }

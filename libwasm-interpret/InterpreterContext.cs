@@ -70,6 +70,11 @@ namespace Wasm.Interpret
         /// <returns>The popped value.</returns>
         public T Pop<T>()
         {
+            if (StackDepth == 0)
+            {
+                throw new WasmException("Cannot pop an element from an empty stack.");
+            }
+
             return (T)valStack.Pop();
         }
 
@@ -114,6 +119,11 @@ namespace Wasm.Interpret
         /// <returns>The peeked value.</returns>
         public T Peek<T>()
         {
+            if (StackDepth == 0)
+            {
+                throw new WasmException("Cannot peek an element from an empty stack.");
+            }
+
             return (T)valStack.Peek();
         }
 

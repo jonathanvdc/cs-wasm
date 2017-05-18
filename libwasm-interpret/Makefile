@@ -1,6 +1,7 @@
 files = \
 	DefaultInstructionInterpreter.cs \
 	FunctionDefinition.cs \
+	FunctionTable.cs \
 	IImporter.cs \
 	InstructionInterpreter.cs \
 	InterpreterContext.cs \

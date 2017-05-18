@@ -14,6 +14,7 @@ namespace Wasm.Interpret
             this.definedMemories = new List<LinearMemory>();
             this.definedGlobals = new List<Variable>();
             this.definedFuncs = new List<FunctionDefinition>();
+            this.definedTables = new List<FunctionTable>();
         }
 
         /// <summary>
@@ -24,6 +25,7 @@ namespace Wasm.Interpret
         private List<LinearMemory> definedMemories;
         private List<Variable> definedGlobals;
         private List<FunctionDefinition> definedFuncs;
+        private List<FunctionTable> definedTables;
 
         /// <summary>
         /// Gets a read-only list of the memories in this module.
@@ -34,6 +36,8 @@ namespace Wasm.Interpret
         /// Gets a read-only list of global variables in this module.
         /// </summary>
         public IReadOnlyList<Variable> Globals => definedGlobals;
+
+        public IReadOnlyList<FunctionTable> Tables => definedTables;
 
         /// <summary>
         /// Evaluates the given initializer expression.
@@ -135,6 +139,10 @@ namespace Wasm.Interpret
                     else if (import is ImportedFunction)
                     {
                         definedFuncs.Add(Importer.ImportFunction((ImportedFunction)import));
+                    }
+                    else if (import is ImportedTable)
+                    {
+                        definedTables.Add(Importer.ImportTable((ImportedTable)import));
                     }
                     else
                     {

@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Include="DefaultInstructionInterpreter.cs" />
     <Compile Include="FunctionDefinition.cs" />
+    <Compile Include="FunctionTable.cs" />
     <Compile Include="IImporter.cs" />
     <Compile Include="InstructionInterpreter.cs" />
     <Compile Include="InterpreterContext.cs" />

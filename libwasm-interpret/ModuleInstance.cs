@@ -82,7 +82,7 @@ namespace Wasm.Interpret
         /// <returns>A module instance.</returns>
         public static ModuleInstance Instantiate(WasmFile File, IImporter Importer)
         {
-            return Instantiate(File, Importer, new DefaultInstructionInterpreter());
+            return Instantiate(File, Importer, DefaultInstructionInterpreter.Default);
         }
 
         /// <summary>

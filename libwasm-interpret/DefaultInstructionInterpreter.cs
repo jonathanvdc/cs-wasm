@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Wasm.Instructions;
 
 namespace Wasm.Interpret
@@ -6,8 +7,45 @@ namespace Wasm.Interpret
     /// <summary>
     /// The default instruction interpreter implementation.
     /// </summary>
-    public class DefaultInstructionInterpreter : InstructionInterpreter
+    public sealed class DefaultInstructionInterpreter : InstructionInterpreter
     {
+        /// <summary>
+        /// Creates an instruction interpreter with no operator implementations.
+        /// </summary>
+        public DefaultInstructionInterpreter()
+        {
+            this.operatorImpls =
+                new Dictionary<Operator, Action<Instruction, InterpreterContext>>();
+        }
+
+        /// <summary>
+        /// Creates an instruction interpreter that clones the given interpreter's
+        /// operator implementations.
+        /// </summary>
+        public DefaultInstructionInterpreter(DefaultInstructionInterpreter Other)
+        {
+            this.operatorImpls =
+                new Dictionary<Operator, Action<Instruction, InterpreterContext>>(
+                    Other.operatorImpls);
+        }
+
+        /// <summary>
+        /// A mapping of operators to their implementations.
+        /// </summary>
+        private Dictionary<Operator, Action<Instruction, InterpreterContext>> operatorImpls;
+
+        /// <summary>
+        /// Implements the given operator as the specified action.
+        /// </summary>
+        /// <param name="Op">The operator to implement.</param>
+        /// <param name="Implementation">The action that implements the operator.</param>
+        public void ImplementOperator(
+            Operator Op,
+            Action<Instruction, InterpreterContext> Implementation)
+        {
+            operatorImpls[Op] = Implementation;
+        }
+
         /// <summary>
         /// Interprets the given instruction within the specified context.
         /// </summary>
@@ -15,7 +53,26 @@ namespace Wasm.Interpret
         /// <param name="Context">The interpreter context.</param>
         public override void Interpret(Instruction Value, InterpreterContext Context)
         {
-            throw new NotImplementedException();
+            Action<Instruction, InterpreterContext> impl;
+            if (operatorImpls.TryGetValue(Value.Op, out impl))
+            {
+                impl(Value, Context);
+            }
+            else
+            {
+                throw new WasmException("Operator not implemented by interpreter: " + Value.Op.ToString());
+            }
+        }
+
+        /// <summary>
+        /// The default instruction interpreter with the default list of operator implementations.
+        /// No additional operators should be implemented in this interpreter.
+        /// </summary>
+        public static readonly DefaultInstructionInterpreter Default;
+
+        static DefaultInstructionInterpreter()
+        {
+            Default = new DefaultInstructionInterpreter();
         }
     }
 }

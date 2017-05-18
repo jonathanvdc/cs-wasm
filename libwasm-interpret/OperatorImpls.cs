@@ -131,6 +131,25 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes a 'br_table' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void BrTable(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.BrTable.CastInstruction(Value);
+            int index = Context.Pop<int>();
+            if (index < 0 || index > instr.TargetTable.Count)
+            {
+                Context.BreakDepth = (int)instr.DefaultTarget;
+            }
+            else
+            {
+                Context.BreakDepth = (int)instr.TargetTable[index];
+            }
+        }
+
+        /// <summary>
         /// Executes a 'drop' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

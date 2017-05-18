@@ -71,7 +71,7 @@ namespace Wasm.Interpret
 
         /// <summary>
         /// The default instruction interpreter with the default list of operator implementations.
-        /// No additional operators should be implemented in this interpreter.
+        /// Please don't implement any additional operators in this interpreter instance.
         /// </summary>
         public static readonly DefaultInstructionInterpreter Default;
 

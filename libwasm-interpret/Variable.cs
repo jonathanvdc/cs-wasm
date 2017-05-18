@@ -60,7 +60,7 @@ namespace Wasm.Interpret
             if (!IsInstanceOf<T>(Value, Type))
             {
                 throw new WasmException(
-                    "Cannot assign a value of type '" + Value.GetType().Name +
+                    "Cannot assign a value of type '" + GetTypeName(Value) +
                     "' to a variable of type '" + ((object)Type).ToString() + "'.");
             }
 
@@ -80,7 +80,7 @@ namespace Wasm.Interpret
             {
                 throw new WasmException(
                     "Cannot create a variable of type '" + ((object)Type).ToString() +
-                    "' with an initial value of type '" + Value.GetType().Name + "'.");
+                    "' with an initial value of type '" + GetTypeName(Value) + "'.");
             }
 
             return new Variable(Value, Type, IsMutable);
@@ -144,6 +144,11 @@ namespace Wasm.Interpret
                 default:
                     throw new WasmException("Unknown value type: " + Type);
             }
+        }
+
+        private static string GetTypeName(object Value)
+        {
+            return Value.GetType().Name;
         }
     }
 }

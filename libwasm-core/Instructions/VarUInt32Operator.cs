@@ -24,5 +24,15 @@ namespace Wasm.Instructions
         {
             return new VarUInt32Instruction(this, Reader.ReadVarUInt32());
         }
+
+        /// <summary>
+        /// Casts the given instruction to this operator's instruction type.
+        /// </summary>
+        /// <param name="Value">The instruction to cast.</param>
+        /// <returns>The given instruction as this operator's instruction type.</returns>
+        public VarUInt32Instruction CastInstruction(Instruction Value)
+        {
+            return (VarUInt32Instruction)Value;
+        }
     }
 }

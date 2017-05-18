@@ -35,5 +35,49 @@ namespace Wasm.Interpret
         {
             Context.Pop<object>();
         }
+
+        /// <summary>
+        /// Executes an 'i32.const' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Const(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int32Const.CastInstruction(Value);
+            Context.Push<int>(instr.Immediate);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.const' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Const(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Const.CastInstruction(Value);
+            Context.Push<long>(instr.Immediate);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.const' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Const(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Float32Const.CastInstruction(Value);
+            Context.Push<float>(instr.Immediate);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.const' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Const(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Float64Const.CastInstruction(Value);
+            Context.Push<double>(instr.Immediate);
+        }
     }
 }

@@ -32,5 +32,15 @@ namespace Wasm.Instructions
             uint defaultEntry = Reader.ReadVarUInt32();
             return new BrTableInstruction(this, tableEntries, defaultEntry);
         }
+
+        /// <summary>
+        /// Casts the given instruction to this operator's instruction type.
+        /// </summary>
+        /// <param name="Value">The instruction to cast.</param>
+        /// <returns>The given instruction as this operator's instruction type.</returns>
+        public BrTableInstruction CastInstruction(Instruction Value)
+        {
+            return (BrTableInstruction)Value;
+        }
     }
 }

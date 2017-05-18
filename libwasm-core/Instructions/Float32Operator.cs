@@ -24,5 +24,15 @@ namespace Wasm.Instructions
         {
             return new Float32Instruction(this, Reader.ReadFloat32());
         }
+
+        /// <summary>
+        /// Casts the given instruction to this operator's instruction type.
+        /// </summary>
+        /// <param name="Value">The instruction to cast.</param>
+        /// <returns>The given instruction as this operator's instruction type.</returns>
+        public Float32Instruction CastInstruction(Instruction Value)
+        {
+            return (Float32Instruction)Value;
+        }
     }
 }

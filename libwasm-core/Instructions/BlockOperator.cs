@@ -63,5 +63,15 @@ namespace Wasm.Instructions
                 }
             }
         }
+
+        /// <summary>
+        /// Casts the given instruction to this operator's instruction type.
+        /// </summary>
+        /// <param name="Value">The instruction to cast.</param>
+        /// <returns>The given instruction as this operator's instruction type.</returns>
+        public BlockInstruction CastInstruction(Instruction Value)
+        {
+            return (BlockInstruction)Value;
+        }
     }
 }

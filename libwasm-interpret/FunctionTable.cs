@@ -37,8 +37,8 @@ namespace Wasm.Interpret
         /// </summary>
         public FunctionDefinition this[uint Index]
         {
-            get => contents[(int)Index];
-            set => contents[(int)Index] = value;
+            get { return contents[(int)Index]; }
+            set { contents[(int)Index] = value; }
         }
     }
 }

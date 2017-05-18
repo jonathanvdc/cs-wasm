@@ -82,6 +82,7 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Nop, OperatorImpls.Nop);
             Default.ImplementOperator(Operators.Block, OperatorImpls.Block);
             Default.ImplementOperator(Operators.Loop, OperatorImpls.Loop);
+            Default.ImplementOperator(Operators.If, OperatorImpls.If);
             Default.ImplementOperator(Operators.Drop, OperatorImpls.Drop);
             Default.ImplementOperator(Operators.Int32Const, OperatorImpls.Int32Const);
             Default.ImplementOperator(Operators.Int64Const, OperatorImpls.Int64Const);

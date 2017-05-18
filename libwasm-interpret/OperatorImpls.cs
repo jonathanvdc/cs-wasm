@@ -82,6 +82,29 @@ namespace Wasm.Interpret
             }
         }
 
+
+        /// <summary>
+        /// Executes an 'if' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void If(Instruction Value, InterpreterContext Context)
+        {
+            // Determine which branch we should take.
+            var instr = Operators.If.CastInstruction(Value);
+            var condVal = Context.Pop<int>();
+            var bodyToRun = condVal != 0
+                ? instr.IfBranch
+                : instr.ElseBranch;
+
+            if (bodyToRun != null)
+            {
+                // Create a block and run it.
+                var block = Operators.Block.Create(instr.Type, bodyToRun);
+                Block(block, Context);
+            }
+        }
+
         /// <summary>
         /// Executes a 'drop' instruction.
         /// </summary>

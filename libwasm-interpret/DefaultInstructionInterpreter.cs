@@ -53,6 +53,11 @@ namespace Wasm.Interpret
         /// <param name="Context">The interpreter context.</param>
         public override void Interpret(Instruction Value, InterpreterContext Context)
         {
+            if (Context.HasReturned)
+            {
+                return;
+            }
+
             Action<Instruction, InterpreterContext> impl;
             if (operatorImpls.TryGetValue(Value.Op, out impl))
             {

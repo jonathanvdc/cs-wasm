@@ -113,6 +113,9 @@ namespace Wasm.Interpret
             // Instantiate function definitions.
             instance.InstantiateFunctionDefs(File);
 
+            // Instantiate function tables.
+            instance.InstantiateTables(File);
+
             return instance;
         }
 
@@ -252,6 +255,38 @@ namespace Wasm.Interpret
         private void DefineFunction(FunctionType Signature, FunctionBody Body)
         {
             definedFuncs.Add(new WasmFunctionDefinition(Signature, Body, this));
+        }
+
+        /// <summary>
+        /// Instantiates the tables in the given WebAssembly file.
+        /// </summary>
+        /// <param name="File">The file whose tables are to be instantiated.</param>
+        private void InstantiateTables(WasmFile File)
+        {
+            // Create module-defined tables.
+            var allTableSections = File.GetSections<TableSection>();
+            for (int i = 0; i < allTableSections.Count; i++)
+            {
+                foreach (var tableSpec in allTableSections[i].Tables)
+                {
+                    definedTables.Add(new FunctionTable(tableSpec.Limits));
+                }
+            }
+
+            // Initialize tables by applying the segments defined by element sections.
+            var allElementSections = File.GetSections<ElementSection>();
+            for (int i = 0; i < allElementSections.Count; i++)
+            {
+                foreach (var segment in allElementSections[i].Segments)
+                {
+                    var table = Tables[(int)segment.TableIndex];
+                    var evalOffset = Evaluate<int>(segment.Offset);
+                    for (int j = 0; j < segment.Elements.Count; j++)
+                    {
+                        table[(uint)(evalOffset + j)] = definedFuncs[(int)segment.Elements[j]];
+                    }
+                }
+            }
         }
     }
 }

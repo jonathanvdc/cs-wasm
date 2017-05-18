@@ -9,20 +9,26 @@ namespace Wasm.Interpret
     public sealed class FunctionTable
     {
         /// <summary>
-        /// Creates an empty function table.
+        /// Creates a function table from the given resizable limits.
+        /// The table's initial contents are trap values.
         /// </summary>
-        public FunctionTable()
-            : this(Enumerable.Empty<FunctionDefinition>())
-        { }
+        /// <param name="Limits">The table's limits.</param>
+        public FunctionTable(ResizableLimits Limits)
+        {
+            this.Limits = Limits;
+            this.contents = new List<FunctionDefinition>((int)Limits.Initial);
+            var funcDef = new ThrowFunctionDefinition(new WasmException("Indirect call target not initialized yet."));
+            for (int i = 0; i < Limits.Initial; i++)
+            {
+                contents.Add(funcDef);
+            }
+        }
 
         /// <summary>
-        /// Creates a function table from the given list of function definitions.
+        /// Gets this function table's limits.
         /// </summary>
-        /// <param name="Contents">The function table's contents.</param>
-        public FunctionTable(IEnumerable<FunctionDefinition> Contents)
-        {
-            this.contents = new List<FunctionDefinition>(Contents);
-        }
+        /// <returns>The function table's limits.</returns>
+        public ResizableLimits Limits { get; private set; }
 
         private List<FunctionDefinition> contents;
 

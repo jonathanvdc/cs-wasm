@@ -7,6 +7,7 @@ files = \
 	InterpreterContext.cs \
 	LinearMemory.cs \
 	ModuleInstance.cs \
+	ThrowFunctionDefinition.cs \
 	Variable.cs \
 	WasmFunctionDefinition.cs
 

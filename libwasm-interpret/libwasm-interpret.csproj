@@ -39,6 +39,7 @@
     <Compile Include="InterpreterContext.cs" />
     <Compile Include="LinearMemory.cs" />
     <Compile Include="ModuleInstance.cs" />
+    <Compile Include="ThrowFunctionDefinition.cs" />
     <Compile Include="Variable.cs" />
     <Compile Include="WasmFunctionDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

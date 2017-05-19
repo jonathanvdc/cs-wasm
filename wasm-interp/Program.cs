@@ -111,14 +111,16 @@ namespace Wasm.Interpret
             int exitCode = 0;
             try
             {
-                var output = funcToRun.Invoke(new object[0]);
+                IReadOnlyList<object> output = funcToRun.Invoke(new object[0]);
                 if (output.Count > 0)
                 {
-                    Console.Write("returned: ");
                     for (int i = 0; i < output.Count; i++)
                     {
-                        Console.Write(" ");
-                        Console.Write(output);
+                        if (i > 0)
+                        {
+                            Console.Write(" ");
+                        }
+                        Console.Write(output[i]);
                     }
                     Console.WriteLine();
                 }

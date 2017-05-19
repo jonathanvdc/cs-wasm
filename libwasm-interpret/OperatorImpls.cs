@@ -225,6 +225,39 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes a 'get_local' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void GetLocal(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.GetLocal.CastInstruction(Value);
+            Context.Push<object>(Context.Locals[(int)instr.Immediate].Get<object>());
+        }
+
+        /// <summary>
+        /// Executes a 'set_local' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void SetLocal(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.GetLocal.CastInstruction(Value);
+            Context.Locals[(int)instr.Immediate].Set<object>(Context.Pop<object>());
+        }
+
+        /// <summary>
+        /// Executes a 'tee_local' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void TeeLocal(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.GetLocal.CastInstruction(Value);
+            Context.Locals[(int)instr.Immediate].Set<object>(Context.Peek<object>());
+        }
+
+        /// <summary>
         /// Executes an 'i32.const' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

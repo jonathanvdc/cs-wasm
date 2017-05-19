@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Wasm.Interpret
@@ -7,6 +8,13 @@ namespace Wasm.Interpret
     /// </summary>
     public sealed class WasmFunctionDefinition : FunctionDefinition
     {
+        /// <summary>
+        /// Creates a WebAssembly function definition from the given signature,
+        /// function body and declaring module.
+        /// </summary>
+        /// <param name="Signature">The function's signature.</param>
+        /// <param name="Body">The function's body.</param>
+        /// <param name="Module">The declaring module.</param>
         public WasmFunctionDefinition(
             FunctionType Signature,
             FunctionBody Body,
@@ -33,6 +41,12 @@ namespace Wasm.Interpret
         /// </summary>
         /// <returns>The declaring module.</returns>
         public ModuleInstance Module { get; private set; }
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<WasmValueType> ParameterTypes => Signature.ParameterTypes;
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<WasmValueType> ReturnTypes => Signature.ReturnTypes;
 
         /// <summary>
         /// Invokes this function with the given argument list.

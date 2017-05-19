@@ -9,13 +9,29 @@ namespace Wasm.Interpret
     public sealed class ThrowFunctionDefinition : FunctionDefinition
     {
         /// <summary>
-        /// Creates a new throwing function definition from the given exception.
+        /// Creates a function definition from the given exception.
         /// </summary>
+        /// <param name="ParameterTypes">The list of parameter types.</param>
+        /// <param name="ReturnTypes">The list of return types.</param>
         /// <param name="ExceptionToThrow">The exception to throw.</param>
-        public ThrowFunctionDefinition(Exception ExceptionToThrow)
+        public ThrowFunctionDefinition(
+            IReadOnlyList<WasmValueType> ParameterTypes,
+            IReadOnlyList<WasmValueType> ReturnTypes,
+            Exception ExceptionToThrow)
         {
+            this.paramTypes = ParameterTypes;
+            this.retTypes = ReturnTypes;
             this.ExceptionToThrow = ExceptionToThrow;
         }
+
+        private IReadOnlyList<WasmValueType> paramTypes;
+        private IReadOnlyList<WasmValueType> retTypes;
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<WasmValueType> ParameterTypes => paramTypes;
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<WasmValueType> ReturnTypes => retTypes;
 
         /// <summary>
         /// Gets the exception to throw when this function is invoked.

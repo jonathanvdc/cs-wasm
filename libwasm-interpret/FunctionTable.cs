@@ -17,7 +17,10 @@ namespace Wasm.Interpret
         {
             this.Limits = Limits;
             this.contents = new List<FunctionDefinition>((int)Limits.Initial);
-            var funcDef = new ThrowFunctionDefinition(new WasmException("Indirect call target not initialized yet."));
+            var funcDef = new ThrowFunctionDefinition(
+                new WasmValueType[0],
+                new WasmValueType[0],
+                new WasmException("Indirect call target not initialized yet."));
             for (int i = 0; i < Limits.Initial; i++)
             {
                 contents.Add(funcDef);

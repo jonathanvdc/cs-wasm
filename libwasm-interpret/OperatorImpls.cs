@@ -195,6 +195,18 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes a 'call' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Call(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Call.CastInstruction(Value);
+            var funcDef = Context.Module.Functions[(int)instr.Immediate];
+            
+        }
+
+        /// <summary>
         /// Executes an 'i32.const' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

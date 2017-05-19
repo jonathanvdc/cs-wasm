@@ -9,11 +9,14 @@ namespace Wasm.Interpret
     public sealed class SpecTestImporter : IImporter
     {
         /// <inheritdoc/>
-        public FunctionDefinition ImportFunction(ImportedFunction Description)
+        public FunctionDefinition ImportFunction(
+            ImportedFunction Description, FunctionType Signature)
         {
             if (Description.FieldName == "print")
             {
-                return new DelegateFunctionDefinition(Print);
+                return new SpecTestPrintFunctionDefinition(
+                    Signature.ParameterTypes,
+                    Signature.ReturnTypes);
             }
             else
             {
@@ -87,19 +90,49 @@ namespace Wasm.Interpret
                 return null;
             }
         }
+    }
 
-        private static IReadOnlyList<object> Print(IReadOnlyList<object> Args)
+    /// <summary>
+    /// An implementation of the 'spectest.print' function.
+    /// </summary>
+    internal sealed class SpecTestPrintFunctionDefinition : FunctionDefinition
+    {
+        public SpecTestPrintFunctionDefinition(
+            IReadOnlyList<WasmValueType> ParameterTypes,
+            IReadOnlyList<WasmValueType> ReturnTypes)
         {
-            for (int i = 0; i < Args.Count; i++)
+            this.paramTypes = ParameterTypes;
+            this.retTypes = ReturnTypes;
+        }
+
+        private IReadOnlyList<WasmValueType> paramTypes;
+        private IReadOnlyList<WasmValueType> retTypes;
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<WasmValueType> ParameterTypes => paramTypes;
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<WasmValueType> ReturnTypes => retTypes;
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> Arguments)
+        {
+            for (int i = 0; i < Arguments.Count; i++)
             {
                 if (i > 0)
                 {
                     Console.Write(" ");
                 }
-                Console.Write(Args[i]);
+                Console.Write(Arguments[i]);
             }
             Console.WriteLine();
-            return new object[0];
+
+            var results = new object[ReturnTypes.Count];
+            for (int i = 0; i < results.Length; i++)
+            {
+                results[i] = Variable.GetDefaultValue(ReturnTypes[i]);
+            }
+            return results;
         }
     }
 }

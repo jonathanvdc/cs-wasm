@@ -137,8 +137,11 @@ namespace Wasm.Interpret
         {
             var instance = new ModuleInstance(Interpreter);
 
+            // Extract the function types.
+            var allFuncTypes = GetFunctionTypes(File);
+
             // Resolve all imports.
-            instance.ResolveImports(File, Importer);
+            instance.ResolveImports(File, Importer, allFuncTypes);
 
             // Instantiate global variables.
             instance.InstantiateGlobals(File);
@@ -147,7 +150,7 @@ namespace Wasm.Interpret
             instance.InstantiateMemories(File);
 
             // Instantiate function definitions.
-            instance.InstantiateFunctionDefs(File);
+            instance.InstantiateFunctionDefs(File, allFuncTypes);
 
             // Instantiate function tables.
             instance.InstantiateTables(File);
@@ -162,7 +165,10 @@ namespace Wasm.Interpret
         /// Uses the given importer to resolve all imported values.
         /// </summary>
         /// <param name="Importer">The importer.</param>
-        private void ResolveImports(WasmFile File, IImporter Importer)
+        private void ResolveImports(
+            WasmFile File,
+            IImporter Importer,
+            List<FunctionType> FunctionTypes)
         {
             var allImportSections = File.GetSections<ImportSection>();
             for (int i = 0; i < allImportSections.Count; i++)
@@ -190,7 +196,8 @@ namespace Wasm.Interpret
                     }
                     else if (import is ImportedFunction)
                     {
-                        var funcDef = Importer.ImportFunction((ImportedFunction)import);
+                        var funcImport = (ImportedFunction)import;
+                        var funcDef = Importer.ImportFunction(funcImport, FunctionTypes[(int)funcImport.TypeIndex]);
                         if (funcDef == null)
                         {
                             throw new WasmException("Importer cannot resolve function definition import.");
@@ -263,10 +270,11 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
-        /// Instantiates all function definitions from the given WebAssembly file.
+        /// Gets a list of all function types declared by the given WebAssembly file.
         /// </summary>
-        /// <param name="File">A WebAssembly file.</param>
-        private void InstantiateFunctionDefs(WasmFile File)
+        /// <param name="File">The WebAssembly file to examine.</param>
+        /// <returns>The list of function types.</returns>
+        private static List<FunctionType> GetFunctionTypes(WasmFile File)
         {
             var allFuncTypes = new List<FunctionType>();
             var allTypeSections = File.GetSections<TypeSection>();
@@ -274,7 +282,16 @@ namespace Wasm.Interpret
             {
                 allFuncTypes.AddRange(allTypeSections[i].FunctionTypes);
             }
+            return allFuncTypes;
+        }
 
+        /// <summary>
+        /// Instantiates all function definitions from the given WebAssembly file.
+        /// </summary>
+        /// <param name="File">A WebAssembly file.</param>
+        /// <param name="FunctionTypes">The list of all function types declared by the WebAssembly file.</param>
+        private void InstantiateFunctionDefs(WasmFile File, List<FunctionType> FunctionTypes)
+        {
             var funcSignatures = new List<FunctionType>();
             var funcBodies = new List<FunctionBody>();
 
@@ -283,7 +300,7 @@ namespace Wasm.Interpret
             {
                 foreach (var funcSpec in allFuncSections[i].FunctionTypes)
                 {
-                    funcSignatures.Add(allFuncTypes[(int)funcSpec]);
+                    funcSignatures.Add(FunctionTypes[(int)funcSpec]);
                 }
             }
 

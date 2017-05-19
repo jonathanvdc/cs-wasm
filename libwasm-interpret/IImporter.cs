@@ -26,8 +26,9 @@ namespace Wasm.Interpret
         /// Imports the function with the given description.
         /// </summary>
         /// <param name="Description">Describes the function to import.</param>
+        /// <param name="Signature">The signature of the function to import.</param>
         /// <returns>An imported function.</returns>
-        FunctionDefinition ImportFunction(ImportedFunction Description);
+        FunctionDefinition ImportFunction(ImportedFunction Description, FunctionType Signature);
 
         /// <summary>
         /// Imports the table with the given description.

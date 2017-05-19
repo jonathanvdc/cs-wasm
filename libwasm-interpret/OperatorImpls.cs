@@ -242,7 +242,7 @@ namespace Wasm.Interpret
         /// <param name="Context">The interpreter's context.</param>
         public static void SetLocal(Instruction Value, InterpreterContext Context)
         {
-            var instr = Operators.GetLocal.CastInstruction(Value);
+            var instr = Operators.SetLocal.CastInstruction(Value);
             Context.Locals[(int)instr.Immediate].Set<object>(Context.Pop<object>());
         }
 
@@ -253,8 +253,30 @@ namespace Wasm.Interpret
         /// <param name="Context">The interpreter's context.</param>
         public static void TeeLocal(Instruction Value, InterpreterContext Context)
         {
-            var instr = Operators.GetLocal.CastInstruction(Value);
+            var instr = Operators.TeeLocal.CastInstruction(Value);
             Context.Locals[(int)instr.Immediate].Set<object>(Context.Peek<object>());
+        }
+
+        /// <summary>
+        /// Executes a 'get_global' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void GetGlobal(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.GetGlobal.CastInstruction(Value);
+            Context.Push<object>(Context.Module.Globals[(int)instr.Immediate].Get<object>());
+        }
+
+        /// <summary>
+        /// Executes a 'set_global' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void SetGlobal(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.SetGlobal.CastInstruction(Value);
+            Context.Module.Globals[(int)instr.Immediate].Set<object>(Context.Pop<object>());
         }
 
         /// <summary>

@@ -94,6 +94,8 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.GetLocal, OperatorImpls.GetLocal);
             Default.ImplementOperator(Operators.SetLocal, OperatorImpls.SetLocal);
             Default.ImplementOperator(Operators.TeeLocal, OperatorImpls.TeeLocal);
+            Default.ImplementOperator(Operators.GetGlobal, OperatorImpls.GetGlobal);
+            Default.ImplementOperator(Operators.SetGlobal, OperatorImpls.SetGlobal);
             Default.ImplementOperator(Operators.Int32Const, OperatorImpls.Int32Const);
             Default.ImplementOperator(Operators.Int64Const, OperatorImpls.Int64Const);
             Default.ImplementOperator(Operators.Float32Const, OperatorImpls.Float32Const);

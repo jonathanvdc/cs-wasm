@@ -210,6 +210,21 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes a 'call_indirect' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void CallIndirect(Instruction Value, InterpreterContext Context)
+        {
+            var funcDefIndex = Context.Pop<int>();
+            var funcDef = Context.Module.Functions[funcDefIndex];
+
+            var args = Context.Pop<object>(funcDef.ParameterTypes.Count);
+            var results = funcDef.Invoke(args);
+            Context.Push<object>(results);
+        }
+
+        /// <summary>
         /// Executes an 'i32.const' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

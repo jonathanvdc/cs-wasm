@@ -723,6 +723,23 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes an 'i32.popcnt' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Popcnt(Instruction Value, InterpreterContext Context)
+        {
+            var value = (uint)Context.Pop<int>();
+            int numOfOnes = 0;
+            while (value != 0)
+            {
+                numOfOnes += (int)(value & 0x1u);
+                value >>= 1;
+            }
+            Context.Push<int>(numOfOnes);
+        }
+
+        /// <summary>
         /// Executes an 'i32.eq' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

@@ -22,7 +22,7 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
-        /// The interpreter for this module instance.
+        /// Gets the interpreter for this module instance.
         /// </summary>
         public InstructionInterpreter Interpreter { get; private set; }
 

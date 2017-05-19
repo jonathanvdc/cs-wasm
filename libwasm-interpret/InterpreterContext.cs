@@ -43,7 +43,7 @@ namespace Wasm.Interpret
         public IReadOnlyList<Variable> Locals { get; private set; }
 
         /// <summary>
-        /// The evaluation stack stack.
+        /// The evaluation stack.
         /// </summary>
         private Stack<object> valStack;
 

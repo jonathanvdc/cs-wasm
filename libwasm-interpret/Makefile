@@ -1,5 +1,6 @@
 files = \
 	DefaultInstructionInterpreter.cs \
+	DelegateFunctionDefinition.cs \
 	FunctionDefinition.cs \
 	FunctionTable.cs \
 	IImporter.cs \
@@ -8,6 +9,7 @@ files = \
 	LinearMemory.cs \
 	ModuleInstance.cs \
 	OperatorImpls.cs \
+	SpecTestImporter.cs \
 	ThrowFunctionDefinition.cs \
 	Variable.cs \
 	WasmFunctionDefinition.cs

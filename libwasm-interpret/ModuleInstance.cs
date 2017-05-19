@@ -172,19 +172,39 @@ namespace Wasm.Interpret
                 {
                     if (import is ImportedMemory)
                     {
-                        definedMemories.Add(Importer.ImportMemory((ImportedMemory)import));
+                        var memory = Importer.ImportMemory((ImportedMemory)import);
+                        if (memory == null)
+                        {
+                            throw new WasmException("Importer cannot resolve linear memory import.");
+                        }
+                        definedMemories.Add(memory);
                     }
                     else if (import is ImportedGlobal)
                     {
-                        definedGlobals.Add(Importer.ImportGlobal((ImportedGlobal)import));
+                        var globalVar = Importer.ImportGlobal((ImportedGlobal)import);
+                        if (globalVar == null)
+                        {
+                            throw new WasmException("Importer cannot resolve global variable import.");
+                        }
+                        definedGlobals.Add(globalVar);
                     }
                     else if (import is ImportedFunction)
                     {
-                        definedFuncs.Add(Importer.ImportFunction((ImportedFunction)import));
+                        var funcDef = Importer.ImportFunction((ImportedFunction)import);
+                        if (funcDef == null)
+                        {
+                            throw new WasmException("Importer cannot resolve function definition import.");
+                        }
+                        definedFuncs.Add(funcDef);
                     }
                     else if (import is ImportedTable)
                     {
-                        definedTables.Add(Importer.ImportTable((ImportedTable)import));
+                        var table = Importer.ImportTable((ImportedTable)import);
+                        if (table == null)
+                        {
+                            throw new WasmException("Importer cannot resolve table import.");
+                        }
+                        definedTables.Add(table);
                     }
                     else
                     {

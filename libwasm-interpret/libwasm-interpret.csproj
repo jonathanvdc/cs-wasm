@@ -32,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DefaultInstructionInterpreter.cs" />
+    <Compile Include="DelegateFunctionDefinition.cs" />
     <Compile Include="FunctionDefinition.cs" />
     <Compile Include="FunctionTable.cs" />
     <Compile Include="IImporter.cs" />
@@ -40,6 +41,7 @@
     <Compile Include="LinearMemory.cs" />
     <Compile Include="ModuleInstance.cs" />
     <Compile Include="OperatorImpls.cs" />
+    <Compile Include="SpecTestImporter.cs" />
     <Compile Include="ThrowFunctionDefinition.cs" />
     <Compile Include="Variable.cs" />
     <Compile Include="WasmFunctionDefinition.cs" />

@@ -2,6 +2,7 @@ tests
 {
     unit-tests/all.test;
     dump/all.test;
+    interp/all.test;
     examples/all.test;
     roundtrip/all.test;
 }

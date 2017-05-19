@@ -1,0 +1,21 @@
+
+init
+{
+    template InterpretFunction<filename,function-to-run,expected-result>
+    {
+        run
+        {
+            return = @($wasm-interp $(input-files)/$(filename) --run $(function-to-run));
+        }
+
+        init
+        {
+            return = @($echo $(expected-result));
+        }
+    }
+}
+
+tests
+{
+    template InterpretFunction<forty-two.wasm,fortyTwo,42>;
+}

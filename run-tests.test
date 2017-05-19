@@ -6,6 +6,7 @@ init
     run-unit-tests = $(net-runtime) $(working-directory)/unit-tests/bin/clr/unit-tests.exe;
     wasm-cat = $(net-runtime) $(working-directory)/wasm-cat/bin/clr/wasm-cat.exe;
     wasm-dump = $(net-runtime) $(working-directory)/wasm-dump/bin/clr/wasm-dump.exe;
+    wasm-interp = $(net-runtime) $(working-directory)/wasm-interp/bin/clr/wasm-interp.exe;
 }
 
 tests

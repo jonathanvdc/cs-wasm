@@ -96,6 +96,18 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.TeeLocal, OperatorImpls.TeeLocal);
             Default.ImplementOperator(Operators.GetGlobal, OperatorImpls.GetGlobal);
             Default.ImplementOperator(Operators.SetGlobal, OperatorImpls.SetGlobal);
+            Default.ImplementOperator(Operators.Int32Load, OperatorImpls.Int32Load);
+            Default.ImplementOperator(Operators.Int64Load, OperatorImpls.Int64Load);
+            Default.ImplementOperator(Operators.Int32Load8S, OperatorImpls.Int32Load8S);
+            Default.ImplementOperator(Operators.Int32Load8U, OperatorImpls.Int32Load8U);
+            Default.ImplementOperator(Operators.Int32Load16S, OperatorImpls.Int32Load16S);
+            Default.ImplementOperator(Operators.Int32Load16U, OperatorImpls.Int32Load16U);
+            Default.ImplementOperator(Operators.Int64Load8S, OperatorImpls.Int64Load8S);
+            Default.ImplementOperator(Operators.Int64Load8U, OperatorImpls.Int64Load8U);
+            Default.ImplementOperator(Operators.Int64Load16S, OperatorImpls.Int64Load16S);
+            Default.ImplementOperator(Operators.Int64Load16U, OperatorImpls.Int64Load16U);
+            Default.ImplementOperator(Operators.Int64Load32S, OperatorImpls.Int64Load32S);
+            Default.ImplementOperator(Operators.Int64Load32U, OperatorImpls.Int64Load32U);
             Default.ImplementOperator(Operators.Int32Const, OperatorImpls.Int32Const);
             Default.ImplementOperator(Operators.Int64Const, OperatorImpls.Int64Const);
             Default.ImplementOperator(Operators.Float32Const, OperatorImpls.Float32Const);

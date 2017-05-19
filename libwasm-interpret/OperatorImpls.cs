@@ -280,6 +280,186 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes an 'i32.load' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Load(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int32Load.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = Context.Module.Memories[0].Int32[pointer];
+            Context.Push<int>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.load' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Load(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Load.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = Context.Module.Memories[0].Int64[pointer];
+            Context.Push<long>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.load8_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Load8S(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int32Load8S.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = Context.Module.Memories[0].Int8[pointer];
+            Context.Push<int>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.load8_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Load8U(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int32Load8U.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = (byte)Context.Module.Memories[0].Int8[pointer];
+            Context.Push<int>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.load16_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Load16S(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int32Load16S.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = Context.Module.Memories[0].Int16[pointer];
+            Context.Push<int>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.load16_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Load16U(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int32Load16U.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = (ushort)Context.Module.Memories[0].Int16[pointer];
+            Context.Push<int>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.load8_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Load8S(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Load8S.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = Context.Module.Memories[0].Int8[pointer];
+            Context.Push<long>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.load8_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Load8U(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Load8U.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = (byte)Context.Module.Memories[0].Int8[pointer];
+            Context.Push<long>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.load16_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Load16S(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Load16S.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = Context.Module.Memories[0].Int16[pointer];
+            Context.Push<long>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.load16_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Load16U(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Load16U.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = (ushort)Context.Module.Memories[0].Int16[pointer];
+            Context.Push<long>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.load32_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Load32S(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Load32S.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = Context.Module.Memories[0].Int32[pointer];
+            Context.Push<long>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.load32_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Load32U(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Load32U.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = (uint)Context.Module.Memories[0].Int32[pointer];
+            Context.Push<long>(value);
+        }
+
+        private static void CheckAlignment(uint Pointer, MemoryInstruction Instruction)
+        {
+            if (Pointer % Instruction.Alignment != 0)
+            {
+                throw new WasmException(
+                    string.Format(
+                        "Misaligned memory access at 0x{0:X08}. (alignment: {1})",
+                        Pointer,
+                        Instruction.Alignment));
+            }
+        }
+
+        /// <summary>
         /// Executes an 'i32.const' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

@@ -294,7 +294,6 @@ namespace Wasm.Instructions
         /// </summary>
         public static readonly VarUInt32Operator Call;
 
-
         /// <summary>
         /// The 'call_indirect' operator, which calls a function pointer.
         /// </summary>

@@ -150,6 +150,16 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes a 'return' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Return(Instruction Value, InterpreterContext Context)
+        {
+            Context.Return();
+        }
+
+        /// <summary>
         /// Executes a 'drop' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>
@@ -157,6 +167,31 @@ namespace Wasm.Interpret
         public static void Drop(Instruction Value, InterpreterContext Context)
         {
             Context.Pop<object>();
+        }
+
+        /// <summary>
+        /// Executes a 'select' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Select(Instruction Value, InterpreterContext Context)
+        {
+            // Stack layout:
+            //
+            //     lhs (any type)
+            //     rhs (same type as `lhs`)
+            //     condition (i32)
+            //
+
+            // Pop operands from the stack.
+            int condVal = Context.Pop<int>();
+            var rhs = Context.Pop<object>();
+            var lhs = Context.Pop<object>();
+
+            // Push the lhs onto the stack if the condition
+            // is truthy; otherwise, push the rhs onto the
+            // stack.
+            Context.Push<object>(condVal != 0 ? lhs : rhs);
         }
 
         /// <summary>

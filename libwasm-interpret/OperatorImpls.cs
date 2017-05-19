@@ -661,6 +661,33 @@ namespace Wasm.Interpret
             Context.Push<int>(lhs << rhs);
         }
 
+
+        /// <summary>
+        /// Executes an 'i32.rotl' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Rotl(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = (uint)Context.Pop<int>();
+            uint result = (lhs << rhs) | (lhs >> (32 - rhs));
+            Context.Push<int>((int)result);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.rotr' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Rotr(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = (uint)Context.Pop<int>();
+            uint result = (lhs >> rhs) | (lhs << (32 - rhs));
+            Context.Push<int>((int)result);
+        }
+
         /// <summary>
         /// Executes an 'i32.clz' instruction.
         /// </summary>

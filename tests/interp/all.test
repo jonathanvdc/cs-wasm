@@ -1,7 +1,7 @@
 
 init
 {
-    template InterpretFunction<filename, function-to-run, expected-result>
+    template InterpretFunction<filename,function-to-run,expected-result>
     {
         run
         {
@@ -17,5 +17,5 @@ init
 
 tests
 {
-    template InterpretFunction<forty-two.wasm, fortyTwo, 42>;
+    template InterpretFunction<forty-two.wasm,fortyTwo,42>;
 }

@@ -662,6 +662,40 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes an 'i32.clz' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Clz(Instruction Value, InterpreterContext Context)
+        {
+            var value = (uint)Context.Pop<int>();
+            int numOfLeadingZeros = 32;
+            while (value != 0)
+            {
+                numOfLeadingZeros--;
+                value >>= 1;
+            }
+            Context.Push<int>(numOfLeadingZeros);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.ctz' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Ctz(Instruction Value, InterpreterContext Context)
+        {
+            var value = (uint)Context.Pop<int>();
+            int numOfTrailingZeros = 0;
+            while ((value & 0x1u) == 0u)
+            {
+                numOfTrailingZeros++;
+                value >>= 1;
+            }
+            Context.Push<int>(numOfTrailingZeros);
+        }
+
+        /// <summary>
         /// Executes an 'i32.eq' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

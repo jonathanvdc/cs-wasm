@@ -115,8 +115,8 @@ namespace Wasm.Interpret
 
             Default.ImplementOperator(Operators.Int32Add, OperatorImpls.Int32Add);
             Default.ImplementOperator(Operators.Int32And, OperatorImpls.Int32And);
-            // TODO: Default.ImplementOperator(Operators.Int32Clz, OperatorImpls.Int32Clz);
-            // TODO: Default.ImplementOperator(Operators.Int32Ctz, OperatorImpls.Int32Ctz);
+            Default.ImplementOperator(Operators.Int32Clz, OperatorImpls.Int32Clz);
+            Default.ImplementOperator(Operators.Int32Ctz, OperatorImpls.Int32Ctz);
             Default.ImplementOperator(Operators.Int32DivS, OperatorImpls.Int32DivS);
             Default.ImplementOperator(Operators.Int32DivU, OperatorImpls.Int32DivU);
             Default.ImplementOperator(Operators.Int32Eq, OperatorImpls.Int32Eq);

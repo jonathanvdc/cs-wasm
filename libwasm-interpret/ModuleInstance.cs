@@ -15,6 +15,10 @@ namespace Wasm.Interpret
             this.definedGlobals = new List<Variable>();
             this.definedFuncs = new List<FunctionDefinition>();
             this.definedTables = new List<FunctionTable>();
+            this.expMemories = new Dictionary<string, LinearMemory>();
+            this.expGlobals = new Dictionary<string, Variable>();
+            this.expFuncs = new Dictionary<string, FunctionDefinition>();
+            this.expTables = new Dictionary<string, FunctionTable>();
         }
 
         /// <summary>
@@ -26,6 +30,10 @@ namespace Wasm.Interpret
         private List<Variable> definedGlobals;
         private List<FunctionDefinition> definedFuncs;
         private List<FunctionTable> definedTables;
+        private Dictionary<string, LinearMemory> expMemories;
+        private Dictionary<string, Variable> expGlobals;
+        private Dictionary<string, FunctionDefinition> expFuncs;
+        private Dictionary<string, FunctionTable> expTables;
 
         /// <summary>
         /// Gets a read-only list of the memories in this module.
@@ -33,11 +41,39 @@ namespace Wasm.Interpret
         public IReadOnlyList<LinearMemory> Memories => definedMemories;
 
         /// <summary>
+        /// Gets a read-only list of the memories in this module.
+        /// </summary>
+        public IReadOnlyList<FunctionDefinition> Functions => definedFuncs;
+
+        /// <summary>
         /// Gets a read-only list of global variables in this module.
         /// </summary>
         public IReadOnlyList<Variable> Globals => definedGlobals;
 
+        /// <summary>
+        /// Gets a read-only list of tables defined in this module.
+        /// </summary>
         public IReadOnlyList<FunctionTable> Tables => definedTables;
+
+        /// <summary>
+        /// Gets a read-only mapping of names to functions exported by this module.
+        /// </summary>
+        public IReadOnlyDictionary<string, LinearMemory> ExportedMemories => expMemories;
+
+        /// <summary>
+        /// Gets a read-only mapping of names to functions exported by this module.
+        /// </summary>
+        public IReadOnlyDictionary<string, FunctionDefinition> ExportedFunctions => expFuncs;
+
+        /// <summary>
+        /// Gets a read-only mapping of names to global variables exported by this module.
+        /// </summary>
+        public IReadOnlyDictionary<string, Variable> ExportedGlobals => expGlobals;
+
+        /// <summary>
+        /// Gets a read-only mapping of names to tables exported by this module.
+        /// </summary>
+        public IReadOnlyDictionary<string, FunctionTable> ExportedTables => expTables;
 
         /// <summary>
         /// Evaluates the given initializer expression.
@@ -115,6 +151,9 @@ namespace Wasm.Interpret
 
             // Instantiate function tables.
             instance.InstantiateTables(File);
+
+            // Export values.
+            instance.RegisterExports(File);
 
             return instance;
         }
@@ -284,6 +323,38 @@ namespace Wasm.Interpret
                     for (int j = 0; j < segment.Elements.Count; j++)
                     {
                         table[(uint)(evalOffset + j)] = definedFuncs[(int)segment.Elements[j]];
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Exports values specified by the given WebAssembly file.
+        /// </summary>
+        /// <param name="File">The file that specifies which values are to be exported and how.</param>
+        private void RegisterExports(WasmFile File)
+        {
+            var allExportSections = File.GetSections<ExportSection>();
+            for (int i = 0; i < allExportSections.Count; i++)
+            {
+                foreach (var export in allExportSections[i].Exports)
+                {
+                    switch (export.Kind)
+                    {
+                        case ExternalKind.Memory:
+                            expMemories[export.Name] = Memories[(int)export.Index];
+                            break;
+                        case ExternalKind.Global:
+                            expGlobals[export.Name] = Globals[(int)export.Index];
+                            break;
+                        case ExternalKind.Function:
+                            expFuncs[export.Name] = Functions[(int)export.Index];
+                            break;
+                        case ExternalKind.Table:
+                            expTables[export.Name] = Tables[(int)export.Index];
+                            break;
+                        default:
+                            throw new WasmException("Unknown export kind: " + export.Kind);
                     }
                 }
             }

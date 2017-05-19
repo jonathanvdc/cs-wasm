@@ -112,6 +112,41 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Int64Const, OperatorImpls.Int64Const);
             Default.ImplementOperator(Operators.Float32Const, OperatorImpls.Float32Const);
             Default.ImplementOperator(Operators.Float64Const, OperatorImpls.Float64Const);
+
+            Default.ImplementOperator(Operators.Int32Add, OperatorImpls.Int32Add);
+            Default.ImplementOperator(Operators.Int32And, OperatorImpls.Int32And);
+            // TODO: Default.ImplementOperator(Operators.Int32Clz, OperatorImpls.Int32Clz);
+            // TODO: Default.ImplementOperator(Operators.Int32Ctz, OperatorImpls.Int32Ctz);
+            Default.ImplementOperator(Operators.Int32DivS, OperatorImpls.Int32DivS);
+            Default.ImplementOperator(Operators.Int32DivU, OperatorImpls.Int32DivU);
+            Default.ImplementOperator(Operators.Int32Eq, OperatorImpls.Int32Eq);
+            Default.ImplementOperator(Operators.Int32Eqz, OperatorImpls.Int32Eqz);
+            Default.ImplementOperator(Operators.Int32GeS, OperatorImpls.Int32GeS);
+            Default.ImplementOperator(Operators.Int32GeU, OperatorImpls.Int32GeU);
+            Default.ImplementOperator(Operators.Int32GtS, OperatorImpls.Int32GtS);
+            Default.ImplementOperator(Operators.Int32GtU, OperatorImpls.Int32GtU);
+            Default.ImplementOperator(Operators.Int32LeS, OperatorImpls.Int32LeS);
+            Default.ImplementOperator(Operators.Int32LeU, OperatorImpls.Int32LeU);
+            Default.ImplementOperator(Operators.Int32LtS, OperatorImpls.Int32LtS);
+            Default.ImplementOperator(Operators.Int32LtU, OperatorImpls.Int32LtU);
+            Default.ImplementOperator(Operators.Int32Mul, OperatorImpls.Int32Mul);
+            Default.ImplementOperator(Operators.Int32Ne, OperatorImpls.Int32Ne);
+            Default.ImplementOperator(Operators.Int32Or, OperatorImpls.Int32Or);
+            // TODO: Default.ImplementOperator(Operators.Int32Popcnt, OperatorImpls.Int32Popcnt);
+            // TODO: Default.ImplementOperator(Operators.Int32ReinterpretFloat32, OperatorImpls.Int32ReinterpretFloat32);
+            Default.ImplementOperator(Operators.Int32RemS, OperatorImpls.Int32RemS);
+            Default.ImplementOperator(Operators.Int32RemU, OperatorImpls.Int32RemU);
+            // TODO: Default.ImplementOperator(Operators.Int32Rotl, OperatorImpls.Int32Rotl);
+            // TODO: Default.ImplementOperator(Operators.Int32Rotr, OperatorImpls.Int32Rotr);
+            Default.ImplementOperator(Operators.Int32Shl, OperatorImpls.Int32Shl);
+            Default.ImplementOperator(Operators.Int32ShrS, OperatorImpls.Int32ShrS);
+            Default.ImplementOperator(Operators.Int32ShrU, OperatorImpls.Int32ShrU);
+            Default.ImplementOperator(Operators.Int32Sub, OperatorImpls.Int32Sub);
+            // TODO: Default.ImplementOperator(Operators.Int32TruncSFloat32, OperatorImpls.Int32TruncSFloat32);
+            // TODO: Default.ImplementOperator(Operators.Int32TruncSFloat64, OperatorImpls.Int32TruncSFloat64);
+            // TODO: Default.ImplementOperator(Operators.Int32TruncUFloat32, OperatorImpls.Int32TruncUFloat32);
+            // TODO: Default.ImplementOperator(Operators.Int32TruncUFloat64, OperatorImpls.Int32TruncUFloat64);
+            Default.ImplementOperator(Operators.Int32Xor, OperatorImpls.Int32Xor);
         }
     }
 }

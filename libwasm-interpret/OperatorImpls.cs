@@ -502,5 +502,295 @@ namespace Wasm.Interpret
             var instr = Operators.Float64Const.CastInstruction(Value);
             Context.Push<double>(instr.Immediate);
         }
+
+        #region Int32 nullaries
+
+        /// <summary>
+        /// Executes an 'i32.add' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Add(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs + rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.sub' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Sub(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs - rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.mul' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Mul(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs * rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.div_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32DivS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs / rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.div_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32DivU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (uint)Context.Pop<int>();
+            var lhs = (uint)Context.Pop<int>();
+            Context.Push<int>((int)(lhs / rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'i32.rem_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32RemS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs % rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.rem_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32RemU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (uint)Context.Pop<int>();
+            var lhs = (uint)Context.Pop<int>();
+            Context.Push<int>((int)(lhs % rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'i32.and' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32And(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs & rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.or' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Or(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs | rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.xor' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Xor(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs ^ rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.shr_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32ShrS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs >> rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.shr_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32ShrU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = (uint)Context.Pop<int>();
+            Context.Push<int>((int)(lhs >> rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'i32.shl' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Shl(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs << rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.eq' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Eq(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs == rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.ne' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Ne(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs != rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.lt_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32LtS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs < rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.lt_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32LtU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (uint)Context.Pop<int>();
+            var lhs = (uint)Context.Pop<int>();
+            Context.Push<int>(lhs < rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.le_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32LeS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs <= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.le_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32LeU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (uint)Context.Pop<int>();
+            var lhs = (uint)Context.Pop<int>();
+            Context.Push<int>(lhs <= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.gt_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32GtS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs > rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.gt_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32GtU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (uint)Context.Pop<int>();
+            var lhs = (uint)Context.Pop<int>();
+            Context.Push<int>(lhs > rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.ge_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32GeS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<int>();
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(lhs >= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.ge_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32GeU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (uint)Context.Pop<int>();
+            var lhs = (uint)Context.Pop<int>();
+            Context.Push<int>(lhs >= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.eqz' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Eqz(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<int>(Context.Pop<int>() == 0 ? 1 : 0);
+        }
+
+        #endregion
     }
 }

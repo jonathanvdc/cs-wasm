@@ -149,5 +149,17 @@ namespace Wasm.Interpret
         {
             valStack.Push(Value);
         }
+
+        /// <summary>
+        /// Pushes the given list of values onto the value stack.
+        /// </summary>
+        /// <param name="Values">The list of values to push onto the stack.</param>
+        public void Push<T>(IReadOnlyList<T> Values)
+        {
+            for (int i = 0; i < Values.Count; i++)
+            {
+                Push<T>(Values[i]);
+            }
+        }
     } 
 }

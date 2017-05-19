@@ -203,7 +203,10 @@ namespace Wasm.Interpret
         {
             var instr = Operators.Call.CastInstruction(Value);
             var funcDef = Context.Module.Functions[(int)instr.Immediate];
-            
+
+            var args = Context.Pop<object>(funcDef.ParameterTypes.Count);
+            var results = funcDef.Invoke(args);
+            Context.Push<object>(results);
         }
 
         /// <summary>

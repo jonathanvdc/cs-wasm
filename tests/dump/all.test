@@ -17,6 +17,7 @@ tests
     template Dump<factorial.wasm>;
     template Dump<forty-two.wasm>;
     template Dump<globals.wasm>;
+    template Dump<i32-ops.wasm>;
     template Dump<import-functions.wasm>;
     template Dump<import-globals.wasm>;
     template Dump<import-memory.wasm>;

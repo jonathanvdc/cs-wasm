@@ -18,6 +18,7 @@ tests
     template Roundtrip<factorial.wasm>;
     template Roundtrip<forty-two.wasm>;
     template Roundtrip<globals.wasm>;
+    template Roundtrip<i32-ops.wasm>;
     template Roundtrip<import-functions.wasm>;
     template Roundtrip<import-globals.wasm>;
     template Roundtrip<import-memory.wasm>;

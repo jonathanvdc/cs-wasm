@@ -19,15 +19,64 @@ namespace Wasm.Interpret
         public string FunctionToRun { get; private set; }
 
         /// <summary>
+        /// Gets the arguments for the function to run, if any.
+        /// </summary>
+        public object[] FunctionArgs { get; private set; }
+
+        /// <summary>
         /// Tries to read command-line options.
         /// </summary>
         public static bool TryRead(string[] Args, out InterpreterArguments ParsedArgs)
         {
             ParsedArgs = default(InterpreterArguments);
             bool expectingRunFuncName = false;
+            bool expectingArgs = false;
+            var funcArgs = new List<object>();
             for (int i = 0; i < Args.Length; i++)
             {
-                if (expectingRunFuncName)
+                if (expectingArgs)
+                {
+                    string argStr = Args[i];
+                    if (argStr.EndsWith("l", StringComparison.OrdinalIgnoreCase))
+                    {
+                        long fArg;
+                        if (!long.TryParse(argStr.Substring(0, argStr.Length - 1), out fArg))
+                        {
+                            return false;
+                        }
+                        funcArgs.Add(fArg);
+                    }
+                    else if (argStr.EndsWith("f", StringComparison.OrdinalIgnoreCase))
+                    {
+                        float fArg;
+                        if (!float.TryParse(argStr.Substring(0, argStr.Length - 1), out fArg))
+                        {
+                            return false;
+                        }
+                        funcArgs.Add(fArg);
+                    }
+
+                    int intFArg;
+                    double doubleFArg;
+                    uint uintFArg;
+                    if (int.TryParse(argStr, out intFArg))
+                    {
+                        funcArgs.Add(intFArg);
+                    }
+                    else if (uint.TryParse(argStr, out uintFArg))
+                    {
+                        funcArgs.Add((int)uintFArg);
+                    }
+                    else
+                    {
+                        if (!double.TryParse(argStr, out doubleFArg))
+                        {
+                            return false;
+                        }
+                        funcArgs.Add(doubleFArg);
+                    }
+                }
+                else if (expectingRunFuncName)
                 {
                     if (ParsedArgs.FunctionToRun != null)
                     {
@@ -36,6 +85,7 @@ namespace Wasm.Interpret
 
                     ParsedArgs.FunctionToRun = Args[i];
                     expectingRunFuncName = false;
+                    expectingArgs = true;
                 }
                 else if (Args[i] == "--run")
                 {
@@ -52,6 +102,8 @@ namespace Wasm.Interpret
                 }
             }
 
+            ParsedArgs.FunctionArgs = funcArgs.ToArray();
+
             return ParsedArgs.WasmFilePath != null
                 && !expectingRunFuncName;
         }
@@ -61,7 +113,7 @@ namespace Wasm.Interpret
     {
         private static int PrintUsage()
         {
-            Console.Error.WriteLine("usage: wasm-interp file.wasm [--run exported_func_name]");
+            Console.Error.WriteLine("usage: wasm-interp file.wasm [--run exported_func_name [args...]]");
             return 1;
         }
 
@@ -111,7 +163,7 @@ namespace Wasm.Interpret
             int exitCode = 0;
             try
             {
-                IReadOnlyList<object> output = funcToRun.Invoke(new object[0]);
+                IReadOnlyList<object> output = funcToRun.Invoke(parsedArgs.FunctionArgs);
                 if (output.Count > 0)
                 {
                     for (int i = 0; i < output.Count; i++)

@@ -146,6 +146,7 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Int32TruncSFloat64, OperatorImpls.Int32TruncSFloat64);
             Default.ImplementOperator(Operators.Int32TruncUFloat32, OperatorImpls.Int32TruncUFloat32);
             Default.ImplementOperator(Operators.Int32TruncUFloat64, OperatorImpls.Int32TruncUFloat64);
+            Default.ImplementOperator(Operators.Int32WrapInt64, OperatorImpls.Int32WrapInt64);
             Default.ImplementOperator(Operators.Int32Xor, OperatorImpls.Int32Xor);
 
             Default.ImplementOperator(Operators.Int64Add, OperatorImpls.Int64Add);
@@ -156,6 +157,8 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Int64DivU, OperatorImpls.Int64DivU);
             Default.ImplementOperator(Operators.Int64Eq, OperatorImpls.Int64Eq);
             Default.ImplementOperator(Operators.Int64Eqz, OperatorImpls.Int64Eqz);
+            Default.ImplementOperator(Operators.Int64ExtendSInt32, OperatorImpls.Int64ExtendSInt32);
+            Default.ImplementOperator(Operators.Int64ExtendUInt32, OperatorImpls.Int64ExtendUInt32);
             Default.ImplementOperator(Operators.Int64GeS, OperatorImpls.Int64GeS);
             Default.ImplementOperator(Operators.Int64GeU, OperatorImpls.Int64GeU);
             Default.ImplementOperator(Operators.Int64GtS, OperatorImpls.Int64GtS);

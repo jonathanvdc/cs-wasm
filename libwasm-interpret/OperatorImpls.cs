@@ -887,6 +887,16 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes an 'i32.wrap/i64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32WrapInt64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<int>((int)Context.Pop<long>());
+        }
+
+        /// <summary>
         /// Executes an 'i32.reinterpret/f32' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>
@@ -1289,6 +1299,26 @@ namespace Wasm.Interpret
         public static void Int64ReinterpretFloat64(Instruction Value, InterpreterContext Context)
         {
             Context.Push<long>(ValueHelpers.ReinterpretAsInt64(Context.Pop<double>()));
+        }
+
+        /// <summary>
+        /// Executes an 'i64.extend_s/i32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64ExtendSInt32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>(Context.Pop<int>());
+        }
+
+        /// <summary>
+        /// Executes an 'i64.extend_u/i32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64ExtendUInt32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>((uint)Context.Pop<int>());
         }
 
         #endregion

@@ -50,5 +50,81 @@ namespace Wasm.Interpret
         {
             return BitConverter.DoubleToInt64Bits(Value);
         }
+
+        /// <summary>
+        /// Rotates the first operand to the left by the number of
+        /// bits given by the second operand.
+        /// </summary>
+        /// <param name="Left">The first operand.</param>
+        /// <param name="Right">The second operand.</param>
+        public static int RotateLeft(int Left, int Right)
+        {
+            var rhs = Right;
+            var lhs = (uint)Left;
+            uint result = (lhs << rhs) | (lhs >> (32 - rhs));
+            return (int)result;
+        }
+
+        /// <summary>
+        /// Rotates the first operand to the right by the number of
+        /// bits given by the second operand.
+        /// </summary>
+        /// <param name="Left">The first operand.</param>
+        /// <param name="Right">The second operand.</param>
+        public static int RotateRight(int Left, int Right)
+        {
+            var rhs = Right;
+            var lhs = (uint)Left;
+            uint result = (lhs >> rhs) | (lhs << (32 - rhs));
+            return (int)result;
+        }
+
+        /// <summary>
+        /// Counts the number of leading zero bits in the given integer.
+        /// </summary>
+        /// <param name="Value">The operand.</param>
+        public static int CountLeadingZeros(int Value)
+        {
+            var uintVal = (uint)Value;
+            int numOfLeadingZeros = 32;
+            while (uintVal != 0)
+            {
+                numOfLeadingZeros--;
+                uintVal >>= 1;
+            }
+            return numOfLeadingZeros;
+        }
+
+        /// <summary>
+        /// Counts the number of trailing zero bits in the given integer.
+        /// </summary>
+        /// <param name="Value">The operand.</param>
+        public static int CountTrailingZeros(int Value)
+        {
+            var uintVal = (uint)Value;
+            int numOfTrailingZeros = 0;
+            while ((uintVal & 0x1u) == 0u)
+            {
+                numOfTrailingZeros++;
+                uintVal >>= 1;
+            }
+            return numOfTrailingZeros;
+        }
+
+        /// <summary>
+        /// Counts the number of one bits in the given integer.
+        /// </summary>
+        /// <param name="Value">The operand.</param>
+        public static int PopCount(int Value)
+        {
+            var uintVal = (uint)Value;
+            int numOfOnes = 0;
+            while (uintVal != 0)
+            {
+                numOfOnes += (int)(uintVal & 0x1u);
+                uintVal >>= 1;
+            }
+            return numOfOnes;
+        }
     }
 }

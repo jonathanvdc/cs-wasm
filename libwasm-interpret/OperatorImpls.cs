@@ -670,9 +670,8 @@ namespace Wasm.Interpret
         public static void Int32Rotl(Instruction Value, InterpreterContext Context)
         {
             var rhs = Context.Pop<int>();
-            var lhs = (uint)Context.Pop<int>();
-            uint result = (lhs << rhs) | (lhs >> (32 - rhs));
-            Context.Push<int>((int)result);
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(ValueHelpers.RotateLeft(lhs, rhs));
         }
 
         /// <summary>
@@ -683,9 +682,8 @@ namespace Wasm.Interpret
         public static void Int32Rotr(Instruction Value, InterpreterContext Context)
         {
             var rhs = Context.Pop<int>();
-            var lhs = (uint)Context.Pop<int>();
-            uint result = (lhs >> rhs) | (lhs << (32 - rhs));
-            Context.Push<int>((int)result);
+            var lhs = Context.Pop<int>();
+            Context.Push<int>(ValueHelpers.RotateRight(lhs, rhs));
         }
 
         /// <summary>
@@ -695,14 +693,7 @@ namespace Wasm.Interpret
         /// <param name="Context">The interpreter's context.</param>
         public static void Int32Clz(Instruction Value, InterpreterContext Context)
         {
-            var value = (uint)Context.Pop<int>();
-            int numOfLeadingZeros = 32;
-            while (value != 0)
-            {
-                numOfLeadingZeros--;
-                value >>= 1;
-            }
-            Context.Push<int>(numOfLeadingZeros);
+            Context.Push<int>(ValueHelpers.CountLeadingZeros(Context.Pop<int>()));
         }
 
         /// <summary>
@@ -712,14 +703,7 @@ namespace Wasm.Interpret
         /// <param name="Context">The interpreter's context.</param>
         public static void Int32Ctz(Instruction Value, InterpreterContext Context)
         {
-            var value = (uint)Context.Pop<int>();
-            int numOfTrailingZeros = 0;
-            while ((value & 0x1u) == 0u)
-            {
-                numOfTrailingZeros++;
-                value >>= 1;
-            }
-            Context.Push<int>(numOfTrailingZeros);
+            Context.Push<int>(ValueHelpers.CountTrailingZeros(Context.Pop<int>()));
         }
 
         /// <summary>
@@ -729,14 +713,7 @@ namespace Wasm.Interpret
         /// <param name="Context">The interpreter's context.</param>
         public static void Int32Popcnt(Instruction Value, InterpreterContext Context)
         {
-            var value = (uint)Context.Pop<int>();
-            int numOfOnes = 0;
-            while (value != 0)
-            {
-                numOfOnes += (int)(value & 0x1u);
-                value >>= 1;
-            }
-            Context.Push<int>(numOfOnes);
+            Context.Push<int>(ValueHelpers.PopCount(Context.Pop<int>()));
         }
 
         /// <summary>

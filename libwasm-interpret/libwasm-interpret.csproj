@@ -43,6 +43,7 @@
     <Compile Include="OperatorImpls.cs" />
     <Compile Include="SpecTestImporter.cs" />
     <Compile Include="ThrowFunctionDefinition.cs" />
+    <Compile Include="ValueHelpers.cs" />
     <Compile Include="Variable.cs" />
     <Compile Include="WasmFunctionDefinition.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

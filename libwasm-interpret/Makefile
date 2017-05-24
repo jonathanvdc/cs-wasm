@@ -11,6 +11,7 @@ files = \
 	OperatorImpls.cs \
 	SpecTestImporter.cs \
 	ThrowFunctionDefinition.cs \
+	ValueHelpers.cs \
 	Variable.cs \
 	WasmFunctionDefinition.cs
 

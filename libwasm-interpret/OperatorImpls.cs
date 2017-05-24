@@ -869,6 +869,56 @@ namespace Wasm.Interpret
             Context.Push<int>(Context.Pop<int>() == 0 ? 1 : 0);
         }
 
+        /// <summary>
+        /// Executes an 'i32.trunc_s/f32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32TruncSFloat32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<int>((int)Context.Pop<float>());
+        }
+
+        /// <summary>
+        /// Executes an 'i32.trunc_u/f32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32TruncUFloat32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<int>((int)(uint)Context.Pop<float>());
+        }
+
+        /// <summary>
+        /// Executes an 'i32.trunc_s/f64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32TruncSFloat64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<int>((int)Context.Pop<double>());
+        }
+
+        /// <summary>
+        /// Executes an 'i32.trunc_u/f64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32TruncUFloat64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<int>((int)(uint)Context.Pop<double>());
+        }
+
+        /// <summary>
+        /// Executes an 'i32.reinterpret/f32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32ReinterpretFloat32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<int>(ValueHelpers.ReinterpretAsInt32(Context.Pop<float>()));
+        }
+
         #endregion
     }
 }

@@ -133,7 +133,7 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Int32Ne, OperatorImpls.Int32Ne);
             Default.ImplementOperator(Operators.Int32Or, OperatorImpls.Int32Or);
             Default.ImplementOperator(Operators.Int32Popcnt, OperatorImpls.Int32Popcnt);
-            // TODO: Default.ImplementOperator(Operators.Int32ReinterpretFloat32, OperatorImpls.Int32ReinterpretFloat32);
+            Default.ImplementOperator(Operators.Int32ReinterpretFloat32, OperatorImpls.Int32ReinterpretFloat32);
             Default.ImplementOperator(Operators.Int32RemS, OperatorImpls.Int32RemS);
             Default.ImplementOperator(Operators.Int32RemU, OperatorImpls.Int32RemU);
             Default.ImplementOperator(Operators.Int32Rotl, OperatorImpls.Int32Rotl);
@@ -142,10 +142,10 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Int32ShrS, OperatorImpls.Int32ShrS);
             Default.ImplementOperator(Operators.Int32ShrU, OperatorImpls.Int32ShrU);
             Default.ImplementOperator(Operators.Int32Sub, OperatorImpls.Int32Sub);
-            // TODO: Default.ImplementOperator(Operators.Int32TruncSFloat32, OperatorImpls.Int32TruncSFloat32);
-            // TODO: Default.ImplementOperator(Operators.Int32TruncSFloat64, OperatorImpls.Int32TruncSFloat64);
-            // TODO: Default.ImplementOperator(Operators.Int32TruncUFloat32, OperatorImpls.Int32TruncUFloat32);
-            // TODO: Default.ImplementOperator(Operators.Int32TruncUFloat64, OperatorImpls.Int32TruncUFloat64);
+            Default.ImplementOperator(Operators.Int32TruncSFloat32, OperatorImpls.Int32TruncSFloat32);
+            Default.ImplementOperator(Operators.Int32TruncSFloat64, OperatorImpls.Int32TruncSFloat64);
+            Default.ImplementOperator(Operators.Int32TruncUFloat32, OperatorImpls.Int32TruncUFloat32);
+            Default.ImplementOperator(Operators.Int32TruncUFloat64, OperatorImpls.Int32TruncUFloat64);
             Default.ImplementOperator(Operators.Int32Xor, OperatorImpls.Int32Xor);
         }
     }

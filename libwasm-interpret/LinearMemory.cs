@@ -100,6 +100,24 @@ namespace Wasm.Interpret
         {
             get { return new LinearMemoryAsInt64(memory); }
         }
+
+        /// <summary>
+        /// Accesses linear memory as a sequence of 32-bit floating-point numbers.
+        /// </summary>
+        /// <returns>A view of this memory.</returns>
+        public LinearMemoryAsFloat32 Float32
+        {
+            get { return new LinearMemoryAsFloat32(memory); }
+        }
+
+        /// <summary>
+        /// Accesses linear memory as a sequence of 64-bit floating-point numbers.
+        /// </summary>
+        /// <returns>A view of this memory.</returns>
+        public LinearMemoryAsFloat64 Float64
+        {
+            get { return new LinearMemoryAsFloat64(memory); }
+        }
     }
 
     /// <summary>
@@ -187,7 +205,7 @@ namespace Wasm.Interpret
     }
 
     /// <summary>
-    /// Accesses linear memory as a sequence of 32-bit signed integers.
+    /// Accesses linear memory as a sequence of 64-bit signed integers.
     /// </summary>
     public struct LinearMemoryAsInt64
     {
@@ -221,6 +239,58 @@ namespace Wasm.Interpret
                 mem[(int)Offset + 2] = (byte)(value >> 16);
                 mem[(int)Offset + 1] = (byte)(value >> 8);
                 mem[(int)Offset] = (byte)value;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Accesses linear memory as a sequence of 32-bit floating-point numbers.
+    /// </summary>
+    public struct LinearMemoryAsFloat32
+    {
+        internal LinearMemoryAsFloat32(List<byte> Memory)
+        {
+            this.mem = Memory;
+        }
+
+        private List<byte> mem;
+
+        public float this[uint Offset]
+        {
+            get
+            {
+                return ValueHelpers.ReinterpretAsFloat32(new LinearMemoryAsInt32(mem)[Offset]);
+            }
+            set
+            {
+                var uintView = new LinearMemoryAsInt32(mem);
+                uintView[Offset] = ValueHelpers.ReinterpretAsInt32(value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Accesses linear memory as a sequence of 64-bit floating-point numbers.
+    /// </summary>
+    public struct LinearMemoryAsFloat64
+    {
+        internal LinearMemoryAsFloat64(List<byte> Memory)
+        {
+            this.mem = Memory;
+        }
+
+        private List<byte> mem;
+
+        public double this[uint Offset]
+        {
+            get
+            {
+                return ValueHelpers.ReinterpretAsFloat64(new LinearMemoryAsInt64(mem)[Offset]);
+            }
+            set
+            {
+                var uintView = new LinearMemoryAsInt64(mem);
+                uintView[Offset] = ValueHelpers.ReinterpretAsInt64(value);
             }
         }
     }

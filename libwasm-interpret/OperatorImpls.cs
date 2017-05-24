@@ -447,6 +447,34 @@ namespace Wasm.Interpret
             Context.Push<long>(value);
         }
 
+        /// <summary>
+        /// Executes an 'f32.load' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Load(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Float32Load.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = Context.Module.Memories[0].Float32[pointer];
+            Context.Push<float>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.load' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Load(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Float64Load.CastInstruction(Value);
+            var pointer = (uint)Context.Pop<int>() + instr.Offset;
+            CheckAlignment(pointer, instr);
+            var value = Context.Module.Memories[0].Float64[pointer];
+            Context.Push<double>(value);
+        }
+
         private static void CheckAlignment(uint Pointer, MemoryInstruction Instruction)
         {
             if (Pointer % Instruction.Alignment != 0)

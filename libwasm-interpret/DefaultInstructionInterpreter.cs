@@ -147,6 +147,41 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Int32TruncUFloat32, OperatorImpls.Int32TruncUFloat32);
             Default.ImplementOperator(Operators.Int32TruncUFloat64, OperatorImpls.Int32TruncUFloat64);
             Default.ImplementOperator(Operators.Int32Xor, OperatorImpls.Int32Xor);
+
+            Default.ImplementOperator(Operators.Int64Add, OperatorImpls.Int64Add);
+            Default.ImplementOperator(Operators.Int64And, OperatorImpls.Int64And);
+            Default.ImplementOperator(Operators.Int64Clz, OperatorImpls.Int64Clz);
+            Default.ImplementOperator(Operators.Int64Ctz, OperatorImpls.Int64Ctz);
+            Default.ImplementOperator(Operators.Int64DivS, OperatorImpls.Int64DivS);
+            Default.ImplementOperator(Operators.Int64DivU, OperatorImpls.Int64DivU);
+            Default.ImplementOperator(Operators.Int64Eq, OperatorImpls.Int64Eq);
+            Default.ImplementOperator(Operators.Int64Eqz, OperatorImpls.Int64Eqz);
+            Default.ImplementOperator(Operators.Int64GeS, OperatorImpls.Int64GeS);
+            Default.ImplementOperator(Operators.Int64GeU, OperatorImpls.Int64GeU);
+            Default.ImplementOperator(Operators.Int64GtS, OperatorImpls.Int64GtS);
+            Default.ImplementOperator(Operators.Int64GtU, OperatorImpls.Int64GtU);
+            Default.ImplementOperator(Operators.Int64LeS, OperatorImpls.Int64LeS);
+            Default.ImplementOperator(Operators.Int64LeU, OperatorImpls.Int64LeU);
+            Default.ImplementOperator(Operators.Int64LtS, OperatorImpls.Int64LtS);
+            Default.ImplementOperator(Operators.Int64LtU, OperatorImpls.Int64LtU);
+            Default.ImplementOperator(Operators.Int64Mul, OperatorImpls.Int64Mul);
+            Default.ImplementOperator(Operators.Int64Ne, OperatorImpls.Int64Ne);
+            Default.ImplementOperator(Operators.Int64Or, OperatorImpls.Int64Or);
+            Default.ImplementOperator(Operators.Int64Popcnt, OperatorImpls.Int64Popcnt);
+            Default.ImplementOperator(Operators.Int64ReinterpretFloat64, OperatorImpls.Int64ReinterpretFloat64);
+            Default.ImplementOperator(Operators.Int64RemS, OperatorImpls.Int64RemS);
+            Default.ImplementOperator(Operators.Int64RemU, OperatorImpls.Int64RemU);
+            Default.ImplementOperator(Operators.Int64Rotl, OperatorImpls.Int64Rotl);
+            Default.ImplementOperator(Operators.Int64Rotr, OperatorImpls.Int64Rotr);
+            Default.ImplementOperator(Operators.Int64Shl, OperatorImpls.Int64Shl);
+            Default.ImplementOperator(Operators.Int64ShrS, OperatorImpls.Int64ShrS);
+            Default.ImplementOperator(Operators.Int64ShrU, OperatorImpls.Int64ShrU);
+            Default.ImplementOperator(Operators.Int64Sub, OperatorImpls.Int64Sub);
+            Default.ImplementOperator(Operators.Int64TruncSFloat32, OperatorImpls.Int64TruncSFloat32);
+            Default.ImplementOperator(Operators.Int64TruncSFloat64, OperatorImpls.Int64TruncSFloat64);
+            Default.ImplementOperator(Operators.Int64TruncUFloat32, OperatorImpls.Int64TruncUFloat32);
+            Default.ImplementOperator(Operators.Int64TruncUFloat64, OperatorImpls.Int64TruncUFloat64);
+            Default.ImplementOperator(Operators.Int64Xor, OperatorImpls.Int64Xor);
         }
     }
 }

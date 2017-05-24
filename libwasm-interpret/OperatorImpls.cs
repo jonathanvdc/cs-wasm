@@ -897,5 +897,400 @@ namespace Wasm.Interpret
         }
 
         #endregion
+
+        #region Int64 nullaries
+
+        /// <summary>
+        /// Executes an 'i64.add' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Add(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs + rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.sub' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Sub(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs - rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.mul' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Mul(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs * rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.div_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64DivS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs / rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.div_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64DivU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (ulong)Context.Pop<long>();
+            var lhs = (ulong)Context.Pop<long>();
+            Context.Push<long>((long)(lhs / rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'i64.rem_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64RemS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs % rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.rem_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64RemU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (ulong)Context.Pop<long>();
+            var lhs = (ulong)Context.Pop<long>();
+            Context.Push<long>((long)(lhs % rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'i64.and' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64And(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs & rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.or' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Or(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs | rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.xor' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Xor(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs ^ rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.shr_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64ShrS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (int)Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs >> rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.shr_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64ShrU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (int)Context.Pop<long>();
+            var lhs = (ulong)Context.Pop<long>();
+            Context.Push<long>((long)(lhs >> rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'i64.shl' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Shl(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (int)Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs << rhs);
+        }
+
+
+        /// <summary>
+        /// Executes an 'i64.rotl' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Rotl(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(ValueHelpers.RotateLeft(lhs, rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'i64.rotr' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Rotr(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(ValueHelpers.RotateRight(lhs, rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'i64.clz' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Clz(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>(ValueHelpers.CountLeadingZeros(Context.Pop<long>()));
+        }
+
+        /// <summary>
+        /// Executes an 'i64.ctz' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Ctz(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>(ValueHelpers.CountTrailingZeros(Context.Pop<long>()));
+        }
+
+        /// <summary>
+        /// Executes an 'i64.popcnt' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Popcnt(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>(ValueHelpers.PopCount(Context.Pop<long>()));
+        }
+
+        /// <summary>
+        /// Executes an 'i64.eq' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Eq(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs == rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.ne' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Ne(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs != rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.lt_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64LtS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs < rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.lt_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64LtU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (ulong)Context.Pop<long>();
+            var lhs = (ulong)Context.Pop<long>();
+            Context.Push<long>(lhs < rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.le_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64LeS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs <= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.le_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64LeU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (ulong)Context.Pop<long>();
+            var lhs = (ulong)Context.Pop<long>();
+            Context.Push<long>(lhs <= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.gt_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64GtS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs > rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.gt_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64GtU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (ulong)Context.Pop<long>();
+            var lhs = (ulong)Context.Pop<long>();
+            Context.Push<long>(lhs > rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.ge_s' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64GeS(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<long>();
+            var lhs = Context.Pop<long>();
+            Context.Push<long>(lhs >= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.ge_u' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64GeU(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = (ulong)Context.Pop<long>();
+            var lhs = (ulong)Context.Pop<long>();
+            Context.Push<long>(lhs >= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.eqz' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Eqz(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>(Context.Pop<long>() == 0 ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'i64.trunc_s/f32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64TruncSFloat32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>((long)Context.Pop<float>());
+        }
+
+        /// <summary>
+        /// Executes an 'i64.trunc_u/f32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64TruncUFloat32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>((long)(ulong)Context.Pop<float>());
+        }
+
+        /// <summary>
+        /// Executes an 'i64.trunc_s/f64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64TruncSFloat64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>((long)Context.Pop<double>());
+        }
+
+        /// <summary>
+        /// Executes an 'i64.trunc_u/f64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64TruncUFloat64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>((long)(ulong)Context.Pop<double>());
+        }
+
+        /// <summary>
+        /// Executes an 'i64.reinterpret/f32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64ReinterpretFloat64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<long>(ValueHelpers.ReinterpretAsInt64(Context.Pop<double>()));
+        }
+
+        #endregion
     }
 }

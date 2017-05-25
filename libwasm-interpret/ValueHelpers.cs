@@ -202,5 +202,63 @@ namespace Wasm.Interpret
             }
             return numOfOnes;
         }
+
+        // Based on the StackOverflow answer by Deduplicator:
+        // https://stackoverflow.com/questions/26576285/how-can-i-get-the-sign-bit-of-a-double
+        private static readonly int float32SignMask =
+            ReinterpretAsInt32(-0.0f) ^ ReinterpretAsInt32(+0.0f);
+
+        private static readonly long float64SignMask =
+            ReinterpretAsInt64(-0.0) ^ ReinterpretAsInt64(+0.0);
+
+        /// <summary>
+        /// Tests if the sign bit of the given 32-bit floating point value is set,
+        /// i.e., if the value is negative.
+        /// </summary>
+        /// <param name="Value">The value to test.</param>
+        /// <returns><c>true</c> if the value's sign bit is set; otherwise, <c>false</c>.</returns>
+        public static bool Signbit(float Value)
+        {
+            return (ReinterpretAsInt32(Value) & float32SignMask) == float32SignMask;
+        }
+
+        /// <summary>
+        /// Composes a 32-bit floating point number with the magnitude of the first
+        /// argument and the sign of the second.
+        /// </summary>
+        /// <param name="Left">The argument whose magnitude is used.</param>
+        /// <param name="Right">The argument whose sign bit is used.</param>
+        public static float Copysign(float Left, float Right)
+        {
+            int leftBits = ReinterpretAsInt32(Left);
+            int rightBits = ReinterpretAsInt32(Right);
+            int resultBits = (leftBits & ~float32SignMask) | (rightBits & float32SignMask);
+            return ReinterpretAsFloat32(resultBits);
+        }
+
+        /// <summary>
+        /// Tests if the sign bit of the given 64-bit floating point value is set,
+        /// i.e., if the value is negative.
+        /// </summary>
+        /// <param name="Value">The value to test.</param>
+        /// <returns><c>true</c> if the value's sign bit is set; otherwise, <c>false</c>.</returns>
+        public static bool Signbit(double Value)
+        {
+            return (ReinterpretAsInt64(Value) & float64SignMask) == float64SignMask;
+        }
+
+        /// <summary>
+        /// Composes a 64-bit floating point number with the magnitude of the first
+        /// argument and the sign of the second.
+        /// </summary>
+        /// <param name="Left">The argument whose magnitude is used.</param>
+        /// <param name="Right">The argument whose sign bit is used.</param>
+        public static double Copysign(double Left, double Right)
+        {
+            long leftBits = ReinterpretAsInt64(Left);
+            long rightBits = ReinterpretAsInt64(Right);
+            long resultBits = (leftBits & ~float64SignMask) | (rightBits & float64SignMask);
+            return ReinterpretAsFloat64(resultBits);
+        }
     }
 }

@@ -187,6 +187,22 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Int64TruncUFloat32, OperatorImpls.Int64TruncUFloat32);
             Default.ImplementOperator(Operators.Int64TruncUFloat64, OperatorImpls.Int64TruncUFloat64);
             Default.ImplementOperator(Operators.Int64Xor, OperatorImpls.Int64Xor);
+
+            Default.ImplementOperator(Operators.Float32Abs, OperatorImpls.Float32Abs);
+            Default.ImplementOperator(Operators.Float32Add, OperatorImpls.Float32Add);
+            Default.ImplementOperator(Operators.Float32Ceil, OperatorImpls.Float32Ceil);
+            Default.ImplementOperator(Operators.Float32Copysign, OperatorImpls.Float32Copysign);
+            Default.ImplementOperator(Operators.Float32Div, OperatorImpls.Float32Div);
+            Default.ImplementOperator(Operators.Float32Eq, OperatorImpls.Float32Eq);
+            Default.ImplementOperator(Operators.Float32Floor, OperatorImpls.Float32Floor);
+            Default.ImplementOperator(Operators.Float32Ge, OperatorImpls.Float32Ge);
+            Default.ImplementOperator(Operators.Float32Gt, OperatorImpls.Float32Gt);
+            Default.ImplementOperator(Operators.Float32Le, OperatorImpls.Float32Le);
+            Default.ImplementOperator(Operators.Float32Lt, OperatorImpls.Float32Lt);
+            Default.ImplementOperator(Operators.Float32Max, OperatorImpls.Float32Max);
+            Default.ImplementOperator(Operators.Float32Min, OperatorImpls.Float32Min);
+            Default.ImplementOperator(Operators.Float32Mul, OperatorImpls.Float32Mul);
+            Default.ImplementOperator(Operators.Float32Ne, OperatorImpls.Float32Ne);
         }
     }
 }

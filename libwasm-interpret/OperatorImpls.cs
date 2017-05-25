@@ -1,3 +1,4 @@
+using System;
 using Wasm.Instructions;
 
 namespace Wasm.Interpret
@@ -1347,6 +1348,184 @@ namespace Wasm.Interpret
         public static void Int64ExtendUInt32(Instruction Value, InterpreterContext Context)
         {
             Context.Push<long>((uint)Context.Pop<int>());
+        }
+
+        #endregion
+
+        #region Float32 nullaries
+
+        /// <summary>
+        /// Executes an 'f32.abs' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Abs(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>(Math.Abs(Context.Pop<float>()));
+        }
+
+        /// <summary>
+        /// Executes an 'f32.add' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Add(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<float>(lhs + rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.ceil' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Ceil(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>((float)Math.Ceiling(Context.Pop<float>()));
+        }
+
+        /// <summary>
+        /// Executes an 'f32.copysign' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Copysign(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<float>(ValueHelpers.Copysign(lhs, rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'f32.div' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Div(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<float>(lhs / rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.eq' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Eq(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<int>(lhs == rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.floor' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Floor(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>((float)Math.Floor(Context.Pop<float>()));
+        }
+
+        /// <summary>
+        /// Executes an 'f32.ge' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Ge(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<int>(lhs >= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.gt' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Gt(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<int>(lhs > rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.le' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Le(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<int>(lhs <= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.lt' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Lt(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<int>(lhs < rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.max' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Max(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<float>(Math.Max(lhs, rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'f32.min' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Min(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<float>(Math.Min(lhs, rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'f32.mul' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Mul(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<float>(lhs * rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.ne' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Ne(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<int>(lhs != rhs ? 1 : 0);
         }
 
         #endregion

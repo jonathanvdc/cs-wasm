@@ -126,6 +126,8 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Int64Store, OperatorImpls.Int64Store);
             Default.ImplementOperator(Operators.Float32Store, OperatorImpls.Float32Store);
             Default.ImplementOperator(Operators.Float64Store, OperatorImpls.Float64Store);
+            Default.ImplementOperator(Operators.CurrentMemory, OperatorImpls.CurrentMemory);
+            Default.ImplementOperator(Operators.GrowMemory, OperatorImpls.GrowMemory);
             Default.ImplementOperator(Operators.Int32Const, OperatorImpls.Int32Const);
             Default.ImplementOperator(Operators.Int64Const, OperatorImpls.Int64Const);
             Default.ImplementOperator(Operators.Float32Const, OperatorImpls.Float32Const);

@@ -608,6 +608,31 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes an 'current_memory' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void CurrentMemory(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.CurrentMemory.CastInstruction(Value);
+            var result = Context.Module.Memories[(int)instr.Immediate].Size;
+            Context.Push<int>((int)result);
+        }
+
+        /// <summary>
+        /// Executes a 'grow_memory' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void GrowMemory(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.CurrentMemory.CastInstruction(Value);
+            var amount = (uint)Context.Pop<int>();
+            var result = Context.Module.Memories[(int)instr.Immediate].Grow(amount);
+            Context.Push<int>(result);
+        }
+
+        /// <summary>
         /// Executes an 'i32.const' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

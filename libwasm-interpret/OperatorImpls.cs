@@ -1641,5 +1641,295 @@ namespace Wasm.Interpret
         }
 
         #endregion
+
+        #region Float64 nullaries
+
+        /// <summary>
+        /// Executes an 'f64.abs' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Abs(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(Math.Abs(Context.Pop<double>()));
+        }
+
+        /// <summary>
+        /// Executes an 'f64.add' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Add(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<double>(lhs + rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.ceil' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Ceil(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(Math.Ceiling(Context.Pop<double>()));
+        }
+
+        /// <summary>
+        /// Executes an 'f64.copysign' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Copysign(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<double>(ValueHelpers.Copysign(lhs, rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'f64.div' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Div(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<double>(lhs / rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.eq' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Eq(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<int>(lhs == rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.floor' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Floor(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(Math.Floor(Context.Pop<double>()));
+        }
+
+        /// <summary>
+        /// Executes an 'f64.ge' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Ge(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<int>(lhs >= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.gt' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Gt(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<int>(lhs > rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.le' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Le(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<int>(lhs <= rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.lt' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Lt(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<int>(lhs < rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.max' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Max(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<double>(Math.Max(lhs, rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'f64.min' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Min(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<double>(Math.Min(lhs, rhs));
+        }
+
+        /// <summary>
+        /// Executes an 'f64.mul' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Mul(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<double>(lhs * rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.ne' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Ne(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<int>(lhs != rhs ? 1 : 0);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.nearest' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Nearest(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(Math.Round(Context.Pop<double>(), MidpointRounding.ToEven));
+        }
+
+        /// <summary>
+        /// Executes an 'f64.neg' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Neg(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(-Context.Pop<double>());
+        }
+
+        /// <summary>
+        /// Executes an 'f64.sub' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Sub(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<double>();
+            var lhs = Context.Pop<double>();
+            Context.Push<double>(lhs - rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'f64.sqrt' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Sqrt(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(Math.Sqrt(Context.Pop<double>()));
+        }
+
+        /// <summary>
+        /// Executes an 'f64.trunc' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Trunc(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(Math.Truncate(Context.Pop<double>()));
+        }
+
+        /// <summary>
+        /// Executes an 'f64.convert_s/i32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64ConvertSInt32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(Context.Pop<int>());
+        }
+
+        /// <summary>
+        /// Executes an 'f64.convert_u/i32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64ConvertUInt32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>((uint)Context.Pop<int>());
+        }
+
+        /// <summary>
+        /// Executes an 'f64.convert_s/i64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64ConvertSInt64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(Context.Pop<long>());
+        }
+
+        /// <summary>
+        /// Executes an 'f64.convert_u/i64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64ConvertUInt64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>((ulong)Context.Pop<long>());
+        }
+
+        /// <summary>
+        /// Executes an 'f64.promote/f32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64PromoteFloat32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(Context.Pop<float>());
+        }
+
+        /// <summary>
+        /// Executes an 'f64.reinterpret/i64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64ReinterpretInt64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<double>(ValueHelpers.ReinterpretAsFloat64(Context.Pop<long>()));
+        }
+
+        #endregion
     }
 }

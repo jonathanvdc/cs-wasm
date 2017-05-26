@@ -214,6 +214,33 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Float32Sqrt, OperatorImpls.Float32Sqrt);
             Default.ImplementOperator(Operators.Float32Sub, OperatorImpls.Float32Sub);
             Default.ImplementOperator(Operators.Float32Trunc, OperatorImpls.Float32Trunc);
+
+            Default.ImplementOperator(Operators.Float64Abs, OperatorImpls.Float64Abs);
+            Default.ImplementOperator(Operators.Float64Add, OperatorImpls.Float64Add);
+            Default.ImplementOperator(Operators.Float64Ceil, OperatorImpls.Float64Ceil);
+            Default.ImplementOperator(Operators.Float64ConvertSInt32, OperatorImpls.Float64ConvertSInt32);
+            Default.ImplementOperator(Operators.Float64ConvertSInt64, OperatorImpls.Float64ConvertSInt64);
+            Default.ImplementOperator(Operators.Float64ConvertUInt32, OperatorImpls.Float64ConvertUInt32);
+            Default.ImplementOperator(Operators.Float64ConvertUInt64, OperatorImpls.Float64ConvertUInt64);
+            Default.ImplementOperator(Operators.Float64Copysign, OperatorImpls.Float64Copysign);
+            Default.ImplementOperator(Operators.Float64Div, OperatorImpls.Float64Div);
+            Default.ImplementOperator(Operators.Float64Eq, OperatorImpls.Float64Eq);
+            Default.ImplementOperator(Operators.Float64Floor, OperatorImpls.Float64Floor);
+            Default.ImplementOperator(Operators.Float64Ge, OperatorImpls.Float64Ge);
+            Default.ImplementOperator(Operators.Float64Gt, OperatorImpls.Float64Gt);
+            Default.ImplementOperator(Operators.Float64Le, OperatorImpls.Float64Le);
+            Default.ImplementOperator(Operators.Float64Lt, OperatorImpls.Float64Lt);
+            Default.ImplementOperator(Operators.Float64Max, OperatorImpls.Float64Max);
+            Default.ImplementOperator(Operators.Float64Min, OperatorImpls.Float64Min);
+            Default.ImplementOperator(Operators.Float64Mul, OperatorImpls.Float64Mul);
+            Default.ImplementOperator(Operators.Float64Ne, OperatorImpls.Float64Ne);
+            Default.ImplementOperator(Operators.Float64Nearest, OperatorImpls.Float64Nearest);
+            Default.ImplementOperator(Operators.Float64Neg, OperatorImpls.Float64Neg);
+            Default.ImplementOperator(Operators.Float64PromoteFloat32, OperatorImpls.Float64PromoteFloat32);
+            Default.ImplementOperator(Operators.Float64ReinterpretInt64, OperatorImpls.Float64ReinterpretInt64);
+            Default.ImplementOperator(Operators.Float64Sqrt, OperatorImpls.Float64Sqrt);
+            Default.ImplementOperator(Operators.Float64Sub, OperatorImpls.Float64Sub);
+            Default.ImplementOperator(Operators.Float64Trunc, OperatorImpls.Float64Trunc);
         }
     }
 }

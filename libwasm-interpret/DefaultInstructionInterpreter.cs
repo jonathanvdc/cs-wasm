@@ -47,6 +47,13 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Checks if this instruction interpreter implements the given operator.
+        /// </summary>
+        /// <param name="Op">A WebAssembly operator.</param>
+        /// <returns><c>true</c> if the given operator is implemented by this interpreter; otherwise, <c>false</c>.</returns>
+        public bool IsImplemented(Operator Op) => operatorImpls.ContainsKey(Op);
+
+        /// <summary>
         /// Interprets the given instruction within the specified context.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>

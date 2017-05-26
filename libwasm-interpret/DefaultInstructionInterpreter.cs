@@ -191,7 +191,12 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Float32Abs, OperatorImpls.Float32Abs);
             Default.ImplementOperator(Operators.Float32Add, OperatorImpls.Float32Add);
             Default.ImplementOperator(Operators.Float32Ceil, OperatorImpls.Float32Ceil);
+            Default.ImplementOperator(Operators.Float32ConvertSInt32, OperatorImpls.Float32ConvertSInt32);
+            Default.ImplementOperator(Operators.Float32ConvertSInt64, OperatorImpls.Float32ConvertSInt64);
+            Default.ImplementOperator(Operators.Float32ConvertUInt32, OperatorImpls.Float32ConvertUInt32);
+            Default.ImplementOperator(Operators.Float32ConvertUInt64, OperatorImpls.Float32ConvertUInt64);
             Default.ImplementOperator(Operators.Float32Copysign, OperatorImpls.Float32Copysign);
+            Default.ImplementOperator(Operators.Float32DemoteFloat64, OperatorImpls.Float32DemoteFloat64);
             Default.ImplementOperator(Operators.Float32Div, OperatorImpls.Float32Div);
             Default.ImplementOperator(Operators.Float32Eq, OperatorImpls.Float32Eq);
             Default.ImplementOperator(Operators.Float32Floor, OperatorImpls.Float32Floor);

@@ -1528,6 +1528,56 @@ namespace Wasm.Interpret
             Context.Push<int>(lhs != rhs ? 1 : 0);
         }
 
+        /// <summary>
+        /// Executes an 'f32.convert_s/i32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32ConvertSInt32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>(Context.Pop<int>());
+        }
+
+        /// <summary>
+        /// Executes an 'f32.convert_u/i32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32ConvertUInt32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>((uint)Context.Pop<int>());
+        }
+
+        /// <summary>
+        /// Executes an 'f32.convert_s/i64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32ConvertSInt64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>(Context.Pop<long>());
+        }
+
+        /// <summary>
+        /// Executes an 'f32.convert_u/i64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32ConvertUInt64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>((ulong)Context.Pop<long>());
+        }
+
+        /// <summary>
+        /// Executes an 'f32.demote/f64' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32DemoteFloat64(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>((float)Context.Pop<double>());
+        }
+
         #endregion
     }
 }

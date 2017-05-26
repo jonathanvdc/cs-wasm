@@ -288,8 +288,7 @@ namespace Wasm.Interpret
         public static void Int32Load(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int32Load.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = Context.Module.Memories[0].Int32[pointer];
             Context.Push<int>(value);
         }
@@ -302,8 +301,7 @@ namespace Wasm.Interpret
         public static void Int64Load(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int64Load.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = Context.Module.Memories[0].Int64[pointer];
             Context.Push<long>(value);
         }
@@ -316,8 +314,7 @@ namespace Wasm.Interpret
         public static void Int32Load8S(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int32Load8S.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = Context.Module.Memories[0].Int8[pointer];
             Context.Push<int>(value);
         }
@@ -330,8 +327,7 @@ namespace Wasm.Interpret
         public static void Int32Load8U(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int32Load8U.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = (byte)Context.Module.Memories[0].Int8[pointer];
             Context.Push<int>(value);
         }
@@ -344,8 +340,7 @@ namespace Wasm.Interpret
         public static void Int32Load16S(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int32Load16S.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = Context.Module.Memories[0].Int16[pointer];
             Context.Push<int>(value);
         }
@@ -358,8 +353,7 @@ namespace Wasm.Interpret
         public static void Int32Load16U(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int32Load16U.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = (ushort)Context.Module.Memories[0].Int16[pointer];
             Context.Push<int>(value);
         }
@@ -372,8 +366,7 @@ namespace Wasm.Interpret
         public static void Int64Load8S(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int64Load8S.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = Context.Module.Memories[0].Int8[pointer];
             Context.Push<long>(value);
         }
@@ -386,8 +379,7 @@ namespace Wasm.Interpret
         public static void Int64Load8U(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int64Load8U.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = (byte)Context.Module.Memories[0].Int8[pointer];
             Context.Push<long>(value);
         }
@@ -400,8 +392,7 @@ namespace Wasm.Interpret
         public static void Int64Load16S(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int64Load16S.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = Context.Module.Memories[0].Int16[pointer];
             Context.Push<long>(value);
         }
@@ -414,8 +405,7 @@ namespace Wasm.Interpret
         public static void Int64Load16U(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int64Load16U.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = (ushort)Context.Module.Memories[0].Int16[pointer];
             Context.Push<long>(value);
         }
@@ -428,8 +418,7 @@ namespace Wasm.Interpret
         public static void Int64Load32S(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int64Load32S.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = Context.Module.Memories[0].Int32[pointer];
             Context.Push<long>(value);
         }
@@ -442,8 +431,7 @@ namespace Wasm.Interpret
         public static void Int64Load32U(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Int64Load32U.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = (uint)Context.Module.Memories[0].Int32[pointer];
             Context.Push<long>(value);
         }
@@ -456,8 +444,7 @@ namespace Wasm.Interpret
         public static void Float32Load(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Float32Load.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = Context.Module.Memories[0].Float32[pointer];
             Context.Push<float>(value);
         }
@@ -470,10 +457,142 @@ namespace Wasm.Interpret
         public static void Float64Load(Instruction Value, InterpreterContext Context)
         {
             var instr = Operators.Float64Load.CastInstruction(Value);
-            var pointer = (uint)Context.Pop<int>() + instr.Offset;
-            CheckAlignment(pointer, instr);
+            var pointer = PopAlignedPointer(instr, Context);
             var value = Context.Module.Memories[0].Float64[pointer];
             Context.Push<double>(value);
+        }
+
+        /// <summary>
+        /// Executes an 'i32.store8' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Store8(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int32Store8.CastInstruction(Value);
+            var pointer = PopAlignedPointer(instr, Context);
+            var value = Context.Pop<int>();
+            var memView = Context.Module.Memories[0].Int8;
+            memView[pointer] = (sbyte)value;
+        }
+
+        /// <summary>
+        /// Executes an 'i32.store16' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Store16(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int32Store16.CastInstruction(Value);
+            var pointer = PopAlignedPointer(instr, Context);
+            var value = Context.Pop<int>();
+            var memView = Context.Module.Memories[0].Int16;
+            memView[pointer] = (short)value;
+        }
+
+        /// <summary>
+        /// Executes an 'i32.store' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int32Store(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int32Store.CastInstruction(Value);
+            var pointer = PopAlignedPointer(instr, Context);
+            var value = Context.Pop<int>();
+            var memView = Context.Module.Memories[0].Int32;
+            memView[pointer] = value;
+        }
+
+        /// <summary>
+        /// Executes an 'i64.store8' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Store8(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Store8.CastInstruction(Value);
+            var pointer = PopAlignedPointer(instr, Context);
+            var value = Context.Pop<long>();
+            var memView = Context.Module.Memories[0].Int8;
+            memView[pointer] = (sbyte)value;
+        }
+
+        /// <summary>
+        /// Executes an 'i32.store16' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Store16(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Store16.CastInstruction(Value);
+            var pointer = PopAlignedPointer(instr, Context);
+            var value = Context.Pop<long>();
+            var memView = Context.Module.Memories[0].Int16;
+            memView[pointer] = (short)value;
+        }
+
+        /// <summary>
+        /// Executes an 'i64.store32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Store32(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Store32.CastInstruction(Value);
+            var pointer = PopAlignedPointer(instr, Context);
+            var value = Context.Pop<long>();
+            var memView = Context.Module.Memories[0].Int32;
+            memView[pointer] = (int)value;
+        }
+
+        /// <summary>
+        /// Executes an 'i64.store' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Int64Store(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Int64Store.CastInstruction(Value);
+            var pointer = PopAlignedPointer(instr, Context);
+            var value = Context.Pop<long>();
+            var memView = Context.Module.Memories[0].Int64;
+            memView[pointer] = value;
+        }
+
+        /// <summary>
+        /// Executes an 'f32.store' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Store(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Float32Store.CastInstruction(Value);
+            var pointer = PopAlignedPointer(instr, Context);
+            var value = Context.Pop<float>();
+            var memView = Context.Module.Memories[0].Float32;
+            memView[pointer] = value;
+        }
+
+        /// <summary>
+        /// Executes an 'f64.store' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float64Store(Instruction Value, InterpreterContext Context)
+        {
+            var instr = Operators.Float64Store.CastInstruction(Value);
+            var pointer = PopAlignedPointer(instr, Context);
+            var value = Context.Pop<double>();
+            var memView = Context.Module.Memories[0].Float64;
+            memView[pointer] = value;
+        }
+
+        private static uint PopAlignedPointer(MemoryInstruction Instruction, InterpreterContext Context)
+        {
+            var pointer = (uint)Context.Pop<int>() + Instruction.Offset;
+            CheckAlignment(pointer, Instruction);
+            return pointer;
         }
 
         private static void CheckAlignment(uint Pointer, MemoryInstruction Instruction)

@@ -1,5 +1,6 @@
 files = \
 	Program.cs \
+	Interpret/DefaultInterpreterTests.cs \
 	Interpret/LinearMemoryTests.cs \
 	../libwasm/bin/flo/libwasm.flo
 libraries = \

@@ -72,6 +72,7 @@ namespace Wasm.UnitTests
         public static int LibwasmInterpret()
         {
             return RunTests.RunMany(
+                new DefaultInterpreterTests(),
                 new LinearMemoryTests());
         }
     }

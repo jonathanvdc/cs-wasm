@@ -208,6 +208,12 @@ namespace Wasm.Interpret
             Default.ImplementOperator(Operators.Float32Min, OperatorImpls.Float32Min);
             Default.ImplementOperator(Operators.Float32Mul, OperatorImpls.Float32Mul);
             Default.ImplementOperator(Operators.Float32Ne, OperatorImpls.Float32Ne);
+            Default.ImplementOperator(Operators.Float32Nearest, OperatorImpls.Float32Nearest);
+            Default.ImplementOperator(Operators.Float32Neg, OperatorImpls.Float32Neg);
+            Default.ImplementOperator(Operators.Float32ReinterpretInt32, OperatorImpls.Float32ReinterpretInt32);
+            Default.ImplementOperator(Operators.Float32Sqrt, OperatorImpls.Float32Sqrt);
+            Default.ImplementOperator(Operators.Float32Sub, OperatorImpls.Float32Sub);
+            Default.ImplementOperator(Operators.Float32Trunc, OperatorImpls.Float32Trunc);
         }
     }
 }

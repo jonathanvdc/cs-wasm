@@ -1529,6 +1529,58 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
+        /// Executes an 'f32.nearest' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Nearest(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>((float)Math.Round(Context.Pop<float>(), MidpointRounding.ToEven));
+        }
+
+        /// <summary>
+        /// Executes an 'f32.neg' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Neg(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>(-Context.Pop<float>());
+        }
+
+        /// <summary>
+        /// Executes an 'f32.sub' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Sub(Instruction Value, InterpreterContext Context)
+        {
+            var rhs = Context.Pop<float>();
+            var lhs = Context.Pop<float>();
+            Context.Push<float>(lhs - rhs);
+        }
+
+        /// <summary>
+        /// Executes an 'f32.sqrt' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Sqrt(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>((float)Math.Sqrt(Context.Pop<float>()));
+        }
+
+        /// <summary>
+        /// Executes an 'f32.trunc' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32Trunc(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>((float)Math.Truncate(Context.Pop<float>()));
+        }
+
+        /// <summary>
         /// Executes an 'f32.convert_s/i32' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>
@@ -1576,6 +1628,16 @@ namespace Wasm.Interpret
         public static void Float32DemoteFloat64(Instruction Value, InterpreterContext Context)
         {
             Context.Push<float>((float)Context.Pop<double>());
+        }
+
+        /// <summary>
+        /// Executes an 'f32.reinterpret/i32' instruction.
+        /// </summary>
+        /// <param name="Value">The instruction to interpret.</param>
+        /// <param name="Context">The interpreter's context.</param>
+        public static void Float32ReinterpretInt32(Instruction Value, InterpreterContext Context)
+        {
+            Context.Push<float>(ValueHelpers.ReinterpretAsFloat32(Context.Pop<int>()));
         }
 
         #endregion

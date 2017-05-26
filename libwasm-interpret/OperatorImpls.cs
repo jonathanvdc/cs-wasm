@@ -608,7 +608,7 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
-        /// Executes an 'current_memory' instruction.
+        /// Executes a 'current_memory' instruction.
         /// </summary>
         /// <param name="Value">The instruction to interpret.</param>
         /// <param name="Context">The interpreter's context.</param>

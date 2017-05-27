@@ -76,7 +76,7 @@ namespace Wasm.Interpret
         /// Gets a flag that tells if a break has been requested.
         /// </summary>
         /// <returns>A flag that tells if a break has been requested.</returns>
-        public bool BreakRequested => BreakDepth < 0;
+        public bool BreakRequested => BreakDepth > 0;
 
         /// <summary>
         /// Pops a value of the given type from the value stack.

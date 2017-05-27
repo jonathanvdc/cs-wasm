@@ -41,6 +41,7 @@
     <Compile Include="LinearMemory.cs" />
     <Compile Include="ModuleInstance.cs" />
     <Compile Include="OperatorImpls.cs" />
+    <Compile Include="PredefinedImporter.cs" />
     <Compile Include="SpecTestImporter.cs" />
     <Compile Include="ThrowFunctionDefinition.cs" />
     <Compile Include="ValueHelpers.cs" />

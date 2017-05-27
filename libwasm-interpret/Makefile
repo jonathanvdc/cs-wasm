@@ -9,6 +9,7 @@ files = \
 	LinearMemory.cs \
 	ModuleInstance.cs \
 	OperatorImpls.cs \
+	PredefinedImporter.cs \
 	SpecTestImporter.cs \
 	ThrowFunctionDefinition.cs \
 	ValueHelpers.cs \

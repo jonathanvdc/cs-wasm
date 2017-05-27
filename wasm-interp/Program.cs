@@ -19,9 +19,35 @@ namespace Wasm.Interpret
         public string FunctionToRun { get; private set; }
 
         /// <summary>
+        /// Gets the name of the importer to use.
+        /// </summary>
+        /// <returns>The name of the importer.</returns>
+        public string ImporterName { get; private set; }
+
+        /// <summary>
         /// Gets the arguments for the function to run, if any.
         /// </summary>
         public object[] FunctionArgs { get; private set; }
+
+        /// <summary>
+        /// Tries to create an importer for these options.
+        /// </summary>
+        /// <param name="Result">The importer.</param>
+        /// <returns><c>true</c> if <c>ImporterName</c> identifies an importer; otherwise, <c>false</c>.</returns>
+        public bool TryGetImporter(out IImporter Result)
+        {
+            if (ImporterName == null
+                || ImporterName.Equals("spectest", StringComparison.OrdinalIgnoreCase))
+            {
+                Result = new SpecTestImporter();
+                return true;
+            }
+            else
+            {
+                Result = null;
+                return false;
+            }
+        }
 
         /// <summary>
         /// Tries to read command-line options.
@@ -30,6 +56,7 @@ namespace Wasm.Interpret
         {
             ParsedArgs = default(InterpreterArguments);
             bool expectingRunFuncName = false;
+            bool expectingImporterName = false;
             bool expectingArgs = false;
             var funcArgs = new List<object>();
             for (int i = 0; i < Args.Length; i++)
@@ -55,25 +82,27 @@ namespace Wasm.Interpret
                         }
                         funcArgs.Add(fArg);
                     }
-
-                    int intFArg;
-                    double doubleFArg;
-                    uint uintFArg;
-                    if (int.TryParse(argStr, out intFArg))
-                    {
-                        funcArgs.Add(intFArg);
-                    }
-                    else if (uint.TryParse(argStr, out uintFArg))
-                    {
-                        funcArgs.Add((int)uintFArg);
-                    }
                     else
                     {
-                        if (!double.TryParse(argStr, out doubleFArg))
+                        int intFArg;
+                        double doubleFArg;
+                        uint uintFArg;
+                        if (int.TryParse(argStr, out intFArg))
                         {
-                            return false;
+                            funcArgs.Add(intFArg);
                         }
-                        funcArgs.Add(doubleFArg);
+                        else if (uint.TryParse(argStr, out uintFArg))
+                        {
+                            funcArgs.Add((int)uintFArg);
+                        }
+                        else
+                        {
+                            if (!double.TryParse(argStr, out doubleFArg))
+                            {
+                                return false;
+                            }
+                            funcArgs.Add(doubleFArg);
+                        }
                     }
                 }
                 else if (expectingRunFuncName)
@@ -87,9 +116,23 @@ namespace Wasm.Interpret
                     expectingRunFuncName = false;
                     expectingArgs = true;
                 }
+                else if (expectingImporterName)
+                {
+                    if (ParsedArgs.ImporterName != null)
+                    {
+                        return false;
+                    }
+
+                    ParsedArgs.ImporterName = Args[i];
+                    expectingImporterName = false;
+                }
                 else if (Args[i] == "--run")
                 {
                     expectingRunFuncName = true;
+                }
+                else if (Args[i] == "--importer")
+                {
+                    expectingImporterName = true;
                 }
                 else
                 {
@@ -105,7 +148,8 @@ namespace Wasm.Interpret
             ParsedArgs.FunctionArgs = funcArgs.ToArray();
 
             return ParsedArgs.WasmFilePath != null
-                && !expectingRunFuncName;
+                && !expectingRunFuncName
+                && !expectingImporterName;
         }
     }
 
@@ -113,7 +157,7 @@ namespace Wasm.Interpret
     {
         private static int PrintUsage()
         {
-            Console.Error.WriteLine("usage: wasm-interp file.wasm [--run exported_func_name [args...]]");
+            Console.Error.WriteLine("usage: wasm-interp file.wasm [--importer spectest] [--run exported_func_name [args...]]");
             return 1;
         }
 
@@ -126,9 +170,16 @@ namespace Wasm.Interpret
                 return PrintUsage();
             }
 
+            IImporter importer;
+            if (!parsedArgs.TryGetImporter(out importer))
+            {
+                Console.Error.WriteLine("error: there is no importer named '" + parsedArgs.ImporterName + "'");
+                return 1;
+            }
+
             // Read and instantiate the module.
             var wasmFile = WasmFile.ReadBinary(parsedArgs.WasmFilePath);
-            var module = ModuleInstance.Instantiate(wasmFile, new SpecTestImporter());
+            var module = ModuleInstance.Instantiate(wasmFile, importer);
 
             // Figure out which function to run.
             FunctionDefinition funcToRun = null;
@@ -138,7 +189,7 @@ namespace Wasm.Interpret
                 {
                     Console.Error.WriteLine(
                         "error: module does not export a function named '" +
-                        funcToRun + "'");
+                        parsedArgs.FunctionToRun + "'");
                     return 1;
                 }
             }

@@ -1303,7 +1303,7 @@ namespace Wasm.Interpret
         {
             var rhs = Context.Pop<long>();
             var lhs = Context.Pop<long>();
-            Context.Push<long>(lhs == rhs ? 1 : 0);
+            Context.Push<int>(lhs == rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1315,7 +1315,7 @@ namespace Wasm.Interpret
         {
             var rhs = Context.Pop<long>();
             var lhs = Context.Pop<long>();
-            Context.Push<long>(lhs != rhs ? 1 : 0);
+            Context.Push<int>(lhs != rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1327,7 +1327,7 @@ namespace Wasm.Interpret
         {
             var rhs = Context.Pop<long>();
             var lhs = Context.Pop<long>();
-            Context.Push<long>(lhs < rhs ? 1 : 0);
+            Context.Push<int>(lhs < rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1339,7 +1339,7 @@ namespace Wasm.Interpret
         {
             var rhs = (ulong)Context.Pop<long>();
             var lhs = (ulong)Context.Pop<long>();
-            Context.Push<long>(lhs < rhs ? 1 : 0);
+            Context.Push<int>(lhs < rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1351,7 +1351,7 @@ namespace Wasm.Interpret
         {
             var rhs = Context.Pop<long>();
             var lhs = Context.Pop<long>();
-            Context.Push<long>(lhs <= rhs ? 1 : 0);
+            Context.Push<int>(lhs <= rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1363,7 +1363,7 @@ namespace Wasm.Interpret
         {
             var rhs = (ulong)Context.Pop<long>();
             var lhs = (ulong)Context.Pop<long>();
-            Context.Push<long>(lhs <= rhs ? 1 : 0);
+            Context.Push<int>(lhs <= rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1375,7 +1375,7 @@ namespace Wasm.Interpret
         {
             var rhs = Context.Pop<long>();
             var lhs = Context.Pop<long>();
-            Context.Push<long>(lhs > rhs ? 1 : 0);
+            Context.Push<int>(lhs > rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1387,7 +1387,7 @@ namespace Wasm.Interpret
         {
             var rhs = (ulong)Context.Pop<long>();
             var lhs = (ulong)Context.Pop<long>();
-            Context.Push<long>(lhs > rhs ? 1 : 0);
+            Context.Push<int>(lhs > rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1399,7 +1399,7 @@ namespace Wasm.Interpret
         {
             var rhs = Context.Pop<long>();
             var lhs = Context.Pop<long>();
-            Context.Push<long>(lhs >= rhs ? 1 : 0);
+            Context.Push<int>(lhs >= rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1411,7 +1411,7 @@ namespace Wasm.Interpret
         {
             var rhs = (ulong)Context.Pop<long>();
             var lhs = (ulong)Context.Pop<long>();
-            Context.Push<long>(lhs >= rhs ? 1 : 0);
+            Context.Push<int>(lhs >= rhs ? 1 : 0);
         }
 
         /// <summary>
@@ -1421,7 +1421,7 @@ namespace Wasm.Interpret
         /// <param name="Context">The interpreter's context.</param>
         public static void Int64Eqz(Instruction Value, InterpreterContext Context)
         {
-            Context.Push<long>(Context.Pop<long>() == 0 ? 1 : 0);
+            Context.Push<int>(Context.Pop<long>() == 0 ? 1 : 0);
         }
 
         /// <summary>

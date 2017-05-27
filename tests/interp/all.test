@@ -17,6 +17,10 @@ init
 
 tests
 {
+    template InterpretFunction<factorial.wasm,fac -1L, 1>;
+    template InterpretFunction<factorial.wasm,fac 0L, 1>;
+    template InterpretFunction<factorial.wasm,fac 1L, 1>;
+    template InterpretFunction<factorial.wasm,fac 5L, 120>;
     template InterpretFunction<forty-two.wasm,fortyTwo,42>;
     template InterpretFunction<i32-ops.wasm,add 1 1,2>;
     template InterpretFunction<i32-ops.wasm,rotr 1989852383 4294967277,-419711787>;

@@ -47,6 +47,7 @@
     <Compile Include="ValueHelpers.cs" />
     <Compile Include="Variable.cs" />
     <Compile Include="WasmFunctionDefinition.cs" />
+    <Compile Include="BaseRuntime\TerminalRuntime.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

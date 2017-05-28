@@ -14,7 +14,8 @@ files = \
 	ThrowFunctionDefinition.cs \
 	ValueHelpers.cs \
 	Variable.cs \
-	WasmFunctionDefinition.cs
+	WasmFunctionDefinition.cs \
+	BaseRuntime/TerminalRuntime.cs
 
 libraries = ../libwasm-core/bin/flo/libwasm-core.flo
 

@@ -104,9 +104,9 @@ namespace Wasm.Interpret
         /// <param name="Index">The index of the function to run.</param>
         /// <param name="Arguments">The function's argument list.</param>
         /// <returns>The function's return value.</returns>
-        public T RunFunction<T>(uint Index, IReadOnlyList<object> Arguments)
+        public IReadOnlyList<object> RunFunction(uint Index, IReadOnlyList<object> Arguments)
         {
-            return (T)definedFuncs[(int)Index].Invoke(Arguments);
+            return definedFuncs[(int)Index].Invoke(Arguments);
         }
 
         /// <summary>
@@ -181,7 +181,7 @@ namespace Wasm.Interpret
                         var memory = Importer.ImportMemory((ImportedMemory)import);
                         if (memory == null)
                         {
-                            throw new WasmException("Importer cannot resolve linear memory import.");
+                            ThrowCannotResolveImport(import, "linear memory");
                         }
                         definedMemories.Add(memory);
                     }
@@ -190,7 +190,7 @@ namespace Wasm.Interpret
                         var globalVar = Importer.ImportGlobal((ImportedGlobal)import);
                         if (globalVar == null)
                         {
-                            throw new WasmException("Importer cannot resolve global variable import.");
+                            ThrowCannotResolveImport(import, "global variable");
                         }
                         definedGlobals.Add(globalVar);
                     }
@@ -200,7 +200,7 @@ namespace Wasm.Interpret
                         var funcDef = Importer.ImportFunction(funcImport, FunctionTypes[(int)funcImport.TypeIndex]);
                         if (funcDef == null)
                         {
-                            throw new WasmException("Importer cannot resolve function definition import.");
+                            ThrowCannotResolveImport(import, "function");
                         }
                         definedFuncs.Add(funcDef);
                     }
@@ -209,7 +209,7 @@ namespace Wasm.Interpret
                         var table = Importer.ImportTable((ImportedTable)import);
                         if (table == null)
                         {
-                            throw new WasmException("Importer cannot resolve table import.");
+                            ThrowCannotResolveImport(import, "table");
                         }
                         definedTables.Add(table);
                     }
@@ -219,6 +219,14 @@ namespace Wasm.Interpret
                     }
                 }
             }
+        }
+
+        private static void ThrowCannotResolveImport(ImportedValue Import, string ImportType)
+        {
+            throw new WasmException(
+                string.Format(
+                    "Importer cannot resolve {0} definition '{1}.{2}'.",
+                    ImportType, Import.ModuleName, Import.FieldName));
         }
 
         private void InstantiateMemories(WasmFile File)

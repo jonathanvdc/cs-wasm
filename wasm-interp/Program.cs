@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Wasm.Interpret.BaseRuntime;
 
 namespace Wasm.Interpret
 {
@@ -40,6 +41,17 @@ namespace Wasm.Interpret
                 || ImporterName.Equals("spectest", StringComparison.OrdinalIgnoreCase))
             {
                 Result = new SpecTestImporter();
+                return true;
+            }
+            else if (ImporterName.Equals("base-runtime", StringComparison.OrdinalIgnoreCase))
+            {
+                var importer = new PredefinedImporter();
+                TerminalRuntime.IncludeDefinitionsIn(
+                    Console.OpenStandardInput(),
+                    Console.OpenStandardOutput(),
+                    Console.OpenStandardError(),
+                    importer);
+                Result = importer;
                 return true;
             }
             else
@@ -157,7 +169,7 @@ namespace Wasm.Interpret
     {
         private static int PrintUsage()
         {
-            Console.Error.WriteLine("usage: wasm-interp file.wasm [--importer spectest] [--run exported_func_name [args...]]");
+            Console.Error.WriteLine("usage: wasm-interp file.wasm [--importer spectest|base-runtime] [--run exported_func_name [args...]]");
             return 1;
         }
 

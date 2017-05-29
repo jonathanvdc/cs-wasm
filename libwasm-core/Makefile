@@ -52,7 +52,7 @@ files = \
 	Instructions/VarUInt32Instruction.cs \
 	Instructions/VarUInt32Operator.cs
 
-common_options = -asm-name=libwasm-core -asm-version=0.1.0.0 -Wall -Wextra
+common_options = -asm-name=libwasm-core -asm-version=0.1.1.0 -Wall -Wextra
 
 all: flo
 

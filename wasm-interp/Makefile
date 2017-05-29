@@ -1,7 +1,7 @@
 files = Program.cs \
 		../libwasm/bin/flo/libwasm.flo
 
-common_options = -asm-name=wasm-interp -asm-version=0.1.0.0 -Wall -Wextra
+common_options = -asm-name=wasm-interp -asm-version=0.1.1.0 -Wall -Wextra
 
 all: exe flo
 

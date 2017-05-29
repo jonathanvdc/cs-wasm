@@ -13,6 +13,19 @@ init
             return = @($echo $(expected-result));
         }
     }
+
+    template InterpretBaseRuntimeModule<filename,expected-result>
+    {
+        run
+        {
+            return = @($wasm-interp $(input-files)/$(filename) --importer base-runtime);
+        }
+
+        init
+        {
+            return = @($echo $(expected-result));
+        }
+    }
 }
 
 tests
@@ -27,4 +40,5 @@ tests
     template InterpretFunction<i32-ops.wasm,clz 2,30>;
     template InterpretFunction<i32-ops.wasm,ctz 32768,15>;
     template InterpretFunction<i32-ops.wasm,popcnt 2863311530,16>;
+    template InterpretBaseRuntimeModule<print-hi.wasm,hi>;
 }

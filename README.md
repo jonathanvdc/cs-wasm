@@ -4,7 +4,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/4lfpgydcssxvr56o?svg=true)](https://ci.appveyor.com/project/jonathanvdc/cs-wasm)
 [![NuGet](https://img.shields.io/nuget/v/Wasm.svg)](https://www.nuget.org/packages/Wasm)
 
-`cs-wasm` is a C# library that can read and write binary WebAssembly files. It tries to represent WebAssembly files as faithfully as possible; reading a file into memory and writing it back to disk is byte-for-byte equivalent to a simple copy.
+`cs-wasm` is a C# library that can read, write and interpret binary WebAssembly files. It tries to represent WebAssembly files as faithfully as possible; reading a file into memory and writing it back to disk is byte-for-byte equivalent to a simple copy.
 
 ## Setting up `cs-wasm`
 
@@ -108,6 +108,58 @@ We may want to add some sections to our newly-created file now. The example from
 // Define a type section.
 var typeSection = new TypeSection();
 file.Sections.Add(typeSection);
+```
+
+### Interpreting a `WasmFile`
+
+To interpret a WebAssembly file, you first need to instantiate it.
+
+```cs
+using Wasm.Interpret;
+// ...
+ModuleInstance module = ModuleInstance.Instantiate(wasmFile, importer);
+```
+
+Notice the `importer` argument there? That's the object from which a `ModuleInstance` can import functions, memories, global variables and tables. An `importer` must implement `IImporter`. You don't have to implement `IImporter` yourself if you don't feel like it, though: `PredefinedImporter` is perfectly adequate for most purposes:
+
+```cs
+using System;
+using Wasm.Interpret;
+// ...
+IReadOnlyList<object> Print(IReadOnlyList<object> Values)
+{
+    Console.WriteLine(Values[0]);
+    return new object[0];
+}
+// ...
+// Create an importer.
+var importer = new PredefinedImporter();
+// Define a function called 'print_i32' that takes an i32 and
+// returns nothing.
+importer.DefineFunction(
+    "print_i32",
+    new DelegateFunctionDefinition(
+        new WasmValueType[] { WasmValueType.Int32 },
+        new WasmValueType[] { },
+        Print));
+// Instantiate the module.
+ModuleInstance module = ModuleInstance.Instantiate(wasmFile, importer);
+```
+
+Once instantiated, you can access the module's functions, memories, global variables and tables, exported or otherwise. To run an exported function named `factorial` and print the result:
+
+```cs
+FunctionDefinition funcDef = module.ExportedFunctions["factorial"];
+IReadOnlyList<object> results = funcDef.Invoke(new object[] { 10L });
+Console.WriteLine("Return value: {0}", results[0]);
+```
+
+Alternatively, you might want to run the WebAssembly file's entry point. `ModuleInstance` does not expose an entry point directly, but it's easy enough to find it by examining the 'start' section of the `WasmFile` on which the `ModuleInstance` is based.
+
+```cs
+var startSec = wasmFile.GetFirstSectionOrNull<StartSection>();
+FunctionDefinition mainFunc = module.Functions[(int)startSec.StartFunctionIndex];
+mainFunc.Invoke(new object[] { });
 ```
 
 ### Other fun stuff

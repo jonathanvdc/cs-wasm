@@ -2,7 +2,7 @@ files = \
 	../libwasm-core/bin/flo/libwasm-core.flo \
 	../libwasm-interpret/bin/flo/libwasm-interpret.flo
 
-common_options = -asm-name=libwasm -asm-version=0.1.1.0
+common_options = -asm-name=libwasm -asm-version=0.1.2.0
 
 all: dll flo
 

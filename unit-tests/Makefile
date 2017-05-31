@@ -8,7 +8,7 @@ libraries = \
 	../packages/Loyc.Collections.24.3.0/lib/net45/Loyc.Collections.dll \
 	../packages/Loyc.Syntax.24.3.0/lib/net45/Loyc.Syntax.dll
 
-common_options = -asm-name=unit-tests -asm-version=0.1.1.0 -Wall -Wextra -fno-whole-program
+common_options = -asm-name=unit-tests -asm-version=0.1.2.0 -Wall -Wextra -fno-whole-program
 
 all: exe flo
 

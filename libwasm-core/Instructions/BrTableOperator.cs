@@ -30,7 +30,22 @@ namespace Wasm.Instructions
                 tableEntries.Add(Reader.ReadVarUInt32());
             }
             uint defaultEntry = Reader.ReadVarUInt32();
-            return new BrTableInstruction(this, tableEntries, defaultEntry);
+            return Create(tableEntries, defaultEntry);
+        }
+
+        /// <summary>
+        /// Creates a break table instruction from this operator, a table of
+        /// break targets and a default target.
+        /// </summary>
+        /// <param name="TargetTable">
+        /// A table of target entries that indicate an outer block or loop to which to break.
+        /// </param>
+        /// <param name="DefaultTarget">
+        /// The default target: an outer block or loop to which to break in the default case.
+        /// </param>
+        public BrTableInstruction Create(IEnumerable<uint> TargetTable, uint DefaultTarget)
+        {
+            return new BrTableInstruction(this, TargetTable, DefaultTarget);
         }
 
         /// <summary>

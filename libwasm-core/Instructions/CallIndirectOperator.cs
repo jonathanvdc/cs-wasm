@@ -26,6 +26,16 @@ namespace Wasm.Instructions
         }
 
         /// <summary>
+        /// Creates an indirect call instruction from this operator and
+        /// an index into the 'type' table.
+        /// </summary>
+        /// <param name="TypeIndex">The index of the callee's signature in the type table.</param>
+        public CallIndirectInstruction Create(uint TypeIndex)
+        {
+            return new CallIndirectInstruction(this, TypeIndex);
+        }
+
+        /// <summary>
         /// Casts the given instruction to this operator's instruction type.
         /// </summary>
         /// <param name="Value">The instruction to cast.</param>

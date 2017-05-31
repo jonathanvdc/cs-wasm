@@ -11,6 +11,13 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class IfElseInstruction : Instruction
     {
+        /// <summary>
+        /// Creates an if-else instruction from the given type, if-branch and
+        /// else-branch.
+        /// </summary>
+        /// <param name="Type">The type of value returned by the if-else instruction.</param>
+        /// <param name="IfBranch">The if-else instruction's 'if' branch.</param>
+        /// <param name="ElseBranch">The if-else instruction's 'else' branch.</param>
         public IfElseInstruction(
             WasmType Type,
             IEnumerable<Instruction> IfBranch,
@@ -28,9 +35,9 @@ namespace Wasm.Instructions
         public override Operator Op { get { return Operators.If; } }
 
         /// <summary>
-        /// Gets the type of value returned by this block.
+        /// Gets the type of value returned by this instruction.
         /// </summary>
-        /// <returns>The type of value returned by this block.</returns>
+        /// <returns>The type of value returned by this instruction.</returns>
         public WasmType Type { get; set; }
 
         /// <summary>

@@ -9,10 +9,23 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class CallIndirectInstruction : Instruction
     {
+        /// <summary>
+        /// Creates an indirect call instruction from the given operator and
+        /// an index into the 'type' table.
+        /// </summary>
+        /// <param name="Op">The operator for this instruction.</param>
+        /// <param name="TypeIndex">The index of the callee's signature in the type table.</param>
         public CallIndirectInstruction(Operator Op, uint TypeIndex)
             : this(Op, TypeIndex, 0)
         { }
 
+        /// <summary>
+        /// Creates an indirect call instruction from the given operator,
+        /// an index into the 'type' table and a value for the reserved field.
+        /// </summary>
+        /// <param name="Op">The operator for this instruction.</param>
+        /// <param name="TypeIndex">The index of the callee's signature in the type table.</param>
+        /// <param name="Reserved">A reserved value, which should always be zero.</param>
         public CallIndirectInstruction(Operator Op, uint TypeIndex, uint Reserved)
         {
             this.opValue = Op;
@@ -29,7 +42,7 @@ namespace Wasm.Instructions
         public override Operator Op { get { return opValue; } }
 
         /// <summary>
-        /// Gets the index in the type table of the callee's signature.
+        /// Gets the index of the callee's signature in the type table.
         /// </summary>
         /// <returns>The callee's signature, as an index in the type table.</returns>
         public uint TypeIndex { get; private set; }

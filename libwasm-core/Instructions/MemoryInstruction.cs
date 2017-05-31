@@ -9,6 +9,15 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class MemoryInstruction : Instruction
     {
+        /// <summary>
+        /// Creates a memory instruction from the given operator, alignment
+        /// and offset.
+        /// </summary>
+        /// <param name="Op">The operator for this memory instruction.</param>
+        /// <param name="Log2Alignment">The log2 of the memory alignment for this instruction.</param>
+        /// <param name="Offset">
+        /// The offset of the memory location relative to the pointer that is accessed.
+        /// </param>
         public MemoryInstruction(Operator Op, uint Log2Alignment, uint Offset)
         {
             this.opValue = Op;

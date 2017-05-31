@@ -22,6 +22,15 @@ namespace Wasm.Instructions
         private NullaryInstruction instruction;
 
         /// <summary>
+        /// Gets an instruction that applies this operator.
+        /// </summary>
+        /// <returns>An instruction.</returns>
+        public NullaryInstruction Create()
+        {
+            return instruction;
+        }
+
+        /// <summary>
         /// Reads the immediates (not the opcode) of a WebAssembly instruction
         /// for this operator from the given reader and returns the result as an
         /// instruction.

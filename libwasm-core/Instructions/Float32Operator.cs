@@ -22,7 +22,18 @@ namespace Wasm.Instructions
         /// <returns>A WebAssembly instruction.</returns>
         public override Instruction ReadImmediates(BinaryWasmReader Reader)
         {
-            return new Float32Instruction(this, Reader.ReadFloat32());
+            return Create(Reader.ReadFloat32());
+        }
+
+        /// <summary>
+        /// Creates a new instruction from this operator and the given
+        /// immediate.
+        /// </summary>
+        /// <param name="Immediate">The immediate.</param>
+        /// <returns>A new instruction.</returns>
+        public Float32Instruction Create(float Immediate)
+        {
+            return new Float32Instruction(this, Immediate);
         }
 
         /// <summary>

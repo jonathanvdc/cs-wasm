@@ -22,7 +22,21 @@ namespace Wasm.Instructions
         /// <returns>A WebAssembly instruction.</returns>
         public override Instruction ReadImmediates(BinaryWasmReader Reader)
         {
-            return new MemoryInstruction(this, Reader.ReadVarUInt32(), Reader.ReadVarUInt32());
+            return Create(Reader.ReadVarUInt32(), Reader.ReadVarUInt32());
+        }
+
+        /// <summary>
+        /// Creates a new instruction from this operator and the given
+        /// immediates.
+        /// </summary>
+        /// <param name="Log2Alignment">The log2 of the memory alignment for this instruction.</param>
+        /// <param name="Offset">
+        /// The offset of the memory location relative to the pointer that is accessed.
+        /// </param>
+        /// <returns>A new instruction.</returns>
+        public MemoryInstruction Create(uint Log2Alignment, uint Offset)
+        {
+            return new MemoryInstruction(this, Log2Alignment, Offset);
         }
 
         /// <summary>

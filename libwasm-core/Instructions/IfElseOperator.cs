@@ -62,6 +62,21 @@ namespace Wasm.Instructions
         }
 
         /// <summary>
+        /// Creates an if-else instruction from the given type, if-branch and
+        /// else-branch.
+        /// </summary>
+        /// <param name="Type">The type of value returned by the if-else instruction.</param>
+        /// <param name="IfBranch">The if-else instruction's 'if' branch.</param>
+        /// <param name="ElseBranch">The if-else instruction's 'else' branch.</param>
+        public IfElseInstruction Create(
+            WasmType Type,
+            IEnumerable<Instruction> IfBranch,
+            IEnumerable<Instruction> ElseBranch)
+        {
+            return new IfElseInstruction(Type, IfBranch, ElseBranch);
+        }
+
+        /// <summary>
         /// Casts the given instruction to this operator's instruction type.
         /// </summary>
         /// <param name="Value">The instruction to cast.</param>

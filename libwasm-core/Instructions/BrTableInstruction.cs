@@ -10,6 +10,17 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class BrTableInstruction : Instruction
     {
+        /// <summary>
+        /// Creates a break table instruction from the given operator, table of
+        /// break targets and a default target.
+        /// </summary>
+        /// <param name="Op">The operator for this instruction.</param>
+        /// <param name="TargetTable">
+        /// A table of target entries that indicate an outer block or loop to which to break.
+        /// </param>
+        /// <param name="DefaultTarget">
+        /// The default target: an outer block or loop to which to break in the default case.
+        /// </param>
         public BrTableInstruction(Operator Op, IEnumerable<uint> TargetTable, uint DefaultTarget)
         {
             this.opValue = Op;
@@ -26,13 +37,13 @@ namespace Wasm.Instructions
         public override Operator Op { get { return opValue; } }
 
         /// <summary>
-        /// Gets a table of target entries that indicate an outer block or loop to which to break
+        /// Gets a table of target entries that indicate an outer block or loop to which to break.
         /// </summary>
         /// <returns>The target entry table.</returns>
         public List<uint> TargetTable { get; private set; }
 
         /// <summary>
-        /// Gets the default target: an outer block or loop to which to break in the default case
+        /// Gets the default target: an outer block or loop to which to break in the default case.
         /// </summary>
         /// <returns>The default target.</returns>
         public uint DefaultTarget { get; set; }

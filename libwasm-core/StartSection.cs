@@ -28,7 +28,7 @@ namespace Wasm
         /// Gets the index of the WebAssembly module's entry point.
         /// </summary>
         /// <returns></returns>
-        public uint StartFunctionIndex { get; private set; }
+        public uint StartFunctionIndex { get; set; }
 
         /// <summary>
         /// Gets this start section's additional payload.

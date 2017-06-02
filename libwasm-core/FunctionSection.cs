@@ -15,6 +15,7 @@ namespace Wasm
         public FunctionSection()
         {
             this.FunctionTypes = new List<uint>();
+            this.ExtraPayload = new byte[0];
         }
 
         /// <summary>

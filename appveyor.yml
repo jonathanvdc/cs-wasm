@@ -62,3 +62,15 @@ deploy:
     on:
       branch: master # Release from master branch only.
       appveyor_repo_tag: true # Deploy on tag push only.
+  - provider: GitHub
+    release: cs-wasm v$(SEMVER)
+    tag: $(APPVEYOR_REPO_TAG_NAME)
+    description: 'Release description' # Fill this out later.
+    auth_token:
+      secure: 693ZX2DdyyjDOqpJaJlUMO1hcMtLbsqMnCLzQVUEq7JjGb+bfEbaB/oMO0b26KZo
+    artifact: cs-wasm-tools.zip # Release the cs-wasm tools as an artifact.
+    draft: true  # Make this a draft.
+    prerelease: false
+    on:
+      branch: master # Release from master branch only.
+      appveyor_repo_tag: true # Deploy on tag push only.

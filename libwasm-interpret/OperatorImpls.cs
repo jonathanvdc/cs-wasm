@@ -61,7 +61,7 @@ namespace Wasm.Interpret
                 interpreter.Interpret(contents[i], Context);
                 if (Context.BreakRequested)
                 {
-                    if (Context.BreakDepth > 0)
+                    if (Context.BreakDepth == 0)
                     {
                         // This loop is the break's target. We should decrement the
                         // break depth to terminate the break request and then re-start

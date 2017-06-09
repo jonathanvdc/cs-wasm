@@ -26,6 +26,13 @@ namespace Wasm.Interpret
         public string ImporterName { get; private set; }
 
         /// <summary>
+        /// Gets a Boolean flag that specifies if an instruction trace is to be
+        /// sent to standard error.
+        /// </summary>
+        /// <returns>The tracing flag.</returns>
+        public bool TraceExecution { get; private set; }
+
+        /// <summary>
         /// Gets the arguments for the function to run, if any.
         /// </summary>
         public object[] FunctionArgs { get; private set; }
@@ -146,6 +153,10 @@ namespace Wasm.Interpret
                 {
                     expectingImporterName = true;
                 }
+                else if (Args[i] == "--trace")
+                {
+                    ParsedArgs.TraceExecution = true;
+                }
                 else
                 {
                     if (ParsedArgs.WasmFilePath != null)
@@ -169,7 +180,7 @@ namespace Wasm.Interpret
     {
         private static int PrintUsage()
         {
-            Console.Error.WriteLine("usage: wasm-interp file.wasm [--importer spectest|base-runtime] [--run exported_func_name [args...]]");
+            Console.Error.WriteLine("usage: wasm-interp file.wasm [--trace] [--importer spectest|base-runtime] [--run exported_func_name [args...]]");
             return 1;
         }
 
@@ -191,7 +202,12 @@ namespace Wasm.Interpret
 
             // Read and instantiate the module.
             var wasmFile = WasmFile.ReadBinary(parsedArgs.WasmFilePath);
-            var module = ModuleInstance.Instantiate(wasmFile, importer);
+            InstructionInterpreter interp = DefaultInstructionInterpreter.Default;
+            if (parsedArgs.TraceExecution)
+            {
+                interp = new TracingInstructionInterpreter(interp, Console.Error);
+            }
+            var module = ModuleInstance.Instantiate(wasmFile, importer, interp);
 
             // Figure out which function to run.
             FunctionDefinition funcToRun = null;

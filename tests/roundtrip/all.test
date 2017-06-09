@@ -16,6 +16,7 @@ tests
 {
     template Roundtrip<elements.wasm>;
     template Roundtrip<factorial.wasm>;
+    template Roundtrip<fib-f32.wasm>;
     template Roundtrip<forty-two.wasm>;
     template Roundtrip<globals.wasm>;
     template Roundtrip<i32-ops.wasm>;

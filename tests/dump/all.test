@@ -15,6 +15,7 @@ tests
 {
     template Dump<elements.wasm>;
     template Dump<factorial.wasm>;
+    template Dump<fib-f32.wasm>;
     template Dump<forty-two.wasm>;
     template Dump<globals.wasm>;
     template Dump<i32-ops.wasm>;

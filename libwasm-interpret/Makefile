@@ -12,6 +12,7 @@ files = \
 	PredefinedImporter.cs \
 	SpecTestImporter.cs \
 	ThrowFunctionDefinition.cs \
+	TracingInstructionInterpreter.cs \
 	ValueHelpers.cs \
 	Variable.cs \
 	WasmFunctionDefinition.cs \

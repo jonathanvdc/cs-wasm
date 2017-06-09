@@ -44,6 +44,7 @@
     <Compile Include="PredefinedImporter.cs" />
     <Compile Include="SpecTestImporter.cs" />
     <Compile Include="ThrowFunctionDefinition.cs" />
+    <Compile Include="TracingInstructionInterpreter.cs" />
     <Compile Include="ValueHelpers.cs" />
     <Compile Include="Variable.cs" />
     <Compile Include="WasmFunctionDefinition.cs" />

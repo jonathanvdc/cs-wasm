@@ -20,7 +20,7 @@ files = \
 
 libraries = ../libwasm-core/bin/flo/libwasm-core.flo
 
-common_options = -asm-name=libwasm-interpret -asm-version=0.1.2.0 -Wall -Wextra
+common_options = -asm-name=libwasm-interpret -asm-version=0.1.3.0 -Wall -Wextra
 
 all: flo
 

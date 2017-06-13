@@ -38,6 +38,7 @@ after_build:
   - xcopy wasm-cat\bin\clr\wasm-cat.exe cs-wasm-tools
   - xcopy wasm-dump\bin\clr\wasm-dump.exe cs-wasm-tools
   - xcopy wasm-interp\bin\clr\wasm-interp.exe cs-wasm-tools
+  - xcopy wasm-opt\bin\clr\wasm-opt.exe cs-wasm-tools
   - 7z a cs-wasm-tools.zip %APPVEYOR_BUILD_FOLDER%\cs-wasm-tools\*
   # Create the NuGet package
   - nuget pack -Version %PKG_VERSION% libwasm.nuspec

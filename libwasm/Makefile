@@ -1,6 +1,7 @@
 files = \
 	../libwasm-core/bin/flo/libwasm-core.flo \
-	../libwasm-interpret/bin/flo/libwasm-interpret.flo
+	../libwasm-interpret/bin/flo/libwasm-interpret.flo \
+	../libwasm-optimize/bin/flo/libwasm-optimize.flo
 
 common_options = -asm-name=libwasm -asm-version=0.1.3.0
 

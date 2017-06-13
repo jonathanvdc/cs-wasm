@@ -1,6 +1,7 @@
 exe:
 	make -C libwasm-core flo
 	make -C libwasm-interpret flo
+	make -C libwasm-optimize flo
 	make -C libwasm flo
 	make -C nullary-opcode-generator exe
 	make -C wasm-cat exe
@@ -11,6 +12,7 @@ exe:
 all:
 	make -C libwasm-core all
 	make -C libwasm-interpret all
+	make -C libwasm-optimize all
 	make -C libwasm all
 	make -C nullary-opcode-generator all
 	make -C wasm-cat all
@@ -21,6 +23,7 @@ all:
 dll:
 	make -C libwasm-core flo
 	make -C libwasm-interpret flo
+	make -C libwasm-optimize flo
 	make -C libwasm all
 	make -C nullary-opcode-generator exe
 	make -C wasm-cat exe
@@ -31,6 +34,7 @@ dll:
 flo:
 	make -C libwasm-core flo
 	make -C libwasm-interpret flo
+	make -C libwasm-optimize flo
 	make -C libwasm flo
 	make -C nullary-opcode-generator flo
 	make -C wasm-cat flo
@@ -41,6 +45,7 @@ flo:
 clean:
 	make -C libwasm-core clean
 	make -C libwasm-interpret clean
+	make -C libwasm-optimize clean
 	make -C libwasm clean
 	make -C nullary-opcode-generator clean
 	make -C wasm-cat clean

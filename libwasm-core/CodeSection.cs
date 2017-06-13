@@ -160,48 +160,6 @@ namespace Wasm
         public bool HasExtraPayload => ExtraPayload != null && ExtraPayload.Length > 0;
 
         /// <summary>
-        /// Merges adjacent local entries that have the same type and deletes empty
-        /// local entries.
-        /// </summary>
-        public void CompressLocalEntries()
-        {
-            var newLocals = new List<LocalEntry>();
-            var aggregateEntry = new LocalEntry(WasmValueType.Int32, 0);
-            for (int i = 0; i < Locals.Count; i++)
-            {
-                var currentEntry = Locals[i];
-                if (currentEntry.LocalType == aggregateEntry.LocalType)
-                {
-                    // If two adjacent local entries have the same type, then
-                    // we should merge them.
-                    aggregateEntry = new LocalEntry(
-                        aggregateEntry.LocalType,
-                        aggregateEntry.LocalCount + currentEntry.LocalCount);
-                }
-                else
-                {
-                    // We can't merge `currentEntry` with `aggregateEntry`. But maybe
-                    // we'll be able to merge `currentEntry` and its successor.
-                    if (aggregateEntry.LocalCount > 0)
-                    {
-                        newLocals.Add(aggregateEntry);
-                    }
-                    aggregateEntry = currentEntry;
-                }
-            }
-
-            // Append the final entry to the new list of locals.
-            if (aggregateEntry.LocalCount > 0)
-            {
-                newLocals.Add(aggregateEntry);
-            }
-
-            // Clear the old local list and replace its contents with the new entries.
-            Locals.Clear();
-            Locals.AddRange(newLocals);
-        }
-
-        /// <summary>
         /// Writes this function body to the given WebAssembly file writer.
         /// </summary>
         /// <param name="Writer">The WebAssembly file writer.</param>

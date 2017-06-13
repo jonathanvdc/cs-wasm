@@ -7,6 +7,7 @@ exe:
 	make -C wasm-cat exe
 	make -C wasm-dump exe
 	make -C wasm-interp exe
+	make -C wasm-opt exe
 	make -C unit-tests exe
 
 all:
@@ -18,6 +19,7 @@ all:
 	make -C wasm-cat all
 	make -C wasm-dump all
 	make -C wasm-interp all
+	make -C wasm-opt all
 	make -C unit-tests all
 
 dll:
@@ -29,6 +31,7 @@ dll:
 	make -C wasm-cat exe
 	make -C wasm-dump exe
 	make -C wasm-interp exe
+	make -C wasm-opt exe
 	make -C unit-tests exe
 
 flo:
@@ -40,6 +43,7 @@ flo:
 	make -C wasm-cat flo
 	make -C wasm-dump flo
 	make -C wasm-interp flo
+	make -C wasm-opt flo
 	make -C unit-tests flo
 
 clean:
@@ -51,6 +55,7 @@ clean:
 	make -C wasm-cat clean
 	make -C wasm-dump clean
 	make -C wasm-interp clean
+	make -C wasm-opt clean
 	make -C unit-tests clean
 	make -C examples clean
 

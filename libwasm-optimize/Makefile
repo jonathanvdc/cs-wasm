@@ -1,5 +1,6 @@
 files = \
 	FunctionBodyOptimizations.cs \
+	FunctionTypeOptimizations.cs \
 	WasmFileOptimizations.cs
 
 libraries = ../libwasm-core/bin/flo/libwasm-core.flo

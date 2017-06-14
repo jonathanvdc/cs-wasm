@@ -13,6 +13,7 @@ namespace Wasm.Optimize
         /// <param name="File">The file to optimize.</param>
         public static void Optimize(this WasmFile File)
         {
+            File.CompressFunctionTypes();
             foreach (var section in File.Sections)
             {
                 if (section is CodeSection)

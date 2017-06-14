@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FunctionBodyOptimizations.cs" />
+    <Compile Include="FunctionTypeOptimizations.cs" />
     <Compile Include="WasmFileOptimizations.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -5,11 +5,26 @@ init
     {
         run
         {
-            return = @($wasm-interp $(input-files)/$(filename) --run $(function-to-run));
+            return = @($wasm-interp $(interp-filename) --run $(function-to-run));
+        }
+
+        configs
+        {
+            no-opt
+            {
+                interp-filename = $(input-files)/$(filename);
+            }
+
+            opt
+            {
+                interp-filename = out/$(filename);
+                $wasm-opt $(input-files)/$(filename) -o $(interp-filename);
+            }
         }
 
         init
         {
+            $mkdir-rec out;
             return = @($echo $(expected-result));
         }
     }
@@ -18,11 +33,26 @@ init
     {
         run
         {
-            return = @($wasm-interp $(input-files)/$(filename) --importer base-runtime);
+            return = @($wasm-interp $(interp-filename) --importer base-runtime);
+        }
+
+        configs
+        {
+            no-opt
+            {
+                interp-filename = $(input-files)/$(filename);
+            }
+
+            opt
+            {
+                interp-filename = out/$(filename);
+                $wasm-opt $(input-files)/$(filename) -o $(interp-filename);
+            }
         }
 
         init
         {
+            $mkdir-rec out;
             return = @($echo $(expected-result));
         }
     }
@@ -34,8 +64,23 @@ init
             return = @($wasm-interp $(input-files)/$(filename));
         }
 
+        configs
+        {
+            no-opt
+            {
+                interp-filename = $(input-files)/$(filename);
+            }
+
+            opt
+            {
+                interp-filename = out/$(filename);
+                $wasm-opt $(input-files)/$(filename) -o $(interp-filename);
+            }
+        }
+
         init
         {
+            $mkdir-rec out;
             return = @($echo $(expected-result));
         }
     }

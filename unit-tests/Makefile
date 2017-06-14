@@ -2,6 +2,7 @@ files = \
 	Program.cs \
 	Interpret/DefaultInterpreterTests.cs \
 	Interpret/LinearMemoryTests.cs \
+	Optimize/FunctionBodyOptimizationTests.cs \
 	../libwasm/bin/flo/libwasm.flo
 libraries = \
 	../packages/Loyc.Essentials.24.3.0/lib/net45/Loyc.Essentials.dll \

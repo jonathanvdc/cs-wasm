@@ -13,4 +13,5 @@ init
 tests
 {
     template RunUnitTests<1>;
+    template RunUnitTests<2>;
 }

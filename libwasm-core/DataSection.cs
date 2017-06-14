@@ -203,7 +203,7 @@ namespace Wasm
             var index = Reader.ReadVarUInt32();
             var offset = InitializerExpression.ReadFrom(Reader);
             var dataLength = Reader.ReadVarUInt32();
-            var data = Reader.Reader.ReadBytes((int)dataLength);
+            var data = Reader.ReadBytes((int)dataLength);
             return new DataSegment(index, offset, data);
         }
 

@@ -23,16 +23,49 @@ namespace Wasm.Binary
         /// </summary>
         /// <param name="Reader">The binary reader for a WebAssembly file.</param>
         /// <param name="StringEncoding">The encoding for strings in the WebAssembly file.</param>
-        public BinaryWasmReader(BinaryReader Reader, Encoding StringEncoding)
+        public BinaryWasmReader(
+            BinaryReader Reader,
+            Encoding StringEncoding)
         {
-            this.Reader = Reader;
+            this.reader = Reader;
             this.StringEncoding = StringEncoding;
+            this.streamIsEmpty = defaultStreamIsEmptyImpl;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmReader"/> class.
+        /// </summary>
+        /// <param name="Reader">The binary reader for a WebAssembly file.</param>
+        /// <param name="StringEncoding">The encoding for strings in the WebAssembly file.</param>
+        /// <param name="StreamIsEmpty">Tests if the stream is empty.</param>
+        public BinaryWasmReader(
+            BinaryReader Reader,
+            Encoding StringEncoding,
+            Func<bool> StreamIsEmpty)
+        {
+            this.reader = Reader;
+            this.StringEncoding = StringEncoding;
+            this.streamIsEmpty = StreamIsEmpty;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmReader"/> class.
+        /// </summary>
+        /// <param name="Reader">The binary reader for a WebAssembly file.</param>
+        /// <param name="StreamIsEmpty">Tests if the stream is empty.</param>
+        public BinaryWasmReader(
+            BinaryReader Reader,
+            Func<bool> StreamIsEmpty)
+        {
+            this.reader = Reader;
+            this.StringEncoding = UTF8Encoding.UTF8;
+            this.streamIsEmpty = StreamIsEmpty;
         }
 
         /// <summary>
         /// The binary reader for a WebAssembly file.
         /// </summary>
-        public BinaryReader Reader { get; private set; }
+        private BinaryReader reader;
 
         /// <summary>
         /// The encoding that is used to parse strings.
@@ -41,9 +74,45 @@ namespace Wasm.Binary
         public Encoding StringEncoding { get; private set; }
 
         /// <summary>
+        /// Tests if the stream is empty.
+        /// </summary>
+        private Func<bool> streamIsEmpty;
+
+        /// <summary>
+        /// A default implementation that tests if the stream is empty.
+        /// </summary>
+        private bool defaultStreamIsEmptyImpl()
+        {
+            return Position >= reader.BaseStream.Length;
+        }
+
+        /// <summary>
         /// Gets the current position of the reader in the WebAssembly file.
         /// </summary>
-        public long Position => Reader.BaseStream.Position;
+        public long Position { get; private set; }
+
+        /// <summary>
+        /// Reads a single byte.
+        /// </summary>
+        /// <returns>The byte that was read.</returns>
+        public byte ReadByte()
+        {
+            byte result = reader.ReadByte();
+            Position++;
+            return result;
+        }
+
+        /// <summary>
+        /// Reads a range of bytes.
+        /// </summary>
+        /// <param name="Count">The number of bytes to read.</param>
+        /// <returns>The array of bytes that were read.</returns>
+        public byte[] ReadBytes(int Count)
+        {
+            byte[] results = reader.ReadBytes(Count);
+            Position += Count;
+            return results;
+        }
 
         /// <summary>
         /// Parses an unsigned LEB128 variable-length integer, limited to 64 bits.
@@ -57,7 +126,7 @@ namespace Wasm.Binary
             int shift = 0;
             while (true)
             {
-                byte b = Reader.ReadByte();
+                byte b = ReadByte();
                 result |= ((ulong)(b & 0x7F) << shift);
                 if ((b & 0x80) == 0)
                     break;
@@ -108,7 +177,7 @@ namespace Wasm.Binary
             byte b;
             do
             {
-                b = Reader.ReadByte();
+                b = ReadByte();
                 result |= ((long)(b & 0x7F) << shift);
                 shift += 7;
             } while ((b & 0x80) != 0);
@@ -147,7 +216,9 @@ namespace Wasm.Binary
         /// <returns>The parsed 32-bit floating-point number.</returns>
         public float ReadFloat32()
         {
-            return Reader.ReadSingle();
+            var result = reader.ReadSingle();
+            Position += sizeof(float);
+            return result;
         }
 
         /// <summary>
@@ -156,7 +227,9 @@ namespace Wasm.Binary
         /// <returns>The parsed 64-bit floating-point number.</returns>
         public double ReadFloat64()
         {
-            return Reader.ReadDouble();
+            var result = reader.ReadDouble();
+            Position += sizeof(double);
+            return result;
         }
 
         /// <summary>
@@ -184,7 +257,7 @@ namespace Wasm.Binary
         public string ReadString()
         {
             uint length = ReadVarUInt32();
-            byte[] bytes = Reader.ReadBytes((int)length);
+            byte[] bytes = ReadBytes((int)length);
             return StringEncoding.GetString(bytes);
         }
 
@@ -208,7 +281,9 @@ namespace Wasm.Binary
         /// <returns>The parsed version header.</returns>
         public VersionHeader ReadVersionHeader()
         {
-            return new VersionHeader(Reader.ReadUInt32(), Reader.ReadUInt32());
+            var result = new VersionHeader(reader.ReadUInt32(), reader.ReadUInt32());
+            Position += 2 * sizeof(uint);
+            return result;
         }
 
         /// <summary>
@@ -221,9 +296,9 @@ namespace Wasm.Binary
             uint payloadLength = ReadVarUInt32();
             if (code == SectionCode.Custom)
             {
-                uint startPos = (uint)Reader.BaseStream.Position;
+                uint startPos = (uint)Position;
                 var name = ReadString();
-                uint nameLength = (uint)Reader.BaseStream.Position - startPos;
+                uint nameLength = (uint)Position - startPos;
                 return new SectionHeader(new SectionName(name), payloadLength - nameLength);
             }
             else
@@ -263,7 +338,7 @@ namespace Wasm.Binary
         /// <returns>The remaining payload of the section whose payload starts at the given position.</returns>
         public byte[] ReadRemainingPayload(long StartPosition, uint PayloadLength)
         {
-            return Reader.ReadBytes((int)(Reader.BaseStream.Position - StartPosition - PayloadLength));
+            return ReadBytes((int)(Position - StartPosition - PayloadLength));
         }
 
         /// <summary>
@@ -286,7 +361,7 @@ namespace Wasm.Binary
         {
             return new CustomSection(
                 Header.Name.CustomName,
-                Reader.ReadBytes((int)Header.PayloadLength));
+                ReadBytes((int)Header.PayloadLength));
         }
 
         /// <summary>
@@ -334,7 +409,7 @@ namespace Wasm.Binary
         {
             return new UnknownSection(
                 Header.Name.Code,
-                Reader.ReadBytes((int)Header.PayloadLength));
+                ReadBytes((int)Header.PayloadLength));
         }
 
         /// <summary>
@@ -346,7 +421,7 @@ namespace Wasm.Binary
             var version = ReadVersionHeader();
             version.Verify();
             var sections = new List<Section>();
-            while (Reader.BaseStream.Length - Position > 0)
+            while (!streamIsEmpty())
             {
                 sections.Add(ReadSection());
             }

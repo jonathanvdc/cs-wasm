@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -177,6 +178,20 @@ namespace Wasm
             // Create a WebAssembly reader and read the file.
             var reader = new BinaryReader(Source);
             var wasmReader = new BinaryWasmReader(reader);
+            return wasmReader.ReadFile();
+        }
+
+        /// <summary>
+        /// Reads a binary WebAssembly from the given stream.
+        /// </summary>
+        /// <param name="Source">The stream from which a WebAssembly file is to be read.</param>
+        /// <param name="StreamIsEmpty">Tests if the input stream is empty.</param>
+        /// <returns>The WebAssembly file.</returns>
+        public static WasmFile ReadBinary(Stream Source, Func<bool> StreamIsEmpty)
+        {
+            // Create a WebAssembly reader and read the file.
+            var reader = new BinaryReader(Source);
+            var wasmReader = new BinaryWasmReader(reader, StreamIsEmpty);
             return wasmReader.ReadFile();
         }
 

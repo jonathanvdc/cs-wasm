@@ -183,7 +183,7 @@ namespace Wasm
         {
             string moduleName = Reader.ReadString();
             string fieldName = Reader.ReadString();
-            var kind = (ExternalKind)Reader.Reader.ReadByte();
+            var kind = (ExternalKind)Reader.ReadByte();
             switch (kind)
             {
                 case ExternalKind.Function:

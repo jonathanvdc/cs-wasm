@@ -39,7 +39,7 @@ namespace Wasm.Instructions
             List<Instruction> elseBranch = null;
             while (true)
             {
-                byte opCode = Reader.Reader.ReadByte();
+                byte opCode = Reader.ReadByte();
                 if (opCode == Operators.EndOpCode)
                 {
                     return new IfElseInstruction(BlockType, ifBranch, elseBranch);

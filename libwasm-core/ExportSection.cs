@@ -71,7 +71,7 @@ namespace Wasm
                 exportedVals.Add(
                     new ExportedValue(
                         Reader.ReadString(),
-                        (ExternalKind)Reader.Reader.ReadByte(),
+                        (ExternalKind)Reader.ReadByte(),
                         Reader.ReadVarUInt32()));
             }
 

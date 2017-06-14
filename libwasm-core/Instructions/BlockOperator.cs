@@ -51,7 +51,7 @@ namespace Wasm.Instructions
             var contents = new List<Instruction>();
             while (true)
             {
-                byte opCode = Reader.Reader.ReadByte();
+                byte opCode = Reader.ReadByte();
                 if (opCode == Operators.EndOpCode)
                 {
                     return Create(BlockType, contents);

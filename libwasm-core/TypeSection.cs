@@ -111,8 +111,17 @@ namespace Wasm
     /// <summary>
     /// Represents a function type entry in a type section.
     /// </summary>
-    public struct FunctionType
+    public sealed class FunctionType
     {
+        /// <summary>
+        /// Creates a function type.
+        /// </summary>
+        public FunctionType()
+        {
+            this.ParameterTypes = new List<WasmValueType>();
+            this.ReturnTypes = new List<WasmValueType>();
+        }
+
         /// <summary>
         /// Creates a function type from the given parameter types and return types.
         /// </summary>
@@ -124,6 +133,19 @@ namespace Wasm
         {
             this.ParameterTypes = new List<WasmValueType>(ParameterTypes);
             this.ReturnTypes = new List<WasmValueType>(ReturnTypes);
+        }
+
+        /// <summary>
+        /// Creates a function type that takes ownership of the given parameter types and return types.
+        /// </summary>
+        /// <param name="ParameterTypes">This function type's list of parameter types.</param>
+        /// <param name="ReturnTypes">This function type's list of return types.</param>
+        private FunctionType(
+            List<WasmValueType> ParameterTypes,
+            List<WasmValueType> ReturnTypes)
+        {
+            this.ParameterTypes = ParameterTypes;
+            this.ReturnTypes = ReturnTypes;
         }
 
         /// <summary>
@@ -208,10 +230,7 @@ namespace Wasm
                 retTypes.Add(Reader.ReadWasmValueType());
             }
 
-            var result = default(FunctionType);
-            result.ParameterTypes = paramTypes;
-            result.ReturnTypes = retTypes;
-            return result;
+            return new FunctionType(paramTypes, retTypes);
         }
     }
 }

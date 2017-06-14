@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using Wasm.Binary;
 using Wasm.Instructions;
 
@@ -276,7 +277,7 @@ namespace Wasm
     /// Describes a local entry. Each local entry declares a number of local variables
     /// of a given type. It is legal to have several entries with the same type.
     /// </summary>
-    public struct LocalEntry
+    public struct LocalEntry : IEquatable<LocalEntry>
     {
         /// <summary>
         /// Creates a new local entry that defines <c>LocalCount</c> variables of type
@@ -333,6 +334,39 @@ namespace Wasm
             Writer.Write(LocalCount);
             Writer.Write(" x ");
             DumpHelpers.DumpWasmType(LocalType, Writer);
+        }
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var builder = new StringBuilder();
+            Dump(new StringWriter(builder));
+            return builder.ToString();
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object Obj)
+        {
+            return Obj is LocalEntry && Equals((LocalEntry)Obj);
+        }
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            return ((int)LocalType << 16) | (int)LocalCount;
+        }
+
+        /// <summary>
+        /// Checks if this local entry declares the same type and
+        /// number of locals as the given local entry.
+        /// </summary>
+        /// <param name="Other">The other local entry.</param>
+        /// <returns>
+        /// <c>true</c> if this local entry is the same as the given entry; otherwise, <c>false</c>.
+        /// </returns>
+        public bool Equals(LocalEntry Other)
+        {
+            return LocalType == Other.LocalType && LocalCount == Other.LocalCount;
         }
     }
 }

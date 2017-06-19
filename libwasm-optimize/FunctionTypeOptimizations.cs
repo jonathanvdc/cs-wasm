@@ -39,8 +39,9 @@ namespace Wasm.Optimize
                 }
                 else
                 {
-                    structuralOldToNewTypeMap[oldType] = i;
-                    referentialOldToNewTypeMap[i] = i;
+                    newTypeIndex = (uint)newTypeList.Count;
+                    structuralOldToNewTypeMap[oldType] = newTypeIndex;
+                    referentialOldToNewTypeMap[i] = newTypeIndex;
                     newTypeList.Add(oldType);
                 }
                 i++;

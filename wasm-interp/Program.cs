@@ -37,6 +37,10 @@ namespace Wasm.Interpret
         /// </summary>
         public object[] FunctionArgs { get; private set; }
 
+        public const string SpectestImporterName = "spectest";
+        public const string SpectestWithSpacesImporterName = "spectest-spaces";
+        public const string BaseRuntimeImporterName = "base-runtime";
+
         /// <summary>
         /// Tries to create an importer for these options.
         /// </summary>
@@ -45,12 +49,17 @@ namespace Wasm.Interpret
         public bool TryGetImporter(out IImporter Result)
         {
             if (ImporterName == null
-                || ImporterName.Equals("spectest", StringComparison.OrdinalIgnoreCase))
+                || ImporterName.Equals(SpectestImporterName, StringComparison.OrdinalIgnoreCase))
             {
                 Result = new SpecTestImporter();
                 return true;
             }
-            else if (ImporterName.Equals("base-runtime", StringComparison.OrdinalIgnoreCase))
+            else if (ImporterName.Equals(SpectestWithSpacesImporterName, StringComparison.OrdinalIgnoreCase))
+            {
+                Result = new SpecTestImporter(" ");
+                return true;
+            }
+            else if (ImporterName.Equals(BaseRuntimeImporterName, StringComparison.OrdinalIgnoreCase))
             {
                 var importer = new PredefinedImporter();
                 TerminalRuntime.IncludeDefinitionsIn(
@@ -180,7 +189,7 @@ namespace Wasm.Interpret
     {
         private static int PrintUsage()
         {
-            Console.Error.WriteLine("usage: wasm-interp file.wasm [--trace] [--importer spectest|base-runtime] [--run exported_func_name [args...]]");
+            Console.Error.WriteLine("usage: wasm-interp file.wasm [--trace] [--importer spectest|spectest-spaces|base-runtime] [--run exported_func_name [args...]]");
             return 1;
         }
 

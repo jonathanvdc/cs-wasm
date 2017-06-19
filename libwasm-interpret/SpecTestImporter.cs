@@ -8,6 +8,33 @@ namespace Wasm.Interpret
     /// </summary>
     public sealed class SpecTestImporter : IImporter
     {
+        /// <summary>
+        /// Creates an importer for the 'spectest' environment.
+        /// </summary>
+        public SpecTestImporter()
+            : this(Environment.NewLine)
+        { }
+
+        /// <summary>
+        /// Creates an importer for the 'spectest' environment with
+        /// the given print suffix.
+        /// </summary>
+        /// <param name="PrintSuffix">
+        /// The string that is written to the console at the
+        /// end of a print call.
+        /// </param>
+        public SpecTestImporter(string PrintSuffix)
+        {
+            this.PrintSuffix = PrintSuffix;
+        }
+
+        /// <summary>
+        /// Gets the string that is written to the console at the
+        /// end of a print call.
+        /// </summary>
+        /// <returns>The print suffix.</returns>
+        public string PrintSuffix { get; private set; }
+
         /// <inheritdoc/>
         public FunctionDefinition ImportFunction(
             ImportedFunction Description, FunctionType Signature)
@@ -16,7 +43,8 @@ namespace Wasm.Interpret
             {
                 return new SpecTestPrintFunctionDefinition(
                     Signature.ParameterTypes,
-                    Signature.ReturnTypes);
+                    Signature.ReturnTypes,
+                    PrintSuffix);
             }
             else
             {
@@ -99,14 +127,23 @@ namespace Wasm.Interpret
     {
         public SpecTestPrintFunctionDefinition(
             IReadOnlyList<WasmValueType> ParameterTypes,
-            IReadOnlyList<WasmValueType> ReturnTypes)
+            IReadOnlyList<WasmValueType> ReturnTypes,
+            string PrintSuffix)
         {
             this.paramTypes = ParameterTypes;
             this.retTypes = ReturnTypes;
+            this.PrintSuffix = PrintSuffix;
         }
 
         private IReadOnlyList<WasmValueType> paramTypes;
         private IReadOnlyList<WasmValueType> retTypes;
+
+        /// <summary>
+        /// Gets the string that is written to the console at the
+        /// end of a print call.
+        /// </summary>
+        /// <returns>The print suffix.</returns>
+        public string PrintSuffix { get; private set; }
 
         /// <inheritdoc/>
         public override IReadOnlyList<WasmValueType> ParameterTypes => paramTypes;
@@ -125,7 +162,7 @@ namespace Wasm.Interpret
                 }
                 Console.Write(Arguments[i]);
             }
-            Console.WriteLine();
+            Console.Write(PrintSuffix);
 
             var results = new object[ReturnTypes.Count];
             for (int i = 0; i < results.Length; i++)

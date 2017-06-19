@@ -64,7 +64,7 @@ deploy:
       branch: master # Release from master branch only.
       appveyor_repo_tag: true # Deploy on tag push only.
   - provider: GitHub
-    release: cs-wasm v$(SEMVER)
+    release: cs-wasm v$(VERNUM)
     tag: $(APPVEYOR_REPO_TAG_NAME)
     description: 'Release description' # Fill this out later.
     auth_token:

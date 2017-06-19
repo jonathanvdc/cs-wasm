@@ -1,7 +1,7 @@
 files = Program.cs \
 		../libwasm/bin/flo/libwasm.flo
 
-common_options = -asm-name=nullary-opcode-generator -asm-version=0.1.4.0 -Wall -Wextra
+common_options = -asm-name=nullary-opcode-generator -asm-version=0.1.5.0 -Wall -Wextra
 
 all: exe flo
 

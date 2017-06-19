@@ -5,7 +5,7 @@ init
     {
         run
         {
-            return = @($wasm-interp $(interp-filename) --run $(function-to-run));
+            return = @($wasm-interp $(interp-filename) --importer spectest-spaces --run $(function-to-run));
         }
 
         configs
@@ -59,7 +59,7 @@ init
     {
         run
         {
-            return = @($wasm-interp $(input-files)/$(filename));
+            return = @($wasm-interp $(interp-filename) --importer spectest-spaces);
         }
 
         configs
@@ -90,6 +90,7 @@ tests
     template InterpretFunction<factorial.wasm,fac 1L,1>;
     template InterpretFunction<factorial.wasm,fac 5L,120>;
     template InterpretStart<fib-f32.wasm,1597>;
+    template InterpretStart<fib-f32-2.wasm,120 8>;
     template InterpretFunction<forty-two.wasm,fortyTwo,42>;
     template InterpretFunction<i32-ops.wasm,add 1 1,2>;
     template InterpretFunction<i32-ops.wasm,rotr 1989852383 4294967277,-419711787>;

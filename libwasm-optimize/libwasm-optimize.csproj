@@ -33,6 +33,7 @@
   <ItemGroup>
     <Compile Include="Peephole\PeepholeOptimization.cs" />
     <Compile Include="Peephole\TeeLocalOptimization.cs" />
+    <Compile Include="Peephole\UnreachableCodeOptimization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FunctionBodyOptimizations.cs" />
     <Compile Include="FunctionTypeOptimizations.cs" />

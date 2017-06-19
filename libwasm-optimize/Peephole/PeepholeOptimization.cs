@@ -62,7 +62,8 @@ namespace Wasm.Optimize
         public static readonly IEnumerable<PeepholeOptimization> DefaultOptimizations =
             new PeepholeOptimization[]
         {
-            TeeLocalOptimization.Instance
+            TeeLocalOptimization.Instance,
+            UnreachableCodeOptimization.Instance
         };
 
         /// <summary>

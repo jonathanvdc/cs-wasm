@@ -1,6 +1,7 @@
 files = \
 	Peephole/PeepholeOptimization.cs \
 	Peephole/TeeLocalOptimization.cs \
+	Peephole/UnreachableCodeOptimization.cs \
 	FunctionBodyOptimizations.cs \
 	FunctionTypeOptimizations.cs \
 	WasmFileOptimizations.cs

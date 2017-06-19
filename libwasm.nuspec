@@ -10,8 +10,8 @@
     <projectUrl>https://github.com/jonathanvdc/cs-wasm</projectUrl>
     <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <summary>A C# library to read and write binary WebAssembly files. </summary>
-    <description>cs-wasm is a C# library that can read, write and interpret binary WebAssembly files.</description>
+    <summary>A C# library to manipulate and run binary WebAssembly files. </summary>
+    <description>cs-wasm is a C# library that can read, write, interpret and optimize binary WebAssembly files.</description>
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>WebAssembly Wasm</tags>

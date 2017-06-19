@@ -4,7 +4,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/4lfpgydcssxvr56o?svg=true)](https://ci.appveyor.com/project/jonathanvdc/cs-wasm)
 [![NuGet](https://img.shields.io/nuget/v/Wasm.svg)](https://www.nuget.org/packages/Wasm)
 
-`cs-wasm` is a C# library that can read, write and interpret binary WebAssembly files.
+`cs-wasm` is a C# library that can read, write, interpret and optimize binary WebAssembly files.
 
 It tries to represent WebAssembly files as faithfully as possible; reading a file into memory and writing it back to disk is byte-for-byte equivalent to a simple copy.
 
@@ -162,6 +162,26 @@ Alternatively, you might want to run the WebAssembly file's entry point. `Module
 var startSec = wasmFile.GetFirstSectionOrNull<StartSection>();
 FunctionDefinition mainFunc = module.Functions[(int)startSec.StartFunctionIndex];
 mainFunc.Invoke(new object[] { });
+```
+
+### Optimizing a `WasmFile`
+
+`cs-wasm` offers some basic optimizations for WebAssembly files. These optimizations include:
+
+  * removing duplicate type table entries,
+  * merging function body local entries, and
+  * peephole optimizations for function body instructions.
+
+These optimizations are mainly intended for people who want to manipulate/generate decent-looking WebAssembly files without jumping through too many hoops.
+
+Applying all optimizations that ship with `cs-wasm` is a one-liner (not counting the lines that were added for context):
+
+```cs
+using Wasm.Optimize;
+// ...
+WasmFile file;
+// file = ...;
+file.Optimize();
 ```
 
 ### Other fun stuff

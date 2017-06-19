@@ -40,8 +40,11 @@ namespace Wasm
             if (Magic != WasmMagic)
             {
                 throw new BadHeaderException(
-                    this, "Invalid magic number. Got '" +
-                    Magic + "', expected '" + WasmMagic + "'.");
+                    this,
+                    string.Format(
+                        "Invalid magic number. Got '{0}', expected '{1}'.",
+                        DumpHelpers.FormatHex(Magic),
+                        DumpHelpers.FormatHex(WasmMagic)));
             }
 
             if (Version != PreMvpVersion && Version != MvpVersion)

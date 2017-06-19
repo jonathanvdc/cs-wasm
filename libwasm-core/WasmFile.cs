@@ -158,7 +158,7 @@ namespace Wasm
         {
             Writer.Write(
                 "WebAssembly module; magic number: {0}, version number: {1}",
-                Header.Magic,
+                DumpHelpers.FormatHex(Header.Magic),
                 Header.Version);
 
             foreach (var section in Sections)

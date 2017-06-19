@@ -10,6 +10,36 @@ namespace Wasm
     public static class DumpHelpers
     {
         /// <summary>
+        /// Formats the given value as a hexadecimal number.
+        /// </summary>
+        /// <param name="Value">The value to format.</param>
+        /// <returns>A hexadecimal number, prefixed by '0x'.</returns>
+        public static string FormatHex(byte Value)
+        {
+            return string.Format("0x{0:x02}", Value);
+        }
+
+        /// <summary>
+        /// Formats the given value as a hexadecimal number.
+        /// </summary>
+        /// <param name="Value">The value to format.</param>
+        /// <returns>A hexadecimal number, prefixed by '0x'.</returns>
+        public static string FormatHex(ushort Value)
+        {
+            return string.Format("0x{0:x04}", Value);
+        }
+
+        /// <summary>
+        /// Formats the given value as a hexadecimal number.
+        /// </summary>
+        /// <param name="Value">The value to format.</param>
+        /// <returns>A hexadecimal number, prefixed by '0x'.</returns>
+        public static string FormatHex(uint Value)
+        {
+            return string.Format("0x{0:x08}", Value);
+        }
+
+        /// <summary>
         /// Writes the contents of the given stream to the given text writer,
         /// as a space-delimited list of hex bytes.
         /// </summary>
@@ -17,12 +47,19 @@ namespace Wasm
         /// <param name="Writer">The writer to which text is written.</param>
         public static void DumpStream(Stream Stream, TextWriter Writer)
         {
-            for (long i = 0; i < Stream.Length; i++)
+            bool isFirst = true;
+            while (true)
             {
-                if (i > 0)
+                int b = Stream.ReadByte();
+                if (b == -1)
+                    return;
+
+                if (isFirst)
+                    isFirst = false;
+                else
                     Writer.Write(" ");
 
-                Writer.Write("{0:X02}", Stream.ReadByte());
+                Writer.Write(FormatHex((byte)b));
             }
         }
 

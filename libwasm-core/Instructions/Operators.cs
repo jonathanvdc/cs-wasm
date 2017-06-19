@@ -230,7 +230,8 @@ namespace Wasm.Instructions
             }
             else
             {
-                throw new WasmException(string.Format("Unknown opcode: 0x{0:X02}", OpCode));
+                throw new WasmException(
+                    string.Format("Unknown opcode: {0}", DumpHelpers.FormatHex(OpCode)));
             }
         }
 

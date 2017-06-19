@@ -601,8 +601,8 @@ namespace Wasm.Interpret
             {
                 throw new WasmException(
                     string.Format(
-                        "Misaligned memory access at 0x{0:X08}. (alignment: {1})",
-                        Pointer,
+                        "Misaligned memory access at {0}. (alignment: {1})",
+                        DumpHelpers.FormatHex(Pointer),
                         Instruction.Alignment));
             }
         }

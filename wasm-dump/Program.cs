@@ -32,8 +32,6 @@ namespace Wasm.Dump
                 return 1;
             }
 
-            var memStream = new MemoryStream();
-
             WasmFile file;
             if (args.Length == 0)
             {

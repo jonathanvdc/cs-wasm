@@ -3,7 +3,7 @@ files = \
 	../libwasm-interpret/bin/flo/libwasm-interpret.flo \
 	../libwasm-optimize/bin/flo/libwasm-optimize.flo
 
-common_options = -asm-name=libwasm -asm-version=0.1.3.0
+common_options = -asm-name=libwasm -asm-version=0.1.4.0
 
 all: dll flo
 

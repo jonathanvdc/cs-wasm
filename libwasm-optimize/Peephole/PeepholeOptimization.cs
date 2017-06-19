@@ -51,6 +51,21 @@ namespace Wasm.Optimize
         private IEnumerable<PeepholeOptimization> opts;
 
         /// <summary>
+        /// A peephole optimizer based that uses the default set of peephole
+        /// optimizations offered by cs-wasm.
+        /// </summary>
+        public static PeepholeOptimizer DefaultOptimizer => new PeepholeOptimizer(DefaultOptimizations);
+
+        /// <summary>
+        /// The default set of peephole optimizations that ships with cs-wasm.
+        /// </summary>
+        public static readonly IEnumerable<PeepholeOptimization> DefaultOptimizations =
+            new PeepholeOptimization[]
+        {
+            TeeLocalOptimization.Instance
+        };
+
+        /// <summary>
         /// Uses this peephole optimizer to optimize the given sequence of instructions.
         /// </summary>
         /// <param name="Instructions">The instructions to optimize.</param>

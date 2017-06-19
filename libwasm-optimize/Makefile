@@ -1,7 +1,8 @@
 files = \
+	Peephole/PeepholeOptimization.cs \
+	Peephole/TeeLocalOptimization.cs \
 	FunctionBodyOptimizations.cs \
 	FunctionTypeOptimizations.cs \
-	PeepholeOptimization.cs \
 	WasmFileOptimizations.cs
 
 libraries = ../libwasm-core/bin/flo/libwasm-core.flo

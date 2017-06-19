@@ -29,10 +29,16 @@ namespace Wasm.Optimize
         /// <param name="Section">The code section to optimize.</param>
         public static void Optimize(this CodeSection Section)
         {
+            var optimizer = PeepholeOptimizer.DefaultOptimizer;
             foreach (var body in Section.Bodies)
             {
                 // Compress local entries.
                 body.CompressLocalEntries();
+
+                // Apply peephole optimizations.
+                var optInstructions = optimizer.Optimize(body.BodyInstructions);
+                body.BodyInstructions.Clear();
+                body.BodyInstructions.AddRange(optInstructions);
             }
         }
     }

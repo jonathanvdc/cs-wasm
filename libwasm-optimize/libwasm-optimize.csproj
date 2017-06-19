@@ -31,10 +31,11 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Peephole\PeepholeOptimization.cs" />
+    <Compile Include="Peephole\TeeLocalOptimization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FunctionBodyOptimizations.cs" />
     <Compile Include="FunctionTypeOptimizations.cs" />
-    <Compile Include="PeepholeOptimization.cs" />
     <Compile Include="WasmFileOptimizations.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

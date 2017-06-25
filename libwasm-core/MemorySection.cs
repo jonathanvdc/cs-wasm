@@ -10,17 +10,27 @@ namespace Wasm
     /// </summary>
     public sealed class MemorySection : Section
     {
+        /// <summary>
+        /// Creates an empty memory section.
+        /// </summary>
         public MemorySection()
         {
             this.Memories = new List<MemoryType>();
             this.ExtraPayload = new byte[0];
         }
 
+        /// <summary>
+        /// Creates a memory section from the given sequence of memory specifications.
+        /// </summary>
         public MemorySection(IEnumerable<MemoryType> Memories)
             : this(Memories, new byte[0])
         {
         }
 
+        /// <summary>
+        /// Creates a memory section from the given sequence of memory specifications
+        /// and a trailing byte array.
+        /// </summary>
         public MemorySection(IEnumerable<MemoryType> Memories, byte[] ExtraPayload)
         {
             this.Memories = new List<MemoryType>(Memories);

@@ -23,6 +23,7 @@ tests
     template Dump<import-globals.wasm>;
     template Dump<import-memory.wasm>;
     template Dump<import-tables.wasm>;
+    template Dump<name-section.wasm>;
     template Dump<stuff.wasm>;
     template Dump<print-hi.wasm>;
 }

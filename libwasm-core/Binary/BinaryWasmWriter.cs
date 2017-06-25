@@ -73,6 +73,15 @@ namespace Wasm.Binary
         }
 
         /// <summary>
+        /// Writes an unsigned LEB128 variable-length integer, limited to 7 bits.
+        /// </summary>
+        /// <returns>The number of bytes used to encode the integer.</returns>
+        public int WriteVarUInt7(byte Value)
+        {
+            return WriteVarUInt32(Value);
+        }
+
+        /// <summary>
         /// Writes an unsigned LEB128 variable-length integer, limited to one bit.
         /// </summary>
         /// <returns>The number of bytes used to encode the integer.</returns>

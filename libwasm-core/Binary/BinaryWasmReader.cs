@@ -359,9 +359,16 @@ namespace Wasm.Binary
         /// <returns>The parsed section.</returns>
         protected virtual Section ReadCustomSectionPayload(SectionHeader Header)
         {
-            return new CustomSection(
-                Header.Name.CustomName,
-                ReadBytes((int)Header.PayloadLength));
+            if (Header.Name.CustomName == NameSection.CustomName)
+            {
+                return NameSection.ReadSectionPayload(Header, this);
+            }
+            else
+            {
+                return new CustomSection(
+                    Header.Name.CustomName,
+                    ReadBytes((int)Header.PayloadLength));
+            }
         }
 
         /// <summary>

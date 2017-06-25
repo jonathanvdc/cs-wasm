@@ -11,6 +11,7 @@ files = \
 	GlobalSection.cs \
 	ImportSection.cs \
 	MemorySection.cs \
+	NameSection.cs \
 	ResizableLimits.cs \
 	Section.cs \
 	UnknownSection.cs \

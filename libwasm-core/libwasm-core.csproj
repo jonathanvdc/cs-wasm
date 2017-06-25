@@ -43,6 +43,7 @@
     <Compile Include="GlobalSection.cs" />
     <Compile Include="ImportSection.cs" />
     <Compile Include="MemorySection.cs" />
+    <Compile Include="NameSection.cs" />
     <Compile Include="ResizableLimits.cs" />
     <Compile Include="Section.cs" />
     <Compile Include="SectionCode.cs" />

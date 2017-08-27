@@ -1,3 +1,4 @@
+.PHONY: all exe flo clean
 exe:
 	make -C readme-example exe
 

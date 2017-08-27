@@ -3,6 +3,7 @@ files = Program.cs \
 
 common_options = -asm-name=wasm-cat -asm-version=0.1.5.0 -Wall -Wextra
 
+.PHONY: all exe flo clean
 all: exe flo
 
 exe: bin/clr/wasm-cat.exe
@@ -12,8 +13,10 @@ clean:
 	rm -rf bin/
 	rm -rf obj/
 
-bin/clr/wasm-cat.exe: $(files)
-	ecsc $(files) -platform clr -o $@ -O3 $(common_options)
+include ../flame-make-scripts/use-ecsc.mk
 
-bin/flo/wasm-cat.flo: $(files)
-	ecsc $(files) -platform ir -runtime clr -o $@ $(common_options)
+bin/clr/wasm-cat.exe: $(files) | ecsc
+	$(ECSC) $(files) -platform clr -o $@ -O3 $(common_options)
+
+bin/flo/wasm-cat.flo: $(files) | ecsc
+	$(ECSC) $(files) -platform ir -runtime clr -o $@ $(common_options)

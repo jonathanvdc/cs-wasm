@@ -55,6 +55,7 @@ files = \
 
 common_options = -asm-name=libwasm-core -asm-version=0.1.5.0 -Wall -Wextra
 
+.PHONY: all flo clean
 all: flo
 
 flo: bin/flo/libwasm-core.flo
@@ -63,5 +64,7 @@ clean:
 	rm -rf bin/
 	rm -rf obj/
 
-bin/flo/libwasm-core.flo: $(files)
-	ecsc $(files) -platform ir -runtime clr -o $@ $(common_options)
+include ../flame-make-scripts/use-ecsc.mk
+
+bin/flo/libwasm-core.flo: $(files) | ecsc
+	$(ECSC) $(files) -platform ir -runtime clr -o $@ $(common_options)

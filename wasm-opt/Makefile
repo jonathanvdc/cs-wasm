@@ -3,6 +3,7 @@ files = Program.cs \
 
 common_options = -asm-name=wasm-opt -asm-version=0.1.5.0 -Wall -Wextra
 
+.PHONY: all exe flo clean
 all: exe flo
 
 exe: bin/clr/wasm-opt.exe
@@ -12,8 +13,10 @@ clean:
 	rm -rf bin/
 	rm -rf obj/
 
-bin/clr/wasm-opt.exe: $(files)
-	ecsc $(files) -platform clr -o $@ -O3 $(common_options)
+include ../flame-make-scripts/use-ecsc.mk
 
-bin/flo/wasm-opt.flo: $(files)
-	ecsc $(files) -platform ir -runtime clr -o $@ $(common_options)
+bin/clr/wasm-opt.exe: $(files) | ecsc
+	$(ECSC) $(files) -platform clr -o $@ -O3 $(common_options)
+
+bin/flo/wasm-opt.flo: $(files) | ecsc
+	$(ECSC) $(files) -platform ir -runtime clr -o $@ $(common_options)

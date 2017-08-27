@@ -5,6 +5,7 @@ files = \
 
 common_options = -asm-name=libwasm -asm-version=0.1.5.0
 
+.PHONY: all dll flo clean
 all: dll flo
 
 dll: bin/clr/libwasm.dll
@@ -14,8 +15,10 @@ clean:
 	rm -rf bin/
 	rm -rf obj/
 
-bin/clr/libwasm.dll: $(files)
-	ecsc $(files) -platform clr -o $@ -O3 $(common_options) --docs
+include ../flame-make-scripts/use-ecsc.mk
 
-bin/flo/libwasm.flo: $(files)
-	ecsc $(files) -platform ir -runtime clr -o $@ $(common_options)
+bin/clr/libwasm.dll: $(files) | ecsc
+	$(ECSC) $(files) -platform clr -o $@ -O3 $(common_options) --docs
+
+bin/flo/libwasm.flo: $(files) | ecsc
+	$(ECSC) $(files) -platform ir -runtime clr -o $@ $(common_options)

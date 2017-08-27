@@ -46,7 +46,7 @@ flo:
 	make -C wasm-opt flo
 	make -C unit-tests flo
 
-clean:
+clean: clean-compare-test clean-ecsc
 	make -C libwasm-core clean
 	make -C libwasm-interpret clean
 	make -C libwasm-optimize clean
@@ -59,8 +59,11 @@ clean:
 	make -C unit-tests clean
 	make -C examples clean
 
+include flame-make-scripts/use-compare-test.mk
+include flame-make-scripts/use-ecsc.mk
+
 example-projects:
 	make -C examples
 
-test: exe example-projects
-	compare-test run-tests.test
+test: exe example-projects | compare-test
+	$(COMPARE_TEST) run-tests.test

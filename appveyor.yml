@@ -3,12 +3,6 @@ version: 0.1.6.{build}
 image:
   - Visual Studio 2017
 
-# git clone recursively. Fix taken from Sergey S. Betke's answer to
-# https://github.com/appveyor/ci/issues/899
-clone_script:
-  - cmd: git clone -q --recursive --branch=%APPVEYOR_REPO_BRANCH% https://github.com/%APPVEYOR_REPO_NAME%.git %APPVEYOR_BUILD_FOLDER%
-  - cmd: git checkout -qf %APPVEYOR_REPO_COMMIT%
-
 cache:
   - C:\Users\appveyor\AppData\Local\NuGet\Cache
 
@@ -62,7 +56,6 @@ deploy:
     skip_symbols: true
     artifact: /.*\.nupkg/
     on:
-      branch: master # Release from master branch only.
       appveyor_repo_tag: true # Deploy on tag push only.
   - provider: GitHub
     release: cs-wasm v$(VERNUM)

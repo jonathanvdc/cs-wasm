@@ -13,12 +13,14 @@
     <summary>A C# library to manipulate and run binary WebAssembly files. </summary>
     <description>cs-wasm is a C# library that can read, write, interpret and optimize binary WebAssembly files.</description>
     <releaseNotes></releaseNotes>
-    <copyright>Copyright 2017</copyright>
+    <copyright>Copyright 2019</copyright>
     <tags>WebAssembly Wasm</tags>
   </metadata>
   <files>
     <file src="README.md" target="readme.txt" />
-    <file src="libwasm\bin\clr\libwasm.dll" target="lib\net47\" />
-    <file src="libwasm\bin\clr\libwasm.xml" target="lib\net47\" />
+    <file src="libwasm\bin\net47\Release\libwasm.dll" target="lib\net47\" />
+    <file src="libwasm\bin\net47\Release\libwasm.xml" target="lib\net47\" />
+    <file src="libwasm\bin\netstandard2.0\Release\libwasm.dll" target="lib\netstandard2.0\" />
+    <file src="libwasm\bin\netstandard2.0\Release\libwasm.xml" target="lib\netstandard2.0\" />
   </files>
 </package>

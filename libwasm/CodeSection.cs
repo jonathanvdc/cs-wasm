@@ -12,21 +12,37 @@ namespace Wasm
     /// </summary>
     public sealed class CodeSection : Section
     {
+        /// <summary>
+        /// Creates an empty code section.
+        /// </summary>
         public CodeSection()
         {
             this.Bodies = new List<FunctionBody>();
             this.ExtraPayload = new byte[0];
         }
 
-        public CodeSection(IEnumerable<FunctionBody> Bodies)
-            : this(Bodies, new byte[0])
+        /// <summary>
+        /// Creates a code section from a sequence of function bodies.
+        /// </summary>
+        /// <param name="bodies">The code section's function codies.</param>
+        public CodeSection(IEnumerable<FunctionBody> bodies)
+            : this(bodies, new byte[0])
         {
         }
 
-        public CodeSection(IEnumerable<FunctionBody> Bodies, byte[] ExtraPayload)
+        /// <summary>
+        /// Creates a code section from a sequence of function bodies and a
+        /// trailing payload.
+        /// </summary>
+        /// <param name="bodies">The code section's function bodies.</param>
+        /// <param name="extraPayload">
+        /// A sequence of bytes that have no intrinsic meaning; they are part
+        /// of the code section but are placed after the code section's actual contents.
+        /// </param>
+        public CodeSection(IEnumerable<FunctionBody> bodies, byte[] extraPayload)
         {
-            this.Bodies = new List<FunctionBody>(Bodies);
-            this.ExtraPayload = ExtraPayload;
+            this.Bodies = new List<FunctionBody>(bodies);
+            this.ExtraPayload = extraPayload;
         }
 
         /// <inheritdoc/>
@@ -45,60 +61,60 @@ namespace Wasm
         public byte[] ExtraPayload { get; set; }
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32((uint)Bodies.Count);
+            writer.WriteVarUInt32((uint)Bodies.Count);
             foreach (var body in Bodies)
             {
-                body.WriteTo(Writer);
+                body.WriteTo(writer);
             }
-            Writer.Writer.Write(ExtraPayload);
+            writer.Writer.Write(ExtraPayload);
         }
 
         /// <summary>
         /// Reads the code section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <param name="Reader">A reader for a binary WebAssembly file.</param>
+        /// <param name="header">The section header.</param>
+        /// <param name="reader">A reader for a binary WebAssembly file.</param>
         /// <returns>The parsed section.</returns>
         public static CodeSection ReadSectionPayload(
-            SectionHeader Header, BinaryWasmReader Reader)
+            SectionHeader header, BinaryWasmReader reader)
         {
-            long startPos = Reader.Position;
+            long startPos = reader.Position;
             // Read the function bodies.
-            uint count = Reader.ReadVarUInt32();
+            uint count = reader.ReadVarUInt32();
             var funcBodies = new List<FunctionBody>();
             for (uint i = 0; i < count; i++)
             {
-                funcBodies.Add(FunctionBody.ReadFrom(Reader));
+                funcBodies.Add(FunctionBody.ReadFrom(reader));
             }
 
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
+            var extraPayload = reader.ReadRemainingPayload(startPos, header);
             return new CodeSection(funcBodies, extraPayload);
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; number of entries: ");
-            Writer.Write(Bodies.Count);
-            Writer.WriteLine();
-            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+            writer.Write(Name.ToString());
+            writer.Write("; number of entries: ");
+            writer.Write(Bodies.Count);
+            writer.WriteLine();
+            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(writer);
             for (int i = 0; i < Bodies.Count; i++)
             {
-                Writer.Write("#{0}: ", i);
+                writer.Write("#{0}: ", i);
                 indentedWriter.WriteLine();
                 Bodies[i].Dump(indentedWriter);
             }
             if (ExtraPayload.Length > 0)
             {
-                Writer.Write("Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
     }
@@ -112,26 +128,26 @@ namespace Wasm
         /// Creates a function body from the given list of local entries
         /// and a block instruction.
         /// </summary>
-        /// <param name="Locals">The list of local entries.</param>
-        /// <param name="Body">The block instruction that serves as the function's body.</param>
-        public FunctionBody(IEnumerable<LocalEntry> Locals, IEnumerable<Instruction> Body)
-            : this(Locals, Body, new byte[0])
+        /// <param name="locals">The list of local entries.</param>
+        /// <param name="body">The block instruction that serves as the function's body.</param>
+        public FunctionBody(IEnumerable<LocalEntry> locals, IEnumerable<Instruction> body)
+            : this(locals, body, new byte[0])
         { }
 
         /// <summary>
         /// Creates a function body from the given list of local entries,
         /// a list of instructions and the specified extra payload.
         /// </summary>
-        /// <param name="Locals">The list of local entries.</param>
-        /// <param name="Body">The list of instructions that serves as the function's body.</param>
-        /// <param name="ExtraPayload">
+        /// <param name="locals">The list of local entries.</param>
+        /// <param name="body">The list of instructions that serves as the function's body.</param>
+        /// <param name="extraPayload">
         /// The function body's extra payload, which is placed right after the function body.
         /// </param>
-        public FunctionBody(IEnumerable<LocalEntry> Locals, IEnumerable<Instruction> Body, byte[] ExtraPayload)
+        public FunctionBody(IEnumerable<LocalEntry> locals, IEnumerable<Instruction> body, byte[] extraPayload)
         {
-            this.Locals = new List<LocalEntry>(Locals);
-            this.BodyInstructions = new List<Instruction>(Body);
-            this.ExtraPayload = ExtraPayload;
+            this.Locals = new List<LocalEntry>(locals);
+            this.BodyInstructions = new List<Instruction>(body);
+            this.ExtraPayload = extraPayload;
         }
 
         /// <summary>
@@ -163,62 +179,62 @@ namespace Wasm
         /// <summary>
         /// Writes this function body to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The WebAssembly file writer.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The WebAssembly file writer.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteLengthPrefixed(WriteContentsTo);
+            writer.WriteLengthPrefixed(WriteContentsTo);
         }
 
-        private void WriteContentsTo(BinaryWasmWriter Writer)
+        private void WriteContentsTo(BinaryWasmWriter writer)
         {
             // Write the number of local entries to the file.
-            Writer.WriteVarUInt32((uint)Locals.Count);
+            writer.WriteVarUInt32((uint)Locals.Count);
 
             // Write the local variables to the file.
             foreach (var local in Locals)
             {
-                local.WriteTo(Writer);
+                local.WriteTo(writer);
             }
 
             // Write the body to the file.
-            Operators.Block.Create(WasmType.Empty, BodyInstructions).WriteContentsTo(Writer);
+            Operators.Block.Create(WasmType.Empty, BodyInstructions).WriteContentsTo(writer);
 
             if (HasExtraPayload)
             {
                 // If we have at least one byte of additional payload,
                 // then we should write it to the stream now.
-                Writer.Writer.Write(ExtraPayload);
+                writer.Writer.Write(ExtraPayload);
             }
         }
 
         /// <summary>
         /// Reads a function body from the given WebAssembly file reader.
         /// </summary>
-        /// <param name="Reader">The WebAssembly file reader to use.</param>
+        /// <param name="reader">The WebAssembly file reader to use.</param>
         /// <returns>A function body.</returns>
-        public static FunctionBody ReadFrom(BinaryWasmReader Reader)
+        public static FunctionBody ReadFrom(BinaryWasmReader reader)
         {
             // Read the length of the function body definition.
-            uint funcBodyLength = Reader.ReadVarUInt32();
+            uint funcBodyLength = reader.ReadVarUInt32();
 
             // Save the function body's start position.
-            long startPos = Reader.Position;
+            long startPos = reader.Position;
 
             // Read the number of local entries.
-            uint localEntryCount = Reader.ReadVarUInt32();
+            uint localEntryCount = reader.ReadVarUInt32();
 
             // Read local entries.
             var localEntries = new List<LocalEntry>((int)localEntryCount);
             for (uint i = 0; i < localEntryCount; i++)
             {
-                localEntries.Add(LocalEntry.ReadFrom(Reader));
+                localEntries.Add(LocalEntry.ReadFrom(reader));
             }
 
             // Read the function's body block.
-            var body = Operators.Block.ReadBlockContents(WasmType.Empty, Reader);
+            var body = Operators.Block.ReadBlockContents(WasmType.Empty, reader);
 
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadRemainingPayload(startPos, funcBodyLength);
+            var extraPayload = reader.ReadRemainingPayload(startPos, funcBodyLength);
 
             return new FunctionBody(localEntries, body.Contents, extraPayload);
         }
@@ -226,49 +242,49 @@ namespace Wasm
         /// <summary>
         /// Writes a textual representation of this function body to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to which text is written.</param>
-        public void Dump(TextWriter Writer)
+        /// <param name="writer">The writer to which text is written.</param>
+        public void Dump(TextWriter writer)
         {
             if (Locals.Count > 0)
             {
-                Writer.Write("- Local entries:");
-                var varEntryWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+                writer.Write("- Local entries:");
+                var varEntryWriter = DumpHelpers.CreateIndentedTextWriter(writer);
                 for (int i = 0; i < Locals.Count; i++)
                 {
                     varEntryWriter.WriteLine();
                     varEntryWriter.Write("#{0}: ", i);
                     Locals[i].Dump(varEntryWriter);
                 }
-                Writer.WriteLine();
+                writer.WriteLine();
             }
             else
             {
-                Writer.WriteLine("- No local entries");
+                writer.WriteLine("- No local entries");
             }
 
             if (BodyInstructions.Count > 0)
             {
-                Writer.Write("- Function body:");
-                var instructionWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+                writer.Write("- Function body:");
+                var instructionWriter = DumpHelpers.CreateIndentedTextWriter(writer);
                 foreach (var instr in BodyInstructions)
                 {
                     instructionWriter.WriteLine();
                     instr.Dump(instructionWriter);
                 }
-                Writer.WriteLine();
+                writer.WriteLine();
             }
             else
             {
-                Writer.WriteLine("- Empty function body");
+                writer.WriteLine("- Empty function body");
             }
 
             if (HasExtraPayload)
             {
-                Writer.Write("- Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("- Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
     }
@@ -283,12 +299,12 @@ namespace Wasm
         /// Creates a new local entry that defines <c>LocalCount</c> variables of type
         /// <c>LocalType</c>.
         /// </summary>
-        /// <param name="LocalType">The type of the variables to define.</param>
-        /// <param name="LocalCount">The number of local variables to define.</param>
-        public LocalEntry(WasmValueType LocalType, uint LocalCount)
+        /// <param name="localType">The type of the variables to define.</param>
+        /// <param name="localCount">The number of local variables to define.</param>
+        public LocalEntry(WasmValueType localType, uint localCount)
         {
-            this.LocalType = LocalType;
-            this.LocalCount = LocalCount;
+            this.LocalType = localType;
+            this.LocalCount = localCount;
         }
 
         /// <summary>
@@ -306,34 +322,34 @@ namespace Wasm
         /// <summary>
         /// Writes this local entry to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The WebAssembly file writer.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The WebAssembly file writer.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32(LocalCount);
-            Writer.WriteWasmValueType(LocalType);
+            writer.WriteVarUInt32(LocalCount);
+            writer.WriteWasmValueType(LocalType);
         }
 
         /// <summary>
         /// Reads a local entry from the given WebAssembly file reader.
         /// </summary>
-        /// <param name="Reader">The WebAssembly file reader.</param>
+        /// <param name="reader">The WebAssembly file reader.</param>
         /// <returns>A local entry.</returns>
-        public static LocalEntry ReadFrom(BinaryWasmReader Reader)
+        public static LocalEntry ReadFrom(BinaryWasmReader reader)
         {
-            var count = Reader.ReadVarUInt32();
-            var type = Reader.ReadWasmValueType();
+            var count = reader.ReadVarUInt32();
+            var type = reader.ReadWasmValueType();
             return new LocalEntry(type, count);
         }
 
         /// <summary>
         /// Writes a textual representation of this local entry to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to which text is written.</param>
-        public void Dump(TextWriter Writer)
+        /// <param name="writer">The writer to which text is written.</param>
+        public void Dump(TextWriter writer)
         {
-            Writer.Write(LocalCount);
-            Writer.Write(" x ");
-            DumpHelpers.DumpWasmType(LocalType, Writer);
+            writer.Write(LocalCount);
+            writer.Write(" x ");
+            DumpHelpers.DumpWasmType(LocalType, writer);
         }
 
         /// <inheritdoc/>
@@ -345,9 +361,9 @@ namespace Wasm
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object Obj)
+        public override bool Equals(object obj)
         {
-            return Obj is LocalEntry && Equals((LocalEntry)Obj);
+            return obj is LocalEntry && Equals((LocalEntry)obj);
         }
 
         /// <inheritdoc/>
@@ -360,13 +376,13 @@ namespace Wasm
         /// Checks if this local entry declares the same type and
         /// number of locals as the given local entry.
         /// </summary>
-        /// <param name="Other">The other local entry.</param>
+        /// <param name="other">The other local entry.</param>
         /// <returns>
         /// <c>true</c> if this local entry is the same as the given entry; otherwise, <c>false</c>.
         /// </returns>
-        public bool Equals(LocalEntry Other)
+        public bool Equals(LocalEntry other)
         {
-            return LocalType == Other.LocalType && LocalCount == Other.LocalCount;
+            return LocalType == other.LocalType && LocalCount == other.LocalCount;
         }
     }
 }

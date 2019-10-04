@@ -11,12 +11,12 @@ namespace Wasm
         /// <summary>
         /// Creates a custom section from the given section name and payload.
         /// </summary>
-        /// <param name="CustomName">The custom section's name.</param>
-        /// <param name="Payload">The custom section's payload.</param>
-        public CustomSection(string CustomName, byte[] Payload)
+        /// <param name="customName">The custom section's name.</param>
+        /// <param name="payload">The custom section's payload.</param>
+        public CustomSection(string customName, byte[] payload)
         {
-            this.CustomName = CustomName;
-            this.Payload = Payload;
+            this.CustomName = customName;
+            this.Payload = payload;
         }
 
         /// <summary>
@@ -37,10 +37,10 @@ namespace Wasm
         /// <summary>
         /// Writes this WebAssembly section's payload to the given binary writer.
         /// </summary>
-        /// <param name="Writer">The writer to which the payload is written.</param>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to which the payload is written.</param>
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.Writer.Write(Payload);
+            writer.Writer.Write(Payload);
         }
     }
 }

@@ -10,12 +10,12 @@ namespace Wasm
         /// <summary>
         /// Initializes a new instance of the <see cref="BadHeaderException"/> class.
         /// </summary>
-        /// <param name="Header">The version header.</param>
-        /// <param name="Message">The error message.</param>
-        public BadHeaderException(VersionHeader Header, string Message)
-            : base(Message)
+        /// <param name="header">The version header.</param>
+        /// <param name="message">The error message.</param>
+        public BadHeaderException(VersionHeader header, string message)
+            : base(message)
         {
-            this.Header = Header;
+            this.Header = header;
         }
 
         /// <summary>

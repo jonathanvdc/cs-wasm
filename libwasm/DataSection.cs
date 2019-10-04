@@ -12,21 +12,36 @@ namespace Wasm
     /// </summary>
     public sealed class DataSection : Section
     {
+        /// <summary>
+        /// Creates an empty data section.
+        /// </summary>
         public DataSection()
         {
             this.Segments = new List<DataSegment>();
             this.ExtraPayload = new byte[0];
         }
 
-        public DataSection(IEnumerable<DataSegment> Segments)
-            : this(Segments, new byte[0])
+        /// <summary>
+        /// Creates a data section from a sequence of data segments.
+        /// </summary>
+        /// <param name="segments">A sequence of data segments.</param>
+        public DataSection(IEnumerable<DataSegment> segments)
+            : this(segments, new byte[0])
         {
         }
 
-        public DataSection(IEnumerable<DataSegment> Segments, byte[] ExtraPayload)
+        /// <summary>
+        /// Creates a data section from a sequence of data segments and a trailing payload.
+        /// </summary>
+        /// <param name="segments">A sequence of data segments.</param>
+        /// <param name="extraPayload">
+        /// A sequence of bytes that have no intrinsic meaning; they are part
+        /// of the data section but are placed after the data section's actual contents.
+        /// </param>
+        public DataSection(IEnumerable<DataSegment> segments, byte[] extraPayload)
         {
-            this.Segments = new List<DataSegment>(Segments);
-            this.ExtraPayload = ExtraPayload;
+            this.Segments = new List<DataSegment>(segments);
+            this.ExtraPayload = extraPayload;
         }
 
         /// <inheritdoc/>
@@ -45,61 +60,61 @@ namespace Wasm
         public byte[] ExtraPayload { get; set; }
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32((uint)Segments.Count);
+            writer.WriteVarUInt32((uint)Segments.Count);
             foreach (var export in Segments)
             {
-                export.WriteTo(Writer);
+                export.WriteTo(writer);
             }
-            Writer.Writer.Write(ExtraPayload);
+            writer.Writer.Write(ExtraPayload);
         }
 
         /// <summary>
         /// Reads the export section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <param name="Reader">A reader for a binary WebAssembly file.</param>
+        /// <param name="header">The section header.</param>
+        /// <param name="reader">A reader for a binary WebAssembly file.</param>
         /// <returns>The parsed section.</returns>
         public static DataSection ReadSectionPayload(
-            SectionHeader Header, BinaryWasmReader Reader)
+            SectionHeader header, BinaryWasmReader reader)
         {
-            long startPos = Reader.Position;
+            long startPos = reader.Position;
             // Read the data segments.
-            uint count = Reader.ReadVarUInt32();
+            uint count = reader.ReadVarUInt32();
             var exportedVals = new List<DataSegment>();
             for (uint i = 0; i < count; i++)
             {
-                exportedVals.Add(DataSegment.ReadFrom(Reader));
+                exportedVals.Add(DataSegment.ReadFrom(reader));
             }
 
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
+            var extraPayload = reader.ReadRemainingPayload(startPos, header);
             return new DataSection(exportedVals, extraPayload);
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; number of entries: ");
-            Writer.Write(Segments.Count);
-            Writer.WriteLine();
-            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+            writer.Write(Name.ToString());
+            writer.Write("; number of entries: ");
+            writer.Write(Segments.Count);
+            writer.WriteLine();
+            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(writer);
             for (int i = 0; i < Segments.Count; i++)
             {
-                Writer.Write("#{0}:", i);
+                writer.Write("#{0}:", i);
                 indentedWriter.WriteLine();
                 Segments[i].Dump(indentedWriter);
-                Writer.WriteLine();
+                writer.WriteLine();
             }
             if (ExtraPayload.Length > 0)
             {
-                Writer.Write("Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
     }

@@ -15,22 +15,22 @@ namespace Wasm.Optimize
         /// that maps type indices from the old type sequence to
         /// indices of equivalent types in the new function type list.
         /// </summary>
-        /// <param name="Types">The sequence of types to make distinct.</param>
-        /// <param name="NewTypes">The list of distinct function types.</param>
-        /// <param name="TypeMapping">
+        /// <param name="types">The sequence of types to make distinct.</param>
+        /// <param name="newTypes">The list of distinct function types.</param>
+        /// <param name="typeMapping">
         /// A map from function types that occur in <c>Types</c> to their equivalents in <c>NewTypes</c>.
         /// </param>
         public static void MakeFunctionTypesDistinct(
-            IEnumerable<FunctionType> Types,
-            out IReadOnlyList<FunctionType> NewTypes,
-            out IReadOnlyDictionary<uint, uint> TypeMapping)
+            IEnumerable<FunctionType> types,
+            out IReadOnlyList<FunctionType> newTypes,
+            out IReadOnlyDictionary<uint, uint> typeMapping)
         {
             var newTypeList = new List<FunctionType>();
             var structuralOldToNewTypeMap = new Dictionary<FunctionType, uint>(
                 ConstFunctionTypeComparer.Instance);
             var referentialOldToNewTypeMap = new Dictionary<uint, uint>();
             uint i = 0;
-            foreach (var oldType in Types)
+            foreach (var oldType in types)
             {
                 uint newTypeIndex;
                 if (structuralOldToNewTypeMap.TryGetValue(oldType, out newTypeIndex))
@@ -46,8 +46,8 @@ namespace Wasm.Optimize
                 }
                 i++;
             }
-            NewTypes = newTypeList;
-            TypeMapping = referentialOldToNewTypeMap;
+            newTypes = newTypeList;
+            typeMapping = referentialOldToNewTypeMap;
         }
 
         /// <summary>
@@ -55,14 +55,14 @@ namespace Wasm.Optimize
         /// by replacing keys from the rewrite map with their corresponding
         /// values.
         /// </summary>
-        /// <param name="File">The WebAssembly file to rewrite.</param>
-        /// <param name="RewriteMap">A mapping of original type indices to new type indices.</param>
+        /// <param name="file">The WebAssembly file to rewrite.</param>
+        /// <param name="rewriteMap">A mapping of original type indices to new type indices.</param>
         public static void RewriteFunctionTypeReferences(
-            this WasmFile File,
-            IReadOnlyDictionary<uint, uint> RewriteMap)
+            this WasmFile file,
+            IReadOnlyDictionary<uint, uint> rewriteMap)
         {
             // Type references occur only in the import and function sections.
-            var importSections = File.GetSections<ImportSection>();
+            var importSections = file.GetSections<ImportSection>();
             for (int i = 0; i < importSections.Count; i++)
             {
                 var importSec = importSections[i];
@@ -70,21 +70,21 @@ namespace Wasm.Optimize
                 {
                     var importDecl = importSec.Imports[j] as ImportedFunction;
                     uint newIndex;
-                    if (importDecl != null && RewriteMap.TryGetValue(importDecl.TypeIndex, out newIndex))
+                    if (importDecl != null && rewriteMap.TryGetValue(importDecl.TypeIndex, out newIndex))
                     {
                         importDecl.TypeIndex = newIndex;
                     }
                 }
             }
 
-            var funcSections = File.GetSections<FunctionSection>();
+            var funcSections = file.GetSections<FunctionSection>();
             for (int i = 0; i < funcSections.Count; i++)
             {
                 var funcSec = funcSections[i];
                 for (int j = 0; j < funcSec.FunctionTypes.Count; j++)
                 {
                     uint newIndex;
-                    if (RewriteMap.TryGetValue(funcSec.FunctionTypes[j], out newIndex))
+                    if (rewriteMap.TryGetValue(funcSec.FunctionTypes[j], out newIndex))
                     {
                         funcSec.FunctionTypes[j] = newIndex;
                     }
@@ -96,12 +96,12 @@ namespace Wasm.Optimize
         /// Compresses function types in the given WebAssembly file
         /// by including only unique function types.
         /// </summary>
-        /// <param name="File">The WebAssembly file to modify.</param>
+        /// <param name="file">The WebAssembly file to modify.</param>
         public static void CompressFunctionTypes(
-            this WasmFile File)
+            this WasmFile file)
         {
             // Grab the first type section.
-            var typeSection = File.GetFirstSectionOrNull<TypeSection>();
+            var typeSection = file.GetFirstSectionOrNull<TypeSection>();
             if (typeSection == null)
             {
                 return;
@@ -117,7 +117,7 @@ namespace Wasm.Optimize
             typeSection.FunctionTypes.AddRange(newTypes);
 
             // Rewrite type indices.
-            File.RewriteFunctionTypeReferences(typeIndexMap);
+            file.RewriteFunctionTypeReferences(typeIndexMap);
         }
     }
 
@@ -160,4 +160,3 @@ namespace Wasm.Optimize
         }
     }
 }
-

@@ -10,11 +10,11 @@ namespace Wasm.Optimize
         /// <summary>
         /// Applies all known optimizations to the given WebAssembly file.
         /// </summary>
-        /// <param name="File">The file to optimize.</param>
-        public static void Optimize(this WasmFile File)
+        /// <param name="file">The file to optimize.</param>
+        public static void Optimize(this WasmFile file)
         {
-            File.CompressFunctionTypes();
-            foreach (var section in File.Sections)
+            file.CompressFunctionTypes();
+            foreach (var section in file.Sections)
             {
                 if (section is CodeSection)
                 {
@@ -26,11 +26,11 @@ namespace Wasm.Optimize
         /// <summary>
         /// Applies all known optimizations to the given code section.
         /// </summary>
-        /// <param name="Section">The code section to optimize.</param>
-        public static void Optimize(this CodeSection Section)
+        /// <param name="section">The code section to optimize.</param>
+        public static void Optimize(this CodeSection section)
         {
             var optimizer = PeepholeOptimizer.DefaultOptimizer;
-            foreach (var body in Section.Bodies)
+            foreach (var body in section.Bodies)
             {
                 // Compress local entries.
                 body.CompressLocalEntries();
@@ -43,4 +43,3 @@ namespace Wasm.Optimize
         }
     }
 }
-

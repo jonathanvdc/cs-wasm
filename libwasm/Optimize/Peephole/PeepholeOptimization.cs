@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Wasm.Instructions;
@@ -18,20 +17,20 @@ namespace Wasm.Optimize
         /// is returned that indicates the number of instructions at the front
         /// of the list of instructions that should be rewritten.
         /// </summary>
-        /// <param name="Instructions">
+        /// <param name="instructions">
         /// The instructions to match against the peephole optimization.
         /// </param>
         /// <returns>The number of instructions to rewrite.</returns>
-        public abstract uint Match(IReadOnlyList<Instruction> Instructions);
+        public abstract uint Match(IReadOnlyList<Instruction> instructions);
 
         /// <summary>
         /// Rewrites the given sequence of instructions.
         /// </summary>
-        /// <param name="Matched">
+        /// <param name="matched">
         /// A list of instructions that has been matched and will all be replaced.
         /// </param>
         /// <returns>The rewritten instructions.</returns>
-        public abstract IReadOnlyList<Instruction> Rewrite(IReadOnlyList<Instruction> Matched);
+        public abstract IReadOnlyList<Instruction> Rewrite(IReadOnlyList<Instruction> matched);
     }
 
     /// <summary>
@@ -42,10 +41,10 @@ namespace Wasm.Optimize
         /// <summary>
         /// Creates a peephole optimizer that applies the given optimizations.
         /// </summary>
-        /// <param name="Optimization">The optimizations to apply.</param>
-        public PeepholeOptimizer(IEnumerable<PeepholeOptimization> Optimizations)
+        /// <param name="optimizations">The optimizations to apply.</param>
+        public PeepholeOptimizer(IEnumerable<PeepholeOptimization> optimizations)
         {
-            this.opts = Optimizations;
+            this.opts = optimizations;
         }
 
         private IEnumerable<PeepholeOptimization> opts;
@@ -69,11 +68,11 @@ namespace Wasm.Optimize
         /// <summary>
         /// Uses this peephole optimizer to optimize the given sequence of instructions.
         /// </summary>
-        /// <param name="Instructions">The instructions to optimize.</param>
+        /// <param name="instructions">The instructions to optimize.</param>
         /// <returns>An optimized sequence of instructions.</returns>
-        public IReadOnlyList<Instruction> Optimize(IReadOnlyList<Instruction> Instructions)
+        public IReadOnlyList<Instruction> Optimize(IReadOnlyList<Instruction> instructions)
         {
-            var inputArray = Enumerable.ToArray<Instruction>(Instructions);
+            var inputArray = Enumerable.ToArray<Instruction>(instructions);
             var results = new List<Instruction>();
             for (int i = 0; i < inputArray.Length;)
             {
@@ -119,23 +118,22 @@ namespace Wasm.Optimize
         }
 
         private uint LongestMatch(
-            IReadOnlyList<Instruction> Instructions,
-            out PeepholeOptimization MatchingOptimization)
+            IReadOnlyList<Instruction> instructions,
+            out PeepholeOptimization matchingOptimization)
         {
             uint bestMatch = 0;
             PeepholeOptimization bestOpt = null;
             foreach (var opt in opts)
             {
-                uint match = opt.Match(Instructions);
+                uint match = opt.Match(instructions);
                 if (match > bestMatch)
                 {
                     bestMatch = match;
                     bestOpt = opt;
                 }
             }
-            MatchingOptimization = bestOpt;
+            matchingOptimization = bestOpt;
             return bestMatch;
         }
     }
 }
-

@@ -1,7 +1,4 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Wasm.Instructions;
 
 namespace Wasm.Optimize
@@ -24,20 +21,20 @@ namespace Wasm.Optimize
         /// is returned that indicates the number of instructions at the front
         /// of the list of instructions that should be rewritten.
         /// </summary>
-        /// <param name="Instructions">
+        /// <param name="instructions">
         /// The instructions to match against the peephole optimization.
         /// </param>
         /// <returns>The number of instructions to rewrite.</returns>
-        public override uint Match(IReadOnlyList<Instruction> Instructions)
+        public override uint Match(IReadOnlyList<Instruction> instructions)
         {
-            if (Instructions.Count < 2)
+            if (instructions.Count < 2)
                 return 0;
 
-            var first = Instructions[0];
+            var first = instructions[0];
             if (first.Op != Operators.SetLocal)
                 return 0;
 
-            var second = Instructions[1];
+            var second = instructions[1];
             if (second.Op != Operators.GetLocal)
                 return 0;
 
@@ -52,13 +49,13 @@ namespace Wasm.Optimize
         /// <summary>
         /// Rewrites the given sequence of instructions.
         /// </summary>
-        /// <param name="Matched">
+        /// <param name="matched">
         /// A list of instructions that has been matched and will all be replaced.
         /// </param>
         /// <returns>The rewritten instructions.</returns>
-        public override IReadOnlyList<Instruction> Rewrite(IReadOnlyList<Instruction> Matched)
+        public override IReadOnlyList<Instruction> Rewrite(IReadOnlyList<Instruction> matched)
         {
-            var setLocal = Operators.SetLocal.CastInstruction(Matched[0]);
+            var setLocal = Operators.SetLocal.CastInstruction(matched[0]);
             return new Instruction[] { Operators.TeeLocal.Create(setLocal.Immediate) };
         }
     }

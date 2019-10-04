@@ -94,7 +94,7 @@ namespace Wasm.Optimize
                         // Visit block instructions recursively.
                         var block = (BlockInstruction)inputArray[i];
                         results.Add(
-                            new BlockInstruction(block.Op, block.Type, Optimize(block.Contents)));
+                            new BlockInstruction((BlockOperator)block.Op, block.Type, Optimize(block.Contents)));
                     }
                     else if (inputArray[i] is IfElseInstruction)
                     {

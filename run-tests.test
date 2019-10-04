@@ -3,11 +3,11 @@ init
 {
     examples = $(working-directory)/examples;
     input-files = $(working-directory)/tests/input-files;
-    run-unit-tests = $(net-runtime) $(working-directory)/unit-tests/bin/clr/unit-tests.exe;
-    wasm-cat = $(net-runtime) $(working-directory)/wasm-cat/bin/clr/wasm-cat.exe;
-    wasm-dump = $(net-runtime) $(working-directory)/wasm-dump/bin/clr/wasm-dump.exe;
-    wasm-interp = $(net-runtime) $(working-directory)/wasm-interp/bin/clr/wasm-interp.exe;
-    wasm-opt = $(net-runtime) $(working-directory)/wasm-opt/bin/clr/wasm-opt.exe;
+    run-unit-tests = $(net-runtime) $(working-directory)/unit-tests/bin/Debug/net47/unit-tests.exe;
+    wasm-cat = $(net-runtime) $(working-directory)/wasm-cat/bin/Debug/net47/wasm-cat.exe;
+    wasm-dump = $(net-runtime) $(working-directory)/wasm-dump/bin/Debug/net47/wasm-dump.exe;
+    wasm-interp = $(net-runtime) $(working-directory)/wasm-interp/bin/Debug/net47/wasm-interp.exe;
+    wasm-opt = $(net-runtime) $(working-directory)/wasm-opt/bin/Debug/net47/wasm-opt.exe;
 }
 
 tests

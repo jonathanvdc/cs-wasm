@@ -9,7 +9,7 @@ namespace Wasm
     public struct VersionHeader
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Wasm.Binary.VersionHeader"/> struct.
+        /// Initializes a new instance of the <see cref="VersionHeader"/> struct.
         /// </summary>
         /// <param name="Magic">The magic number.</param>
         /// <param name="Version">The version number.</param>

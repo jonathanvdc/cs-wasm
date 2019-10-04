@@ -20,23 +20,14 @@ install:
   - mkdir compare-test
   - 7z x compare-test.zip -ocompare-test
   - set PATH=%PATH%;%cd%\compare-test
-  # Clone ecsc, compile it and add it to the PATH variable.
-  - git clone --depth=5 https://github.com/jonathanvdc/ecsc
-  - nuget restore ecsc\src\ecsc.sln
-  - msbuild /p:Configuration=Release /verbosity:quiet ecsc\src\ecsc.sln
-  - set PATH=%PATH%;%cd%\ecsc\src\ecsc\bin\Release
   # Add cygwin binaries to the PATH
   - set PATH=%PATH%;C:\cygwin\bin
 
 build_script:
   # Restore NuGet packages
   - nuget restore cs-wasm.sln
-  # Build cs-wasm with csc
-  - msbuild /p:Configuration=Release cs-wasm.sln
-  # Build cs-wasm with ecsc
+  # Build cs-wasm
   - make all
-  # Build the examples with ecsc
-  - make example-projects
 
 after_build:
   # Create a folder that contains all tools and zip it.

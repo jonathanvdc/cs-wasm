@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Wasm.Binary;
 
 namespace Wasm.Dump
 {

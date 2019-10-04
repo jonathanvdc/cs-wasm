@@ -1,11 +1,8 @@
 language: csharp
 dist: trusty
 script:
-  # Restore NuGet packages
+  # Restore NuGet packages.
   - nuget restore cs-wasm.sln
-  # Build the project with the default C# compiler
-  - msbuild /p:Configuration=Release cs-wasm.sln
-  # Build the project with ecsc and test it
+  # Build the project and test it.
   - make all
-  - make example-projects
   - make test

@@ -5,14 +5,15 @@ using Wasm.Binary;
 namespace Wasm
 {
     /// <summary>
-    /// A base class for sections.
+    /// A base class for WebAssembly module sections.
     /// </summary>
     public abstract class Section
     {
+        /// <summary>
+        /// Creates a new WebAssembly module section.
+        /// </summary>
         public Section()
-        {
-
-        }
+        { }
 
         /// <summary>
         /// Gets this section's name.

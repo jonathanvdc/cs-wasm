@@ -18,7 +18,7 @@
   </metadata>
   <files>
     <file src="README.md" target="readme.txt" />
-    <file src="libwasm\bin\clr\libwasm.dll" target="lib\net45\" />
-    <file src="libwasm\bin\clr\libwasm.xml" target="lib\net45\" />
+    <file src="libwasm\bin\clr\libwasm.dll" target="lib\net47\" />
+    <file src="libwasm\bin\clr\libwasm.xml" target="lib\net47\" />
   </files>
 </package>

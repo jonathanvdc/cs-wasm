@@ -8,7 +8,7 @@ namespace Wasm
     public sealed class BadHeaderException : WasmException
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="Wasm.Binary.BadHeaderException"/> class.
+        /// Initializes a new instance of the <see cref="BadHeaderException"/> class.
         /// </summary>
         /// <param name="Header">The version header.</param>
         /// <param name="Message">The error message.</param>

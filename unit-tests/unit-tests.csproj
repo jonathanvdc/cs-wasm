@@ -1,70 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{838EF002-4901-4F56-A47E-82AF993C7047}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <RootNamespace>Wasm.UnitTests</RootNamespace>
     <AssemblyName>unit-tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Externalconsole>true</Externalconsole>
+    <TargetFrameworks>net47</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="Loyc.Essentials">
-      <HintPath>..\packages\Loyc.Essentials.24.3.0\lib\net45\Loyc.Essentials.dll</HintPath>
-    </Reference>
-    <Reference Include="Loyc.Collections">
-      <HintPath>..\packages\Loyc.Collections.24.3.0\lib\net45\Loyc.Collections.dll</HintPath>
-    </Reference>
-    <Reference Include="Loyc.Syntax">
-      <HintPath>..\packages\Loyc.Syntax.24.3.0\lib\net45\Loyc.Syntax.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Interpret\DefaultInterpreterTests.cs" />
-    <Compile Include="Interpret\LinearMemoryTests.cs" />
-    <Compile Include="Optimize\FunctionBodyOptimizationTests.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <ProjectReference Include="..\libwasm-core\libwasm-core.csproj">
-      <Project>{6C27FD1D-096F-4AA9-8FC4-277964CFC390}</Project>
-      <Name>libwasm-core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\libwasm-interpret\libwasm-interpret.csproj">
-      <Project>{3FF2B143-4AD3-4BF5-85F4-1BA682FDD511}</Project>
-      <Name>libwasm-interpret</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\libwasm-optimize\libwasm-optimize.csproj">
-      <Project>{AEB2A309-A048-49F2-A754-F3E216E2BDD9}</Project>
-      <Name>libwasm-optimize</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Interpret\" />
+    <ProjectReference Include="..\libwasm\libwasm.csproj" />
+    <PackageReference Include="Loyc.Essentials" Version="26.8.1" />
+    <PackageReference Include="Loyc.Collections" Version="26.8.1" />
+    <PackageReference Include="Loyc.Syntax" Version="26.8.1" />
   </ItemGroup>
 </Project>

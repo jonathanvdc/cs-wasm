@@ -11,7 +11,7 @@ namespace Wasm
         /// <summary>
         /// Creates a custom section from the given section name and payload.
         /// </summary>
-        /// <param name="Name">The custom section's name.</param>
+        /// <param name="CustomName">The custom section's name.</param>
         /// <param name="Payload">The custom section's payload.</param>
         public CustomSection(string CustomName, byte[] Payload)
         {

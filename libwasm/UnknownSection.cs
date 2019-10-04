@@ -11,7 +11,7 @@ namespace Wasm
         /// <summary>
         /// Creates an unknown section from the given section name and payload.
         /// </summary>
-        /// <param name="Name">The unknown section's name.</param>
+        /// <param name="Code">The unknown section's code.</param>
         /// <param name="Payload">The unknown section's payload.</param>
         public UnknownSection(SectionCode Code, byte[] Payload)
         {

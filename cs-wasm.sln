@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libwasm-core", "libwasm-core\libwasm-core.csproj", "{6C27FD1D-096F-4AA9-8FC4-277964CFC390}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libwasm", "libwasm\libwasm.csproj", "{6C27FD1D-096F-4AA9-8FC4-277964CFC390}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wasm-dump", "wasm-dump\wasm-dump.csproj", "{BEA2507C-F8CF-414E-9E18-A359FC506BB0}"
 EndProject
@@ -11,13 +11,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wasm-cat", "wasm-cat\wasm-c
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "readme-example", "examples\readme-example\readme-example.csproj", "{5415B340-F74D-4ADE-96FF-9457F2BB148E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libwasm-interpret", "libwasm-interpret\libwasm-interpret.csproj", "{3FF2B143-4AD3-4BF5-85F4-1BA682FDD511}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "unit-tests", "unit-tests\unit-tests.csproj", "{838EF002-4901-4F56-A47E-82AF993C7047}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wasm-interp", "wasm-interp\wasm-interp.csproj", "{2895AFBC-05A2-43C3-B999-93F51FDFC9E1}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libwasm-optimize", "libwasm-optimize\libwasm-optimize.csproj", "{AEB2A309-A048-49F2-A754-F3E216E2BDD9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wasm-opt", "wasm-opt\wasm-opt.csproj", "{3EE7C5B4-8A68-4EAD-85BA-7A43FBC104C4}"
 EndProject

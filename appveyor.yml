@@ -62,7 +62,7 @@ deploy:
     tag: $(APPVEYOR_REPO_TAG_NAME)
     description: 'Release description' # Fill this out later.
     auth_token:
-      secure: 693ZX2DdyyjDOqpJaJlUMO1hcMtLbsqMnCLzQVUEq7JjGb+bfEbaB/oMO0b26KZo
+      secure: uD30BxiIToiU/QF5vqzg07XGow2lyfagXLn1eWGi6228/+OpD1za2z/Z7tB2j4+8
     artifact: cs-wasm-tools.zip # Release the cs-wasm tools as an artifact.
     draft: true  # Make this a draft.
     prerelease: false

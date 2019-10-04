@@ -18,9 +18,9 @@
   </metadata>
   <files>
     <file src="README.md" target="readme.txt" />
-    <file src="libwasm\bin\net47\Release\libwasm.dll" target="lib\net47\" />
-    <file src="libwasm\bin\net47\Release\libwasm.xml" target="lib\net47\" />
-    <file src="libwasm\bin\netstandard2.0\Release\libwasm.dll" target="lib\netstandard2.0\" />
-    <file src="libwasm\bin\netstandard2.0\Release\libwasm.xml" target="lib\netstandard2.0\" />
+    <file src="libwasm\bin\Release\net47\libwasm.dll" target="lib\net47\" />
+    <file src="libwasm\bin\Release\net47\libwasm.xml" target="lib\net47\" />
+    <file src="libwasm\bin\Release\netstandard2.0\libwasm.dll" target="lib\netstandard2.0\" />
+    <file src="libwasm\bin\Release\netstandard2.0\libwasm.xml" target="lib\netstandard2.0\" />
   </files>
 </package>

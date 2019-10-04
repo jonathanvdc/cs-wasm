@@ -9,12 +9,12 @@ namespace Wasm.Binary
         /// Creates a section header for a non-custom section with the given section
         /// name and payload length.
         /// </summary>
-        /// <param name="Name">The section name.</param>
-        /// <param name="PayloadLength">The length of the payload.</param>
-        public SectionHeader(SectionName Name, uint PayloadLength)
+        /// <param name="name">The section name.</param>
+        /// <param name="payloadLength">The length of the payload.</param>
+        public SectionHeader(SectionName name, uint payloadLength)
         {
-            this.Name = Name;
-            this.PayloadLength = PayloadLength;
+            this.Name = name;
+            this.PayloadLength = payloadLength;
         }
 
         /// <summary>
@@ -29,6 +29,7 @@ namespace Wasm.Binary
         /// <returns>The length of the payload, in bytes.</returns>
         public uint PayloadLength { get; private set; }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             return Name + ", payload size: " + PayloadLength;

@@ -13,53 +13,53 @@ namespace Wasm.Binary
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmReader"/> class.
         /// </summary>
-        /// <param name="Reader">The binary reader for a WebAssembly file.</param>
-        public BinaryWasmReader(BinaryReader Reader)
-            : this(Reader, UTF8Encoding.UTF8)
+        /// <param name="reader">The binary reader for a WebAssembly file.</param>
+        public BinaryWasmReader(BinaryReader reader)
+            : this(reader, UTF8Encoding.UTF8)
         { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmReader"/> class.
         /// </summary>
-        /// <param name="Reader">The binary reader for a WebAssembly file.</param>
-        /// <param name="StringEncoding">The encoding for strings in the WebAssembly file.</param>
+        /// <param name="reader">The binary reader for a WebAssembly file.</param>
+        /// <param name="stringEncoding">The encoding for strings in the WebAssembly file.</param>
         public BinaryWasmReader(
-            BinaryReader Reader,
-            Encoding StringEncoding)
+            BinaryReader reader,
+            Encoding stringEncoding)
         {
-            this.reader = Reader;
-            this.StringEncoding = StringEncoding;
+            this.reader = reader;
+            this.StringEncoding = stringEncoding;
             this.streamIsEmpty = defaultStreamIsEmptyImpl;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmReader"/> class.
         /// </summary>
-        /// <param name="Reader">The binary reader for a WebAssembly file.</param>
-        /// <param name="StringEncoding">The encoding for strings in the WebAssembly file.</param>
-        /// <param name="StreamIsEmpty">Tests if the stream is empty.</param>
+        /// <param name="reader">The binary reader for a WebAssembly file.</param>
+        /// <param name="stringEncoding">The encoding for strings in the WebAssembly file.</param>
+        /// <param name="streamIsEmpty">Tests if the stream is empty.</param>
         public BinaryWasmReader(
-            BinaryReader Reader,
-            Encoding StringEncoding,
-            Func<bool> StreamIsEmpty)
+            BinaryReader reader,
+            Encoding stringEncoding,
+            Func<bool> streamIsEmpty)
         {
-            this.reader = Reader;
-            this.StringEncoding = StringEncoding;
-            this.streamIsEmpty = StreamIsEmpty;
+            this.reader = reader;
+            this.StringEncoding = stringEncoding;
+            this.streamIsEmpty = streamIsEmpty;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmReader"/> class.
         /// </summary>
-        /// <param name="Reader">The binary reader for a WebAssembly file.</param>
-        /// <param name="StreamIsEmpty">Tests if the stream is empty.</param>
+        /// <param name="reader">The binary reader for a WebAssembly file.</param>
+        /// <param name="streamIsEmpty">Tests if the stream is empty.</param>
         public BinaryWasmReader(
-            BinaryReader Reader,
-            Func<bool> StreamIsEmpty)
+            BinaryReader reader,
+            Func<bool> streamIsEmpty)
         {
-            this.reader = Reader;
+            this.reader = reader;
             this.StringEncoding = UTF8Encoding.UTF8;
-            this.streamIsEmpty = StreamIsEmpty;
+            this.streamIsEmpty = streamIsEmpty;
         }
 
         /// <summary>
@@ -105,12 +105,12 @@ namespace Wasm.Binary
         /// <summary>
         /// Reads a range of bytes.
         /// </summary>
-        /// <param name="Count">The number of bytes to read.</param>
+        /// <param name="count">The number of bytes to read.</param>
         /// <returns>The array of bytes that were read.</returns>
-        public byte[] ReadBytes(int Count)
+        public byte[] ReadBytes(int count)
         {
-            byte[] results = reader.ReadBytes(Count);
-            Position += Count;
+            byte[] results = reader.ReadBytes(count);
+            Position += count;
             return results;
         }
 
@@ -320,103 +320,103 @@ namespace Wasm.Binary
         /// <summary>
         /// Reads the section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
+        /// <param name="header">The section header.</param>
         /// <returns>The parsed section.</returns>
-        public Section ReadSectionPayload(SectionHeader Header)
+        public Section ReadSectionPayload(SectionHeader header)
         {
-            if (Header.Name.IsCustom)
-                return ReadCustomSectionPayload(Header);
+            if (header.Name.IsCustom)
+                return ReadCustomSectionPayload(header);
             else
-                return ReadKnownSectionPayload(Header);
+                return ReadKnownSectionPayload(header);
         }
 
         /// <summary>
         /// Reads the remaining payload of the section whose payload starts at the given position.
         /// </summary>
-        /// <param name="StartPosition">The start of the section's payload.</param>
-        /// <param name="PayloadLength">The length of the section's payload, in bytes.</param>
+        /// <param name="startPosition">The start of the section's payload.</param>
+        /// <param name="payloadLength">The length of the section's payload, in bytes.</param>
         /// <returns>The remaining payload of the section whose payload starts at the given position.</returns>
-        public byte[] ReadRemainingPayload(long StartPosition, uint PayloadLength)
+        public byte[] ReadRemainingPayload(long startPosition, uint payloadLength)
         {
-            return ReadBytes((int)(Position - StartPosition - PayloadLength));
+            return ReadBytes((int)(Position - startPosition - payloadLength));
         }
 
         /// <summary>
         /// Reads the remaining payload of the section whose payload starts at the given position.
         /// </summary>
-        /// <param name="StartPosition">The start of the section's payload.</param>
-        /// <param name="Header">The section's header.</param>
+        /// <param name="startPosition">The start of the section's payload.</param>
+        /// <param name="header">The section's header.</param>
         /// <returns>The remaining payload of the section whose payload starts at the given position.</returns>
-        public byte[] ReadRemainingPayload(long StartPosition, SectionHeader Header)
+        public byte[] ReadRemainingPayload(long startPosition, SectionHeader header)
         {
-            return ReadRemainingPayload(StartPosition, Header.PayloadLength);
+            return ReadRemainingPayload(startPosition, header.PayloadLength);
         }
 
         /// <summary>
         /// Reads the custom section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
+        /// <param name="header">The section header.</param>
         /// <returns>The parsed section.</returns>
-        protected virtual Section ReadCustomSectionPayload(SectionHeader Header)
+        protected virtual Section ReadCustomSectionPayload(SectionHeader header)
         {
-            if (Header.Name.CustomName == NameSection.CustomName)
+            if (header.Name.CustomName == NameSection.CustomName)
             {
-                return NameSection.ReadSectionPayload(Header, this);
+                return NameSection.ReadSectionPayload(header, this);
             }
             else
             {
                 return new CustomSection(
-                    Header.Name.CustomName,
-                    ReadBytes((int)Header.PayloadLength));
+                    header.Name.CustomName,
+                    ReadBytes((int)header.PayloadLength));
             }
         }
 
         /// <summary>
         /// Reads the non-custom section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
+        /// <param name="header">The section header.</param>
         /// <returns>The parsed section.</returns>
-        protected Section ReadKnownSectionPayload(SectionHeader Header)
+        protected Section ReadKnownSectionPayload(SectionHeader header)
         {
-            switch (Header.Name.Code)
+            switch (header.Name.Code)
             {
                 case SectionCode.Type:
-                    return TypeSection.ReadSectionPayload(Header, this);
+                    return TypeSection.ReadSectionPayload(header, this);
                 case SectionCode.Import:
-                    return ImportSection.ReadSectionPayload(Header, this);
+                    return ImportSection.ReadSectionPayload(header, this);
                 case SectionCode.Function:
-                    return FunctionSection.ReadSectionPayload(Header, this);
+                    return FunctionSection.ReadSectionPayload(header, this);
                 case SectionCode.Table:
-                    return TableSection.ReadSectionPayload(Header, this);
+                    return TableSection.ReadSectionPayload(header, this);
                 case SectionCode.Memory:
-                    return MemorySection.ReadSectionPayload(Header, this);
+                    return MemorySection.ReadSectionPayload(header, this);
                 case SectionCode.Global:
-                    return GlobalSection.ReadSectionPayload(Header, this);
+                    return GlobalSection.ReadSectionPayload(header, this);
                 case SectionCode.Export:
-                    return ExportSection.ReadSectionPayload(Header, this);
+                    return ExportSection.ReadSectionPayload(header, this);
                 case SectionCode.Start:
-                    return StartSection.ReadSectionPayload(Header, this);
+                    return StartSection.ReadSectionPayload(header, this);
                 case SectionCode.Element:
-                    return ElementSection.ReadSectionPayload(Header, this);
+                    return ElementSection.ReadSectionPayload(header, this);
                 case SectionCode.Code:
-                    return CodeSection.ReadSectionPayload(Header, this);
+                    return CodeSection.ReadSectionPayload(header, this);
                 case SectionCode.Data:
-                    return DataSection.ReadSectionPayload(Header, this);
+                    return DataSection.ReadSectionPayload(header, this);
                 default:
-                    return ReadUnknownSectionPayload(Header);
+                    return ReadUnknownSectionPayload(header);
             }
         }
 
         /// <summary>
         /// Reads the unknown, non-custom section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
+        /// <param name="header">The section header.</param>
         /// <returns>The parsed section.</returns>
-        protected virtual Section ReadUnknownSectionPayload(SectionHeader Header)
+        protected virtual Section ReadUnknownSectionPayload(SectionHeader header)
         {
             return new UnknownSection(
-                Header.Name.Code,
-                ReadBytes((int)Header.PayloadLength));
+                header.Name.Code,
+                ReadBytes((int)header.PayloadLength));
         }
 
         /// <summary>

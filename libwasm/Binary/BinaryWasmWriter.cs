@@ -13,20 +13,20 @@ namespace Wasm.Binary
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmWriter"/> class.
         /// </summary>
-        /// <param name="Writer">The binary writer for a WebAssembly file.</param>
-        public BinaryWasmWriter(BinaryWriter Writer)
-            : this(Writer, UTF8Encoding.UTF8)
+        /// <param name="writer">The binary writer for a WebAssembly file.</param>
+        public BinaryWasmWriter(BinaryWriter writer)
+            : this(writer, UTF8Encoding.UTF8)
         { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.Binary.BinaryWasmWriter"/> class.
         /// </summary>
-        /// <param name="Writer">The binary writer for a WebAssembly file.</param>
-        /// <param name="StringEncoding">The encoding for strings in the WebAssembly file.</param>
-        public BinaryWasmWriter(BinaryWriter Writer, Encoding StringEncoding)
+        /// <param name="writer">The binary writer for a WebAssembly file.</param>
+        /// <param name="stringEncoding">The encoding for strings in the WebAssembly file.</param>
+        public BinaryWasmWriter(BinaryWriter writer, Encoding stringEncoding)
         {
-            this.Writer = Writer;
-            this.StringEncoding = StringEncoding;
+            this.Writer = writer;
+            this.StringEncoding = stringEncoding;
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Wasm.Binary
         /// Writes an unsigned LEB128 variable-length integer, limited to 64 bits.
         /// </summary>
         /// <returns>The number of bytes used to encode the integer.</returns>
-        public int WriteVarUInt64(ulong Value)
+        public int WriteVarUInt64(ulong value)
         {
             // C# translation of code borrowed from Wikipedia article:
             // https://en.wikipedia.org/wiki/LEB128
@@ -52,14 +52,14 @@ namespace Wasm.Binary
             int count = 0;
             do
             {
-                byte b = (byte)(Value & 0x7F);
-                Value >>= 7;
-                if (Value != 0)
+                byte b = (byte)(value & 0x7F);
+                value >>= 7;
+                if (value != 0)
                     b |= 0x80;
 
                 Writer.Write(b);
                 count++;
-            } while (Value != 0);
+            } while (value != 0);
             return count;
         }
 
@@ -67,34 +67,34 @@ namespace Wasm.Binary
         /// Writes an unsigned LEB128 variable-length integer, limited to 32 bits.
         /// </summary>
         /// <returns>The number of bytes used to encode the integer.</returns>
-        public int WriteVarUInt32(uint Value)
+        public int WriteVarUInt32(uint value)
         {
-            return WriteVarUInt64(Value);
+            return WriteVarUInt64(value);
         }
 
         /// <summary>
         /// Writes an unsigned LEB128 variable-length integer, limited to 7 bits.
         /// </summary>
         /// <returns>The number of bytes used to encode the integer.</returns>
-        public int WriteVarUInt7(byte Value)
+        public int WriteVarUInt7(byte value)
         {
-            return WriteVarUInt32(Value);
+            return WriteVarUInt32(value);
         }
 
         /// <summary>
         /// Writes an unsigned LEB128 variable-length integer, limited to one bit.
         /// </summary>
         /// <returns>The number of bytes used to encode the integer.</returns>
-        public int WriteVarUInt1(bool Value)
+        public int WriteVarUInt1(bool value)
         {
-            return WriteVarUInt32(Value ? 1u : 0u);
+            return WriteVarUInt32(value ? 1u : 0u);
         }
 
         /// <summary>
         /// Writes a signed LEB128 variable-length integer, limited to 64 bits.
         /// </summary>
         /// <returns>The number of bytes used to encode the integer.</returns>
-        public int WriteVarInt64(long Value)
+        public int WriteVarInt64(long value)
         {
             // C# translation of code borrowed from Wikipedia article:
             // https://en.wikipedia.org/wiki/LEB128
@@ -103,10 +103,10 @@ namespace Wasm.Binary
             bool more = true;
             while (more)
             {
-                byte b = (byte)(Value & 0x7F);
-                Value >>= 7;
+                byte b = (byte)(value & 0x7F);
+                value >>= 7;
 
-                if ((Value == 0 && ((b & 0x40) == 0)) || (Value == -1 && ((b & 0x40) == 0x40)))
+                if ((value == 0 && ((b & 0x40) == 0)) || (value == -1 && ((b & 0x40) == 0x40)))
                     more = false;
                 else
                     // set high order bit of byte
@@ -122,69 +122,69 @@ namespace Wasm.Binary
         /// Writes a signed LEB128 variable-length integer, limited to 32 bits.
         /// </summary>
         /// <returns>The number of bytes used to encode the integer.</returns>
-        public int WriteVarInt32(int Value)
+        public int WriteVarInt32(int value)
         {
-            return WriteVarInt64(Value);
+            return WriteVarInt64(value);
         }
 
         /// <summary>
         /// Writes a signed LEB128 variable-length integer, limited to 7 bits.
         /// </summary>
         /// <returns>The number of bytes used to encode the integer.</returns>
-        public int WriteVarInt7(sbyte Value)
+        public int WriteVarInt7(sbyte value)
         {
-            return WriteVarInt64(Value);
+            return WriteVarInt64(value);
         }
 
         /// <summary>
         /// Writes a 32-bit floating-point number.
         /// </summary>
-        /// <param name="Value">The floating-point number to write.</param>
+        /// <param name="value">The floating-point number to write.</param>
         /// <returns>The number of bytes used to encode the floating-point number.</returns>
-        public int WriteFloat32(float Value)
+        public int WriteFloat32(float value)
         {
-            Writer.Write(Value);
+            Writer.Write(value);
             return 4;
         }
 
         /// <summary>
         /// Writes a 64-bit floating-point number.
         /// </summary>
-        /// <param name="Value">The floating-point number to write.</param>
+        /// <param name="value">The floating-point number to write.</param>
         /// <returns>The number of bytes used to encode the floating-point number.</returns>
-        public int WriteFloat64(double Value)
+        public int WriteFloat64(double value)
         {
-            Writer.Write(Value);
+            Writer.Write(value);
             return 8;
         }
 
         /// <summary>
         /// Writes a WebAssembly language type.
         /// </summary>
-        /// <param name="Value">The WebAssembly language type to write.</param>
+        /// <param name="value">The WebAssembly language type to write.</param>
         /// <returns>The number of bytes used to encode the type.</returns>
-        public int WriteWasmType(WasmType Value)
+        public int WriteWasmType(WasmType value)
         {
-            return WriteVarInt7((sbyte)Value);
+            return WriteVarInt7((sbyte)value);
         }
 
         /// <summary>
         /// Writes a WebAssembly value type.
         /// </summary>
-        /// <param name="Value">The WebAssembly language value to write.</param>
+        /// <param name="value">The WebAssembly language value to write.</param>
         /// <returns>The number of bytes used to encode the type.</returns>
-        public int WriteWasmValueType(WasmValueType Value)
+        public int WriteWasmValueType(WasmValueType value)
         {
-            return WriteVarInt7((sbyte)Value);
+            return WriteVarInt7((sbyte)value);
         }
 
         /// <summary>
         /// Writes a length-prefixed string to the WebAssembly file.
         /// </summary>
-        /// <param name="Value">The string to write to the file.</param>
-        public void WriteString(string Value)
+        /// <param name="value">The string to write to the file.</param>
+        public void WriteString(string value)
         {
-            byte[] buffer = StringEncoding.GetBytes(Value);
+            byte[] buffer = StringEncoding.GetBytes(value);
             WriteVarUInt32((uint)buffer.Length);
             Writer.Write(buffer);
         }
@@ -193,8 +193,8 @@ namespace Wasm.Binary
         /// Writes data and prefixes it with a variable-length 32-bit unsigned integer
         /// that specifies the number of bytes written.
         /// </summary>
-        /// <param name="WriteData">Writes data to a WebAssembly file.</param>
-        public void WriteLengthPrefixed(Action<BinaryWasmWriter> WriteData)
+        /// <param name="writeData">Writes data to a WebAssembly file.</param>
+        public void WriteLengthPrefixed(Action<BinaryWasmWriter> writeData)
         {
             using (var memStream = new MemoryStream())
             {
@@ -203,7 +203,7 @@ namespace Wasm.Binary
                     StringEncoding);
 
                 // Write the contents to the memory stream.
-                WriteData(innerWriter);
+                writeData(innerWriter);
 
                 // Save the number of bytes we've written.
                 var numberOfBytes = memStream.Position;
@@ -222,35 +222,34 @@ namespace Wasm.Binary
         /// <summary>
         /// Writes a WebAssembly version header.
         /// </summary>
-        /// <param name="Header">The WebAssembly version header to write.</param>
-        public void WriteVersionHeader(VersionHeader Header)
+        /// <param name="header">The WebAssembly version header to write.</param>
+        public void WriteVersionHeader(VersionHeader header)
         {
-            Writer.Write(Header.Magic);
-            Writer.Write(Header.Version);
+            Writer.Write(header.Magic);
+            Writer.Write(header.Version);
         }
 
         /// <summary>
         /// Writes a WebAssembly section, including its header.
         /// </summary>
-        /// <param name="Value">The WebAssembly section to write.</param>
-        public void WriteSection(Section Value)
+        /// <param name="value">The WebAssembly section to write.</param>
+        public void WriteSection(Section value)
         {
-            WriteVarInt7((sbyte)Value.Name.Code);
-            WriteLengthPrefixed(Value.WriteCustomNameAndPayloadTo);
+            WriteVarInt7((sbyte)value.Name.Code);
+            WriteLengthPrefixed(value.WriteCustomNameAndPayloadTo);
         }
 
         /// <summary>
         /// Writes a WebAssembly file.
         /// </summary>
-        /// <param name="File">The WebAssembly file to write.</param>
-        public void WriteFile(WasmFile File)
+        /// <param name="file">The WebAssembly file to write.</param>
+        public void WriteFile(WasmFile file)
         {
-            WriteVersionHeader(File.Header);
-            foreach (var section in File.Sections)
+            WriteVersionHeader(file.Header);
+            foreach (var section in file.Sections)
             {
                 WriteSection(section);
             }
         }
     }
 }
-

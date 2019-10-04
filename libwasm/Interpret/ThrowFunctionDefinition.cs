@@ -11,17 +11,17 @@ namespace Wasm.Interpret
         /// <summary>
         /// Creates a function definition from the given exception.
         /// </summary>
-        /// <param name="ParameterTypes">The list of parameter types.</param>
-        /// <param name="ReturnTypes">The list of return types.</param>
-        /// <param name="ExceptionToThrow">The exception to throw.</param>
+        /// <param name="parameterTypes">The list of parameter types.</param>
+        /// <param name="returnTypes">The list of return types.</param>
+        /// <param name="exceptionToThrow">The exception to throw.</param>
         public ThrowFunctionDefinition(
-            IReadOnlyList<WasmValueType> ParameterTypes,
-            IReadOnlyList<WasmValueType> ReturnTypes,
-            Exception ExceptionToThrow)
+            IReadOnlyList<WasmValueType> parameterTypes,
+            IReadOnlyList<WasmValueType> returnTypes,
+            Exception exceptionToThrow)
         {
-            this.paramTypes = ParameterTypes;
-            this.retTypes = ReturnTypes;
-            this.ExceptionToThrow = ExceptionToThrow;
+            this.paramTypes = parameterTypes;
+            this.retTypes = returnTypes;
+            this.ExceptionToThrow = exceptionToThrow;
         }
 
         private IReadOnlyList<WasmValueType> paramTypes;
@@ -40,7 +40,7 @@ namespace Wasm.Interpret
         public Exception ExceptionToThrow { get; private set; }
 
         /// <inheritdoc/>
-        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> Arguments)
+        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments)
         {
             throw ExceptionToThrow;
         }

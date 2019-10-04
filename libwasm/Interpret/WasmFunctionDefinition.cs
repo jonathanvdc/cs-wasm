@@ -12,17 +12,17 @@ namespace Wasm.Interpret
         /// Creates a WebAssembly function definition from the given signature,
         /// function body and declaring module.
         /// </summary>
-        /// <param name="Signature">The function's signature.</param>
-        /// <param name="Body">The function's body.</param>
-        /// <param name="Module">The declaring module.</param>
+        /// <param name="signature">The function's signature.</param>
+        /// <param name="body">The function's body.</param>
+        /// <param name="module">The declaring module.</param>
         public WasmFunctionDefinition(
-            FunctionType Signature,
-            FunctionBody Body,
-            ModuleInstance Module)
+            FunctionType signature,
+            FunctionBody body,
+            ModuleInstance module)
         {
-            this.Signature = Signature;
-            this.body = Body;
-            this.Module = Module;
+            this.Signature = signature;
+            this.body = body;
+            this.Module = module;
         }
 
         /// <summary>
@@ -51,24 +51,24 @@ namespace Wasm.Interpret
         /// <summary>
         /// Invokes this function with the given argument list.
         /// </summary>
-        /// <param name="Arguments">The list of arguments for this function's parameters.</param>
+        /// <param name="arguments">The list of arguments for this function's parameters.</param>
         /// <returns>The list of return values.</returns>
-        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> Arguments)
+        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments)
         {
             var locals = new List<Variable>();
 
             // Check argument types and create parameter variables.
-            if (Signature.ParameterTypes.Count != Arguments.Count)
+            if (Signature.ParameterTypes.Count != arguments.Count)
             {
                 throw new WasmException(
                     "Function arity mismatch: function has " + Signature.ParameterTypes.Count +
-                    " parameters and is given " + Arguments.Count + " arguments.");
+                    " parameters and is given " + arguments.Count + " arguments.");
             }
 
             // Turn each argument into a variable.
             for (int i = 0; i < Signature.ParameterTypes.Count; i++)
             {
-                locals.Add(Variable.Create<object>(Signature.ParameterTypes[i], true, Arguments[i]));
+                locals.Add(Variable.Create<object>(Signature.ParameterTypes[i], true, arguments[i]));
             }
 
             // Turn each local into a variable.

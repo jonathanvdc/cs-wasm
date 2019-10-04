@@ -10,12 +10,12 @@ namespace Wasm.Interpret
         /// <summary>
         /// Creates a linear memory from the given specification.
         /// </summary>
-        /// <param name="Limits">The specification for this linear memory: a range in units of pages.</param>
-        public LinearMemory(ResizableLimits Limits)
+        /// <param name="limits">The specification for this linear memory: a range in units of pages.</param>
+        public LinearMemory(ResizableLimits limits)
         {
-            this.Limits = Limits;
+            this.Limits = limits;
             this.memory = new List<byte>();
-            GrowToSize(Limits.Initial);
+            GrowToSize(limits.Initial);
         }
 
         private List<byte> memory;
@@ -36,17 +36,17 @@ namespace Wasm.Interpret
         /// Grows the memory to the given number of pages.
         /// Return the previous memory size in units of pages or -1 on failure.
         /// </summary>
-        /// <param name="NewSize">The new number of pages in the linear memory.</param>
+        /// <param name="newSize">The new number of pages in the linear memory.</param>
         /// <returns>The previous memory size in units of pages or -1 on failure.</returns>
-        private int GrowToSize(uint NewSize)
+        private int GrowToSize(uint newSize)
         {
-            if (Limits.HasMaximum && NewSize > Limits.Maximum.Value)
+            if (Limits.HasMaximum && newSize > Limits.Maximum.Value)
             {
                 return -1;
             }
 
             int oldMemorySize = (int)Size;
-            int newSizeInBytes = (int)(NewSize * MemoryType.PageSize);
+            int newSizeInBytes = (int)(newSize * MemoryType.PageSize);
             while (memory.Count < newSizeInBytes)
             {
                 memory.Add(0);
@@ -58,11 +58,11 @@ namespace Wasm.Interpret
         /// Grows linear memory by a given unsigned delta of pages.
         /// Return the previous memory size in units of pages or -1 on failure.
         /// </summary>
-        /// <param name="NumberOfPages">The number of pages to grow the linear memory by.</param>
+        /// <param name="numberOfPages">The number of pages to grow the linear memory by.</param>
         /// <returns>The previous memory size in units of pages or -1 on failure.</returns>
-        public int Grow(uint NumberOfPages)
+        public int Grow(uint numberOfPages)
         {
-            return GrowToSize(Size + NumberOfPages);
+            return GrowToSize(Size + numberOfPages);
         }
 
         /// <summary>
@@ -125,22 +125,26 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsInt8
     {
-        internal LinearMemoryAsInt8(List<byte> Memory)
+        internal LinearMemoryAsInt8(List<byte> memory)
         {
-            this.mem = Memory;
+            this.mem = memory;
         }
 
         private List<byte> mem;
 
-        public sbyte this[uint Offset]
+        /// <summary>
+        /// Gets or sets a value in memory at a particular byte offset.
+        /// </summary>
+        /// <value>A value in memory.</value>
+        public sbyte this[uint offset]
         {
             get
             {
-                return (sbyte)mem[(int)Offset];
+                return (sbyte)mem[(int)offset];
             }
             set
             {
-                mem[(int)Offset] = (byte)value;
+                mem[(int)offset] = (byte)value;
             }
         }
     }
@@ -150,25 +154,29 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsInt16
     {
-        internal LinearMemoryAsInt16(List<byte> Memory)
+        internal LinearMemoryAsInt16(List<byte> memory)
         {
-            this.mem = Memory;
+            this.mem = memory;
         }
 
         private List<byte> mem;
 
-        public short this[uint Offset]
+        /// <summary>
+        /// Gets or sets a value in memory at a particular byte offset.
+        /// </summary>
+        /// <value>A value in memory.</value>
+        public short this[uint offset]
         {
             get
             {
                 return (short)(
-                    (uint)mem[(int)Offset + 1] << 8 |
-                    (uint)mem[(int)Offset]);
+                    (uint)mem[(int)offset + 1] << 8 |
+                    (uint)mem[(int)offset]);
             }
             set
             {
-                mem[(int)Offset + 1] = (byte)(value >> 8);
-                mem[(int)Offset] = (byte)value;
+                mem[(int)offset + 1] = (byte)(value >> 8);
+                mem[(int)offset] = (byte)value;
             }
         }
     }
@@ -178,28 +186,32 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsInt32
     {
-        internal LinearMemoryAsInt32(List<byte> Memory)
+        internal LinearMemoryAsInt32(List<byte> memory)
         {
-            this.mem = Memory;
+            this.mem = memory;
         }
 
         private List<byte> mem;
 
-        public int this[uint Offset]
+        /// <summary>
+        /// Gets or sets a value in memory at a particular byte offset.
+        /// </summary>
+        /// <value>A value in memory.</value>
+        public int this[uint offset]
         {
             get
             {
-                return (int)mem[(int)Offset + 3] << 24
-                    | (int)mem[(int)Offset + 2] << 16
-                    | (int)mem[(int)Offset + 1] << 8
-                    | (int)mem[(int)Offset];
+                return (int)mem[(int)offset + 3] << 24
+                    | (int)mem[(int)offset + 2] << 16
+                    | (int)mem[(int)offset + 1] << 8
+                    | (int)mem[(int)offset];
             }
             set
             {
-                mem[(int)Offset + 3] = (byte)(value >> 24);
-                mem[(int)Offset + 2] = (byte)(value >> 16);
-                mem[(int)Offset + 1] = (byte)(value >> 8);
-                mem[(int)Offset] = (byte)value;
+                mem[(int)offset + 3] = (byte)(value >> 24);
+                mem[(int)offset + 2] = (byte)(value >> 16);
+                mem[(int)offset + 1] = (byte)(value >> 8);
+                mem[(int)offset] = (byte)value;
             }
         }
     }
@@ -209,36 +221,40 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsInt64
     {
-        internal LinearMemoryAsInt64(List<byte> Memory)
+        internal LinearMemoryAsInt64(List<byte> memory)
         {
-            this.mem = Memory;
+            this.mem = memory;
         }
 
         private List<byte> mem;
 
-        public long this[uint Offset]
+        /// <summary>
+        /// Gets or sets a value in memory at a particular byte offset.
+        /// </summary>
+        /// <value>A value in memory.</value>
+        public long this[uint offset]
         {
             get
             {
-                return (long)mem[(int)Offset + 7] << 56
-                    | (long)mem[(int)Offset + 6] << 48
-                    | (long)mem[(int)Offset + 5] << 40
-                    | (long)mem[(int)Offset + 4] << 32
-                    | (long)mem[(int)Offset + 3] << 24
-                    | (long)mem[(int)Offset + 2] << 16
-                    | (long)mem[(int)Offset + 1] << 8
-                    | (long)mem[(int)Offset];
+                return (long)mem[(int)offset + 7] << 56
+                    | (long)mem[(int)offset + 6] << 48
+                    | (long)mem[(int)offset + 5] << 40
+                    | (long)mem[(int)offset + 4] << 32
+                    | (long)mem[(int)offset + 3] << 24
+                    | (long)mem[(int)offset + 2] << 16
+                    | (long)mem[(int)offset + 1] << 8
+                    | (long)mem[(int)offset];
             }
             set
             {
-                mem[(int)Offset + 7] = (byte)(value >> 56);
-                mem[(int)Offset + 6] = (byte)(value >> 48);
-                mem[(int)Offset + 5] = (byte)(value >> 40);
-                mem[(int)Offset + 4] = (byte)(value >> 32);
-                mem[(int)Offset + 3] = (byte)(value >> 24);
-                mem[(int)Offset + 2] = (byte)(value >> 16);
-                mem[(int)Offset + 1] = (byte)(value >> 8);
-                mem[(int)Offset] = (byte)value;
+                mem[(int)offset + 7] = (byte)(value >> 56);
+                mem[(int)offset + 6] = (byte)(value >> 48);
+                mem[(int)offset + 5] = (byte)(value >> 40);
+                mem[(int)offset + 4] = (byte)(value >> 32);
+                mem[(int)offset + 3] = (byte)(value >> 24);
+                mem[(int)offset + 2] = (byte)(value >> 16);
+                mem[(int)offset + 1] = (byte)(value >> 8);
+                mem[(int)offset] = (byte)value;
             }
         }
     }
@@ -248,23 +264,27 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsFloat32
     {
-        internal LinearMemoryAsFloat32(List<byte> Memory)
+        internal LinearMemoryAsFloat32(List<byte> memory)
         {
-            this.mem = Memory;
+            this.mem = memory;
         }
 
         private List<byte> mem;
 
-        public float this[uint Offset]
+        /// <summary>
+        /// Gets or sets a value in memory at a particular byte offset.
+        /// </summary>
+        /// <value>A value in memory.</value>
+        public float this[uint offset]
         {
             get
             {
-                return ValueHelpers.ReinterpretAsFloat32(new LinearMemoryAsInt32(mem)[Offset]);
+                return ValueHelpers.ReinterpretAsFloat32(new LinearMemoryAsInt32(mem)[offset]);
             }
             set
             {
                 var uintView = new LinearMemoryAsInt32(mem);
-                uintView[Offset] = ValueHelpers.ReinterpretAsInt32(value);
+                uintView[offset] = ValueHelpers.ReinterpretAsInt32(value);
             }
         }
     }
@@ -274,23 +294,27 @@ namespace Wasm.Interpret
     /// </summary>
     public struct LinearMemoryAsFloat64
     {
-        internal LinearMemoryAsFloat64(List<byte> Memory)
+        internal LinearMemoryAsFloat64(List<byte> memory)
         {
-            this.mem = Memory;
+            this.mem = memory;
         }
 
         private List<byte> mem;
 
-        public double this[uint Offset]
+        /// <summary>
+        /// Gets or sets a value in memory at a particular byte offset.
+        /// </summary>
+        /// <value>A value in memory.</value>
+        public double this[uint offset]
         {
             get
             {
-                return ValueHelpers.ReinterpretAsFloat64(new LinearMemoryAsInt64(mem)[Offset]);
+                return ValueHelpers.ReinterpretAsFloat64(new LinearMemoryAsInt64(mem)[offset]);
             }
             set
             {
                 var uintView = new LinearMemoryAsInt64(mem);
-                uintView[Offset] = ValueHelpers.ReinterpretAsInt64(value);
+                uintView[offset] = ValueHelpers.ReinterpretAsInt64(value);
             }
         }
     }

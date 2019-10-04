@@ -11,56 +11,56 @@ namespace Wasm.Interpret
         /// Reinterprets the given 32-bit integer's bits as a 32-bit floating-point
         /// number.
         /// </summary>
-        /// <param name="Value">The value to reinterpret.</param>
+        /// <param name="value">The value to reinterpret.</param>
         /// <returns>A 32-bit floating-point number.</returns>
-        public static float ReinterpretAsFloat32(int Value)
+        public static float ReinterpretAsFloat32(int value)
         {
-            return BitConverter.ToSingle(BitConverter.GetBytes(Value), 0);
+            return BitConverter.ToSingle(BitConverter.GetBytes(value), 0);
         }
 
         /// <summary>
         /// Reinterprets the given 32-bit floating-point number's bits as a 32-bit
         /// integer.
         /// </summary>
-        /// <param name="Value">The value to reinterpret.</param>
+        /// <param name="value">The value to reinterpret.</param>
         /// <returns>A 32-bit integer.</returns>
-        public static int ReinterpretAsInt32(float Value)
+        public static int ReinterpretAsInt32(float value)
         {
-            return BitConverter.ToInt32(BitConverter.GetBytes(Value), 0);
+            return BitConverter.ToInt32(BitConverter.GetBytes(value), 0);
         }
 
         /// <summary>
         /// Reinterprets the given 64-bit integer's bits as a 64-bit floating-point
         /// number.
         /// </summary>
-        /// <param name="Value">The value to reinterpret.</param>
+        /// <param name="value">The value to reinterpret.</param>
         /// <returns>A 64-bit floating-point number.</returns>
-        public static double ReinterpretAsFloat64(long Value)
+        public static double ReinterpretAsFloat64(long value)
         {
-            return BitConverter.Int64BitsToDouble(Value);
+            return BitConverter.Int64BitsToDouble(value);
         }
 
         /// <summary>
         /// Reinterprets the given 64-bit floating-point number's bits as a 64-bit
         /// integer.
         /// </summary>
-        /// <param name="Value">The value to reinterpret.</param>
+        /// <param name="value">The value to reinterpret.</param>
         /// <returns>A 64-bit integer.</returns>
-        public static long ReinterpretAsInt64(double Value)
+        public static long ReinterpretAsInt64(double value)
         {
-            return BitConverter.DoubleToInt64Bits(Value);
+            return BitConverter.DoubleToInt64Bits(value);
         }
 
         /// <summary>
         /// Rotates the first operand to the left by the number of
         /// bits given by the second operand.
         /// </summary>
-        /// <param name="Left">The first operand.</param>
-        /// <param name="Right">The second operand.</param>
-        public static int RotateLeft(int Left, int Right)
+        /// <param name="left">The first operand.</param>
+        /// <param name="right">The second operand.</param>
+        public static int RotateLeft(int left, int right)
         {
-            var rhs = Right;
-            var lhs = (uint)Left;
+            var rhs = right;
+            var lhs = (uint)left;
             uint result = (lhs << rhs) | (lhs >> (32 - rhs));
             return (int)result;
         }
@@ -69,12 +69,12 @@ namespace Wasm.Interpret
         /// Rotates the first operand to the right by the number of
         /// bits given by the second operand.
         /// </summary>
-        /// <param name="Left">The first operand.</param>
-        /// <param name="Right">The second operand.</param>
-        public static int RotateRight(int Left, int Right)
+        /// <param name="left">The first operand.</param>
+        /// <param name="right">The second operand.</param>
+        public static int RotateRight(int left, int right)
         {
-            var rhs = Right;
-            var lhs = (uint)Left;
+            var rhs = right;
+            var lhs = (uint)left;
             uint result = (lhs >> rhs) | (lhs << (32 - rhs));
             return (int)result;
         }
@@ -82,10 +82,10 @@ namespace Wasm.Interpret
         /// <summary>
         /// Counts the number of leading zero bits in the given integer.
         /// </summary>
-        /// <param name="Value">The operand.</param>
-        public static int CountLeadingZeros(int Value)
+        /// <param name="value">The operand.</param>
+        public static int CountLeadingZeros(int value)
         {
-            var uintVal = (uint)Value;
+            var uintVal = (uint)value;
             int numOfLeadingZeros = 32;
             while (uintVal != 0)
             {
@@ -98,10 +98,10 @@ namespace Wasm.Interpret
         /// <summary>
         /// Counts the number of trailing zero bits in the given integer.
         /// </summary>
-        /// <param name="Value">The operand.</param>
-        public static int CountTrailingZeros(int Value)
+        /// <param name="value">The operand.</param>
+        public static int CountTrailingZeros(int value)
         {
-            var uintVal = (uint)Value;
+            var uintVal = (uint)value;
             int numOfTrailingZeros = 0;
             while ((uintVal & 0x1u) == 0u)
             {
@@ -114,10 +114,10 @@ namespace Wasm.Interpret
         /// <summary>
         /// Counts the number of one bits in the given integer.
         /// </summary>
-        /// <param name="Value">The operand.</param>
-        public static int PopCount(int Value)
+        /// <param name="value">The operand.</param>
+        public static int PopCount(int value)
         {
-            var uintVal = (uint)Value;
+            var uintVal = (uint)value;
             int numOfOnes = 0;
             while (uintVal != 0)
             {
@@ -131,12 +131,12 @@ namespace Wasm.Interpret
         /// Rotates the first operand to the left by the number of
         /// bits given by the second operand.
         /// </summary>
-        /// <param name="Left">The first operand.</param>
-        /// <param name="Right">The second operand.</param>
-        public static long RotateLeft(long Left, long Right)
+        /// <param name="left">The first operand.</param>
+        /// <param name="right">The second operand.</param>
+        public static long RotateLeft(long left, long right)
         {
-            var rhs = (int)Right;
-            var lhs = (ulong)Left;
+            var rhs = (int)right;
+            var lhs = (ulong)left;
             ulong result = (lhs << rhs) | (lhs >> (64 - rhs));
             return (long)result;
         }
@@ -145,12 +145,12 @@ namespace Wasm.Interpret
         /// Rotates the first operand to the right by the number of
         /// bits given by the second operand.
         /// </summary>
-        /// <param name="Left">The first operand.</param>
-        /// <param name="Right">The second operand.</param>
-        public static long RotateRight(long Left, long Right)
+        /// <param name="left">The first operand.</param>
+        /// <param name="right">The second operand.</param>
+        public static long RotateRight(long left, long right)
         {
-            var rhs = (int)Right;
-            var lhs = (ulong)Left;
+            var rhs = (int)right;
+            var lhs = (ulong)left;
             ulong result = (lhs >> rhs) | (lhs << (64 - rhs));
             return (long)result;
         }
@@ -158,10 +158,10 @@ namespace Wasm.Interpret
         /// <summary>
         /// Counts the number of leading zero bits in the given integer.
         /// </summary>
-        /// <param name="Value">The operand.</param>
-        public static int CountLeadingZeros(long Value)
+        /// <param name="value">The operand.</param>
+        public static int CountLeadingZeros(long value)
         {
-            var uintVal = (ulong)Value;
+            var uintVal = (ulong)value;
             int numOfLeadingZeros = 64;
             while (uintVal != 0)
             {
@@ -174,10 +174,10 @@ namespace Wasm.Interpret
         /// <summary>
         /// Counts the number of trailing zero bits in the given integer.
         /// </summary>
-        /// <param name="Value">The operand.</param>
-        public static int CountTrailingZeros(long Value)
+        /// <param name="value">The operand.</param>
+        public static int CountTrailingZeros(long value)
         {
-            var uintVal = (ulong)Value;
+            var uintVal = (ulong)value;
             int numOfTrailingZeros = 0;
             while ((uintVal & 0x1u) == 0u)
             {
@@ -190,10 +190,10 @@ namespace Wasm.Interpret
         /// <summary>
         /// Counts the number of one bits in the given integer.
         /// </summary>
-        /// <param name="Value">The operand.</param>
-        public static int PopCount(long Value)
+        /// <param name="value">The operand.</param>
+        public static int PopCount(long value)
         {
-            var uintVal = (ulong)Value;
+            var uintVal = (ulong)value;
             int numOfOnes = 0;
             while (uintVal != 0)
             {
@@ -215,23 +215,23 @@ namespace Wasm.Interpret
         /// Tests if the sign bit of the given 32-bit floating point value is set,
         /// i.e., if the value is negative.
         /// </summary>
-        /// <param name="Value">The value to test.</param>
+        /// <param name="value">The value to test.</param>
         /// <returns><c>true</c> if the value's sign bit is set; otherwise, <c>false</c>.</returns>
-        public static bool Signbit(float Value)
+        public static bool Signbit(float value)
         {
-            return (ReinterpretAsInt32(Value) & float32SignMask) == float32SignMask;
+            return (ReinterpretAsInt32(value) & float32SignMask) == float32SignMask;
         }
 
         /// <summary>
         /// Composes a 32-bit floating point number with the magnitude of the first
         /// argument and the sign of the second.
         /// </summary>
-        /// <param name="Left">The argument whose magnitude is used.</param>
-        /// <param name="Right">The argument whose sign bit is used.</param>
-        public static float Copysign(float Left, float Right)
+        /// <param name="left">The argument whose magnitude is used.</param>
+        /// <param name="right">The argument whose sign bit is used.</param>
+        public static float Copysign(float left, float right)
         {
-            int leftBits = ReinterpretAsInt32(Left);
-            int rightBits = ReinterpretAsInt32(Right);
+            int leftBits = ReinterpretAsInt32(left);
+            int rightBits = ReinterpretAsInt32(right);
             int resultBits = (leftBits & ~float32SignMask) | (rightBits & float32SignMask);
             return ReinterpretAsFloat32(resultBits);
         }
@@ -240,23 +240,23 @@ namespace Wasm.Interpret
         /// Tests if the sign bit of the given 64-bit floating point value is set,
         /// i.e., if the value is negative.
         /// </summary>
-        /// <param name="Value">The value to test.</param>
+        /// <param name="value">The value to test.</param>
         /// <returns><c>true</c> if the value's sign bit is set; otherwise, <c>false</c>.</returns>
-        public static bool Signbit(double Value)
+        public static bool Signbit(double value)
         {
-            return (ReinterpretAsInt64(Value) & float64SignMask) == float64SignMask;
+            return (ReinterpretAsInt64(value) & float64SignMask) == float64SignMask;
         }
 
         /// <summary>
         /// Composes a 64-bit floating point number with the magnitude of the first
         /// argument and the sign of the second.
         /// </summary>
-        /// <param name="Left">The argument whose magnitude is used.</param>
-        /// <param name="Right">The argument whose sign bit is used.</param>
-        public static double Copysign(double Left, double Right)
+        /// <param name="left">The argument whose magnitude is used.</param>
+        /// <param name="right">The argument whose sign bit is used.</param>
+        public static double Copysign(double left, double right)
         {
-            long leftBits = ReinterpretAsInt64(Left);
-            long rightBits = ReinterpretAsInt64(Right);
+            long leftBits = ReinterpretAsInt64(left);
+            long rightBits = ReinterpretAsInt64(right);
             long resultBits = (leftBits & ~float64SignMask) | (rightBits & float64SignMask);
             return ReinterpretAsFloat64(resultBits);
         }

@@ -10,21 +10,21 @@ namespace Wasm.Interpret
         /// <summary>
         /// Creates a new interpreter context from the given module.
         /// </summary>
-        /// <param name="Module">The owning module.</param>
-        public InterpreterContext(ModuleInstance Module)
-            : this(Module, new Variable[0])
+        /// <param name="module">The owning module.</param>
+        public InterpreterContext(ModuleInstance module)
+            : this(module, new Variable[0])
         { }
 
         /// <summary>
         /// Creates a new interpreter context from the given module and list of
         /// local variables.
         /// </summary>
-        /// <param name="Module">The owning module.</param>
-        /// <param name="Locals">The list of local variables in this context.</param>
-        public InterpreterContext(ModuleInstance Module, IReadOnlyList<Variable> Locals)
+        /// <param name="module">The owning module.</param>
+        /// <param name="locals">The list of local variables in this context.</param>
+        public InterpreterContext(ModuleInstance module, IReadOnlyList<Variable> locals)
         {
-            this.Module = Module;
-            this.Locals = Locals;
+            this.Module = module;
+            this.Locals = locals;
             this.valStack = new Stack<object>();
             this.ReturnValues = null;
             this.BreakDepth = -1;
@@ -96,10 +96,10 @@ namespace Wasm.Interpret
         /// Pops an array of values of the given type from the value stack.
         /// </summary>
         /// <returns>The popped values.</returns>
-        public T[] Pop<T>(int Count)
+        public T[] Pop<T>(int count)
         {
-            var results = new T[Count];
-            for (int i = Count - 1; i >= 0; i--)
+            var results = new T[count];
+            for (int i = count - 1; i >= 0; i--)
             {
                 results[i] = Pop<T>();
             }
@@ -144,21 +144,21 @@ namespace Wasm.Interpret
         /// <summary>
         /// Pushes the given value onto the value stack.
         /// </summary>
-        /// <param name="Value">The value to push onto the stack.</param>
-        public void Push<T>(T Value)
+        /// <param name="value">The value to push onto the stack.</param>
+        public void Push<T>(T value)
         {
-            valStack.Push(Value);
+            valStack.Push(value);
         }
 
         /// <summary>
         /// Pushes the given list of values onto the value stack.
         /// </summary>
-        /// <param name="Values">The list of values to push onto the stack.</param>
-        public void Push<T>(IReadOnlyList<T> Values)
+        /// <param name="values">The list of values to push onto the stack.</param>
+        public void Push<T>(IReadOnlyList<T> values)
         {
-            for (int i = 0; i < Values.Count; i++)
+            for (int i = 0; i < values.Count; i++)
             {
-                Push<T>(Values[i]);
+                Push<T>(values[i]);
             }
         }
     } 

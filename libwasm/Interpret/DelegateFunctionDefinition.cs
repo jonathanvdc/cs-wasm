@@ -11,17 +11,17 @@ namespace Wasm.Interpret
         /// <summary>
         /// Creates a function definition from the given delegate.
         /// </summary>
-        /// <param name="ParameterTypes">The list of parameter types.</param>
-        /// <param name="ReturnTypes">The list of return types.</param>
-        /// <param name="Implementation">The delegate that implements the function definition.</param>
+        /// <param name="parameterTypes">The list of parameter types.</param>
+        /// <param name="returnTypes">The list of return types.</param>
+        /// <param name="implementation">The delegate that implements the function definition.</param>
         public DelegateFunctionDefinition(
-            IReadOnlyList<WasmValueType> ParameterTypes,
-            IReadOnlyList<WasmValueType> ReturnTypes,
-            Func<IReadOnlyList<object>, IReadOnlyList<object>> Implementation)
+            IReadOnlyList<WasmValueType> parameterTypes,
+            IReadOnlyList<WasmValueType> returnTypes,
+            Func<IReadOnlyList<object>, IReadOnlyList<object>> implementation)
         {
-            this.paramTypes = ParameterTypes;
-            this.retTypes = ReturnTypes;
-            this.Implementation = Implementation;
+            this.paramTypes = parameterTypes;
+            this.retTypes = returnTypes;
+            this.Implementation = implementation;
         }
 
         private IReadOnlyList<WasmValueType> paramTypes;
@@ -40,9 +40,9 @@ namespace Wasm.Interpret
         public override IReadOnlyList<WasmValueType> ReturnTypes => retTypes;
 
         /// <inheritdoc/>
-        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> Arguments)
+        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments)
         {
-            return Implementation(Arguments);
+            return Implementation(arguments);
         }
     }
 }

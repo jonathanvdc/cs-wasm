@@ -11,30 +11,30 @@ namespace Wasm.Interpret
         /// <summary>
         /// Imports the linear memory with the given description.
         /// </summary>
-        /// <param name="Description">Describes the memory to import.</param>
+        /// <param name="description">Describes the memory to import.</param>
         /// <returns>An imported memory.</returns>
-        LinearMemory ImportMemory(ImportedMemory Description);
+        LinearMemory ImportMemory(ImportedMemory description);
 
         /// <summary>
         /// Imports the global variable with the given description.
         /// </summary>
-        /// <param name="Description">Describes the global variable to import.</param>
+        /// <param name="description">Describes the global variable to import.</param>
         /// <returns>An imported global variable.</returns>
-        Variable ImportGlobal(ImportedGlobal Description);
+        Variable ImportGlobal(ImportedGlobal description);
 
         /// <summary>
         /// Imports the function with the given description.
         /// </summary>
-        /// <param name="Description">Describes the function to import.</param>
-        /// <param name="Signature">The signature of the function to import.</param>
+        /// <param name="description">Describes the function to import.</param>
+        /// <param name="signature">The signature of the function to import.</param>
         /// <returns>An imported function.</returns>
-        FunctionDefinition ImportFunction(ImportedFunction Description, FunctionType Signature);
+        FunctionDefinition ImportFunction(ImportedFunction description, FunctionType signature);
 
         /// <summary>
         /// Imports the table with the given description.
         /// </summary>
-        /// <param name="Description">Describes the table to import.</param>
+        /// <param name="description">Describes the table to import.</param>
         /// <returns>An imported table.</returns>
-        FunctionTable ImportTable(ImportedTable Description);
+        FunctionTable ImportTable(ImportedTable description);
     }
 }

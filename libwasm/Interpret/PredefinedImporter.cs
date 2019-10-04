@@ -47,69 +47,69 @@ namespace Wasm.Interpret
         /// <summary>
         /// Maps the given name to the given function definition.
         /// </summary>
-        /// <param name="Name">The name to define.</param>
-        /// <param name="Definition">The function definition.</param>
-        public void DefineFunction(string Name, FunctionDefinition Definition)
+        /// <param name="name">The name to define.</param>
+        /// <param name="definition">The function definition.</param>
+        public void DefineFunction(string name, FunctionDefinition definition)
         {
-            funcDefDict[Name] = Definition;
+            funcDefDict[name] = definition;
         }
 
         /// <summary>
         /// Maps the given name to the given variable.
         /// </summary>
-        /// <param name="Name">The name to define.</param>
-        /// <param name="Definition">The variable definition.</param>
-        public void DefineVariable(string Name, Variable Definition)
+        /// <param name="name">The name to define.</param>
+        /// <param name="definition">The variable definition.</param>
+        public void DefineVariable(string name, Variable definition)
         {
-            varDefDict[Name] = Definition;
+            varDefDict[name] = definition;
         }
 
         /// <summary>
         /// Maps the given name to the given memory.
         /// </summary>
-        /// <param name="Name">The name to define.</param>
-        /// <param name="Definition">The memory definition.</param>
-        public void DefineMemory(string Name, LinearMemory Definition)
+        /// <param name="name">The name to define.</param>
+        /// <param name="definition">The memory definition.</param>
+        public void DefineMemory(string name, LinearMemory definition)
         {
-            memDefDict[Name] = Definition;
+            memDefDict[name] = definition;
         }
 
         /// <summary>
         /// Maps the given name to the given table.
         /// </summary>
-        /// <param name="Name">The name to define.</param>
-        /// <param name="Definition">The table definition.</param>
-        public void DefineTable(string Name, FunctionTable Definition)
+        /// <param name="name">The name to define.</param>
+        /// <param name="definition">The table definition.</param>
+        public void DefineTable(string name, FunctionTable definition)
         {
-            tableDefDict[Name] = Definition;
+            tableDefDict[name] = definition;
         }
 
         /// <summary>
         /// Includes the definitions from the given importer in this importer.
         /// </summary>
-        /// <param name="Importer">The importer to include.</param>
-        public void IncludeDefinitions(PredefinedImporter Importer)
+        /// <param name="importer">The importer to include.</param>
+        public void IncludeDefinitions(PredefinedImporter importer)
         {
-            CopyDefinitions<FunctionDefinition>(Importer.funcDefDict, this.funcDefDict);
-            CopyDefinitions<Variable>(Importer.varDefDict, this.varDefDict);
-            CopyDefinitions<LinearMemory>(Importer.memDefDict, this.memDefDict);
-            CopyDefinitions<FunctionTable>(Importer.tableDefDict, this.tableDefDict);
+            CopyDefinitions<FunctionDefinition>(importer.funcDefDict, this.funcDefDict);
+            CopyDefinitions<Variable>(importer.varDefDict, this.varDefDict);
+            CopyDefinitions<LinearMemory>(importer.memDefDict, this.memDefDict);
+            CopyDefinitions<FunctionTable>(importer.tableDefDict, this.tableDefDict);
         }
 
         private static void CopyDefinitions<T>(
-            Dictionary<string, T> SourceDefinitions,
-            Dictionary<string, T> TargetDefinitions)
+            Dictionary<string, T> sourceDefinitions,
+            Dictionary<string, T> targetDefinitions)
         {
-            foreach (var pair in SourceDefinitions)
+            foreach (var pair in sourceDefinitions)
             {
-                TargetDefinitions[pair.Key] = pair.Value;
+                targetDefinitions[pair.Key] = pair.Value;
             }
         }
 
-        private static T ImportOrDefault<T>(ImportedValue Value, Dictionary<string, T> Definitions)
+        private static T ImportOrDefault<T>(ImportedValue value, Dictionary<string, T> definitions)
         {
             T result;
-            if (Definitions.TryGetValue(Value.FieldName, out result))
+            if (definitions.TryGetValue(value.FieldName, out result))
             {
                 return result;
             }
@@ -120,27 +120,27 @@ namespace Wasm.Interpret
         }
 
         /// <inheritdoc/>
-        public FunctionDefinition ImportFunction(ImportedFunction Description, FunctionType Signature)
+        public FunctionDefinition ImportFunction(ImportedFunction description, FunctionType signature)
         {
-            return ImportOrDefault<FunctionDefinition>(Description, funcDefDict);
+            return ImportOrDefault<FunctionDefinition>(description, funcDefDict);
         }
 
         /// <inheritdoc/>
-        public Variable ImportGlobal(ImportedGlobal Description)
+        public Variable ImportGlobal(ImportedGlobal description)
         {
-            return ImportOrDefault<Variable>(Description, varDefDict);
+            return ImportOrDefault<Variable>(description, varDefDict);
         }
 
         /// <inheritdoc/>
-        public LinearMemory ImportMemory(ImportedMemory Description)
+        public LinearMemory ImportMemory(ImportedMemory description)
         {
-            return ImportOrDefault<LinearMemory>(Description, memDefDict);
+            return ImportOrDefault<LinearMemory>(description, memDefDict);
         }
 
         /// <inheritdoc/>
-        public FunctionTable ImportTable(ImportedTable Description)
+        public FunctionTable ImportTable(ImportedTable description)
         {
-            return ImportOrDefault<FunctionTable>(Description, tableDefDict);
+            return ImportOrDefault<FunctionTable>(description, tableDefDict);
         }
     }
 }

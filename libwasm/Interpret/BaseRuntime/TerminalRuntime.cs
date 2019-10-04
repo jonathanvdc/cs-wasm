@@ -11,14 +11,14 @@ namespace Wasm.Interpret.BaseRuntime
         /// <summary>
         /// Creates a base-runtime IO implementation from the given streams.
         /// </summary>
-        /// <param name="InputStream">The runtime's standard input stream.</param>
-        /// <param name="OutputStream">The runtime's standard output stream.</param>
-        /// <param name="ErrorStream">The runtime's standard error stream.</param>
-        private TerminalRuntime(Stream InputStream, Stream OutputStream, Stream ErrorStream)
+        /// <param name="inputStream">The runtime's standard input stream.</param>
+        /// <param name="outputStream">The runtime's standard output stream.</param>
+        /// <param name="errorStream">The runtime's standard error stream.</param>
+        private TerminalRuntime(Stream inputStream, Stream outputStream, Stream errorStream)
         {
-            this.stdinStream = InputStream;
-            this.stdoutStream = OutputStream;
-            this.stderrStream = ErrorStream;
+            this.stdinStream = inputStream;
+            this.stdoutStream = outputStream;
+            this.stderrStream = errorStream;
             this.importerVal = new PredefinedImporter();
 
             this.importerVal.DefineFunction(
@@ -79,49 +79,51 @@ namespace Wasm.Interpret.BaseRuntime
         /// Creates a new terminal I/O runtime and adds all of its definitions to the given
         /// importer.
         /// </summary>
-        /// <param name="InputStream">The runtime's standard input stream.</param>
-        /// <param name="OutputStream">The runtime's standard output stream.</param>
-        /// <param name="ErrorStream">The runtime's standard error stream.</param>
-        /// <param name="Importer">The importer.</param>
+        /// <param name="inputStream">The runtime's standard input stream.</param>
+        /// <param name="outputStream">The runtime's standard output stream.</param>
+        /// <param name="errorStream">The runtime's standard error stream.</param>
+        /// <param name="importer">The importer.</param>
         public static void IncludeDefinitionsIn(
-            Stream InputStream, Stream OutputStream, Stream ErrorStream,
-            PredefinedImporter Importer)
+            Stream inputStream,
+            Stream outputStream,
+            Stream errorStream,
+            PredefinedImporter importer)
         {
-            new TerminalRuntime(InputStream, OutputStream, ErrorStream).IncludeDefinitionsIn(Importer);
+            new TerminalRuntime(inputStream, outputStream, errorStream).IncludeDefinitionsIn(importer);
         }
 
-        private IReadOnlyList<object> StdinReadByte(IReadOnlyList<object> Args)
+        private IReadOnlyList<object> StdinReadByte(IReadOnlyList<object> args)
         {
             return new object[] { stdinStream.ReadByte() };
         }
 
-        private IReadOnlyList<object> StdoutWriteByte(IReadOnlyList<object> Args)
+        private IReadOnlyList<object> StdoutWriteByte(IReadOnlyList<object> args)
         {
-            object data = Args[0];
+            object data = args[0];
             stdoutStream.WriteByte((byte)(int)data);
             return new object[0];
         }
 
-        private IReadOnlyList<object> StderrWriteByte(IReadOnlyList<object> Args)
+        private IReadOnlyList<object> StderrWriteByte(IReadOnlyList<object> args)
         {
-            object data = Args[0];
+            object data = args[0];
             stderrStream.WriteByte((byte)(int)data);
             return new object[0];
         }
 
-        private IReadOnlyList<object> StdinFlush(IReadOnlyList<object> Args)
+        private IReadOnlyList<object> StdinFlush(IReadOnlyList<object> args)
         {
             stdinStream.Flush();
             return new object[0];
         }
 
-        private IReadOnlyList<object> StdoutFlush(IReadOnlyList<object> Args)
+        private IReadOnlyList<object> StdoutFlush(IReadOnlyList<object> args)
         {
             stdinStream.Flush();
             return new object[0];
         }
 
-        private IReadOnlyList<object> StderrFlush(IReadOnlyList<object> Args)
+        private IReadOnlyList<object> StderrFlush(IReadOnlyList<object> args)
         {
             stdinStream.Flush();
             return new object[0];

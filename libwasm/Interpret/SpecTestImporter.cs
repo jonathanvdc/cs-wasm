@@ -19,13 +19,13 @@ namespace Wasm.Interpret
         /// Creates an importer for the 'spectest' environment with
         /// the given print suffix.
         /// </summary>
-        /// <param name="PrintSuffix">
+        /// <param name="printSuffix">
         /// The string that is written to the console at the
         /// end of a print call.
         /// </param>
-        public SpecTestImporter(string PrintSuffix)
+        public SpecTestImporter(string printSuffix)
         {
-            this.PrintSuffix = PrintSuffix;
+            this.PrintSuffix = printSuffix;
         }
 
         /// <summary>
@@ -37,13 +37,13 @@ namespace Wasm.Interpret
 
         /// <inheritdoc/>
         public FunctionDefinition ImportFunction(
-            ImportedFunction Description, FunctionType Signature)
+            ImportedFunction description, FunctionType signature)
         {
-            if (Description.FieldName == "print")
+            if (description.FieldName == "print")
             {
                 return new SpecTestPrintFunctionDefinition(
-                    Signature.ParameterTypes,
-                    Signature.ReturnTypes,
+                    signature.ParameterTypes,
+                    signature.ReturnTypes,
                     PrintSuffix);
             }
             else
@@ -53,34 +53,34 @@ namespace Wasm.Interpret
         }
 
         /// <inheritdoc/>
-        public Variable ImportGlobal(ImportedGlobal Description)
+        public Variable ImportGlobal(ImportedGlobal description)
         {
-            if (Description.FieldName == "global")
+            if (description.FieldName == "global")
             {
-                switch (Description.Global.ContentType)
+                switch (description.Global.ContentType)
                 {
                     case WasmValueType.Int32:
                         return Variable.Create<int>(
                             WasmValueType.Int32,
-                            Description.Global.IsMutable,
+                            description.Global.IsMutable,
                             666);
 
                     case WasmValueType.Int64:
                         return Variable.Create<long>(
                             WasmValueType.Int64,
-                            Description.Global.IsMutable,
+                            description.Global.IsMutable,
                             666L);
 
                     case WasmValueType.Float32:
                         return Variable.Create<float>(
                             WasmValueType.Float32,
-                            Description.Global.IsMutable,
+                            description.Global.IsMutable,
                             666.0f);
 
                     case WasmValueType.Float64:
                         return Variable.Create<double>(
                             WasmValueType.Float64,
-                            Description.Global.IsMutable,
+                            description.Global.IsMutable,
                             666.0);
 
                     default:
@@ -94,9 +94,9 @@ namespace Wasm.Interpret
         }
 
         /// <inheritdoc/>
-        public LinearMemory ImportMemory(ImportedMemory Description)
+        public LinearMemory ImportMemory(ImportedMemory description)
         {
-            if (Description.FieldName == "memory")
+            if (description.FieldName == "memory")
             {
                 return new LinearMemory(new ResizableLimits(1, 2));
             }
@@ -107,9 +107,9 @@ namespace Wasm.Interpret
         }
 
         /// <inheritdoc/>
-        public FunctionTable ImportTable(ImportedTable Description)
+        public FunctionTable ImportTable(ImportedTable description)
         {
-            if (Description.FieldName == "table")
+            if (description.FieldName == "table")
             {
                 return new FunctionTable(new ResizableLimits(10, 20));
             }
@@ -126,12 +126,12 @@ namespace Wasm.Interpret
     internal sealed class SpecTestPrintFunctionDefinition : FunctionDefinition
     {
         public SpecTestPrintFunctionDefinition(
-            IReadOnlyList<WasmValueType> ParameterTypes,
-            IReadOnlyList<WasmValueType> ReturnTypes,
+            IReadOnlyList<WasmValueType> parameterTypes,
+            IReadOnlyList<WasmValueType> returnTypes,
             string PrintSuffix)
         {
-            this.paramTypes = ParameterTypes;
-            this.retTypes = ReturnTypes;
+            this.paramTypes = parameterTypes;
+            this.retTypes = returnTypes;
             this.PrintSuffix = PrintSuffix;
         }
 
@@ -152,15 +152,15 @@ namespace Wasm.Interpret
         public override IReadOnlyList<WasmValueType> ReturnTypes => retTypes;
 
         /// <inheritdoc/>
-        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> Arguments)
+        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments)
         {
-            for (int i = 0; i < Arguments.Count; i++)
+            for (int i = 0; i < arguments.Count; i++)
             {
                 if (i > 0)
                 {
                     Console.Write(" ");
                 }
-                Console.Write(Arguments[i]);
+                Console.Write(arguments[i]);
             }
             Console.Write(PrintSuffix);
 

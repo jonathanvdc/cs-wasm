@@ -8,9 +8,9 @@ namespace Wasm.Interpret
     public sealed class ModuleInstance
     {
 
-        private ModuleInstance(InstructionInterpreter Interpreter)
+        private ModuleInstance(InstructionInterpreter interpreter)
         {
-            this.Interpreter = Interpreter;
+            this.Interpreter = interpreter;
             this.definedMemories = new List<LinearMemory>();
             this.definedGlobals = new List<Variable>();
             this.definedFuncs = new List<FunctionDefinition>();
@@ -78,12 +78,12 @@ namespace Wasm.Interpret
         /// <summary>
         /// Evaluates the given initializer expression.
         /// </summary>
-        /// <param name="Expression">The expression to evaluate.</param>
+        /// <param name="expression">The expression to evaluate.</param>
         /// <returns>The value obtained by evaluating the initializer expression.</returns>
-        public T Evaluate<T>(InitializerExpression Expression)
+        public T Evaluate<T>(InitializerExpression expression)
         {
             var context = new InterpreterContext(this);
-            foreach (var instruction in Expression.BodyInstructions)
+            foreach (var instruction in expression.BodyInstructions)
             {
                 Interpreter.Interpret(instruction, context);
             }
@@ -101,24 +101,24 @@ namespace Wasm.Interpret
         /// <summary>
         /// Runs the function at the given index with the given sequence of arguments.
         /// </summary>
-        /// <param name="Index">The index of the function to run.</param>
-        /// <param name="Arguments">The function's argument list.</param>
+        /// <param name="index">The index of the function to run.</param>
+        /// <param name="arguments">The function's argument list.</param>
         /// <returns>The function's return value.</returns>
-        public IReadOnlyList<object> RunFunction(uint Index, IReadOnlyList<object> Arguments)
+        public IReadOnlyList<object> RunFunction(uint index, IReadOnlyList<object> arguments)
         {
-            return definedFuncs[(int)Index].Invoke(Arguments);
+            return definedFuncs[(int)index].Invoke(arguments);
         }
 
         /// <summary>
         /// Instantiates the given WebAssembly file. An importer is used to
         /// resolve module imports.
         /// </summary>
-        /// <param name="File">The file to instantiate.</param>
-        /// <param name="Importer">Resolves module imports.</param>
+        /// <param name="file">The file to instantiate.</param>
+        /// <param name="importer">Resolves module imports.</param>
         /// <returns>A module instance.</returns>
-        public static ModuleInstance Instantiate(WasmFile File, IImporter Importer)
+        public static ModuleInstance Instantiate(WasmFile file, IImporter importer)
         {
-            return Instantiate(File, Importer, DefaultInstructionInterpreter.Default);
+            return Instantiate(file, importer, DefaultInstructionInterpreter.Default);
         }
 
         /// <summary>
@@ -126,37 +126,37 @@ namespace Wasm.Interpret
         /// resolve module imports and an interpreter is used to interpret
         /// instructions.
         /// </summary>
-        /// <param name="File">The file to instantiate.</param>
-        /// <param name="Importer">Resolves module imports.</param>
-        /// <param name="Interpreter">Interprets instructions.</param>
+        /// <param name="file">The file to instantiate.</param>
+        /// <param name="importer">Resolves module imports.</param>
+        /// <param name="interpreter">Interprets instructions.</param>
         /// <returns>A module instance.</returns>
         public static ModuleInstance Instantiate(
-            WasmFile File,
-            IImporter Importer,
-            InstructionInterpreter Interpreter)
+            WasmFile file,
+            IImporter importer,
+            InstructionInterpreter interpreter)
         {
-            var instance = new ModuleInstance(Interpreter);
+            var instance = new ModuleInstance(interpreter);
 
             // Extract the function types.
-            var allFuncTypes = GetFunctionTypes(File);
+            var allFuncTypes = GetFunctionTypes(file);
 
             // Resolve all imports.
-            instance.ResolveImports(File, Importer, allFuncTypes);
+            instance.ResolveImports(file, importer, allFuncTypes);
 
             // Instantiate global variables.
-            instance.InstantiateGlobals(File);
+            instance.InstantiateGlobals(file);
 
             // Instantiate memories.
-            instance.InstantiateMemories(File);
+            instance.InstantiateMemories(file);
 
             // Instantiate function definitions.
-            instance.InstantiateFunctionDefs(File, allFuncTypes);
+            instance.InstantiateFunctionDefs(file, allFuncTypes);
 
             // Instantiate function tables.
-            instance.InstantiateTables(File);
+            instance.InstantiateTables(file);
 
             // Export values.
-            instance.RegisterExports(File);
+            instance.RegisterExports(file);
 
             return instance;
         }
@@ -164,13 +164,15 @@ namespace Wasm.Interpret
         /// <summary>
         /// Uses the given importer to resolve all imported values.
         /// </summary>
-        /// <param name="Importer">The importer.</param>
+        /// <param name="file">A file whose imports are to be resolved.</param>
+        /// <param name="importer">The importer.</param>
+        /// <param name="functionTypes">A list of <paramref name="file"/>'s function types.</param>
         private void ResolveImports(
-            WasmFile File,
-            IImporter Importer,
-            List<FunctionType> FunctionTypes)
+            WasmFile file,
+            IImporter importer,
+            List<FunctionType> functionTypes)
         {
-            var allImportSections = File.GetSections<ImportSection>();
+            var allImportSections = file.GetSections<ImportSection>();
             for (int i = 0; i < allImportSections.Count; i++)
             {
                 var importSection = allImportSections[i];
@@ -178,7 +180,7 @@ namespace Wasm.Interpret
                 {
                     if (import is ImportedMemory)
                     {
-                        var memory = Importer.ImportMemory((ImportedMemory)import);
+                        var memory = importer.ImportMemory((ImportedMemory)import);
                         if (memory == null)
                         {
                             ThrowCannotResolveImport(import, "linear memory");
@@ -187,7 +189,7 @@ namespace Wasm.Interpret
                     }
                     else if (import is ImportedGlobal)
                     {
-                        var globalVar = Importer.ImportGlobal((ImportedGlobal)import);
+                        var globalVar = importer.ImportGlobal((ImportedGlobal)import);
                         if (globalVar == null)
                         {
                             ThrowCannotResolveImport(import, "global variable");
@@ -197,7 +199,7 @@ namespace Wasm.Interpret
                     else if (import is ImportedFunction)
                     {
                         var funcImport = (ImportedFunction)import;
-                        var funcDef = Importer.ImportFunction(funcImport, FunctionTypes[(int)funcImport.TypeIndex]);
+                        var funcDef = importer.ImportFunction(funcImport, functionTypes[(int)funcImport.TypeIndex]);
                         if (funcDef == null)
                         {
                             ThrowCannotResolveImport(import, "function");
@@ -206,7 +208,7 @@ namespace Wasm.Interpret
                     }
                     else if (import is ImportedTable)
                     {
-                        var table = Importer.ImportTable((ImportedTable)import);
+                        var table = importer.ImportTable((ImportedTable)import);
                         if (table == null)
                         {
                             ThrowCannotResolveImport(import, "table");
@@ -221,18 +223,18 @@ namespace Wasm.Interpret
             }
         }
 
-        private static void ThrowCannotResolveImport(ImportedValue Import, string ImportType)
+        private static void ThrowCannotResolveImport(ImportedValue import, string importType)
         {
             throw new WasmException(
                 string.Format(
                     "Importer cannot resolve {0} definition '{1}.{2}'.",
-                    ImportType, Import.ModuleName, Import.FieldName));
+                    importType, import.ModuleName, import.FieldName));
         }
 
-        private void InstantiateMemories(WasmFile File)
+        private void InstantiateMemories(WasmFile file)
         {
             // Create module-defined memories.
-            var allMemorySections = File.GetSections<MemorySection>();
+            var allMemorySections = file.GetSections<MemorySection>();
             for (int i = 0; i < allMemorySections.Count; i++)
             {
                 var memorySection = allMemorySections[i];
@@ -243,7 +245,7 @@ namespace Wasm.Interpret
             }
 
             // Initialize memories by applying the segments defined by data sections.
-            var allDataSections = File.GetSections<DataSection>();
+            var allDataSections = file.GetSections<DataSection>();
             for (int i = 0; i < allDataSections.Count; i++)
             {
                 var dataSection = allDataSections[i];
@@ -259,10 +261,10 @@ namespace Wasm.Interpret
             }
         }
 
-        private void InstantiateGlobals(WasmFile File)
+        private void InstantiateGlobals(WasmFile file)
         {
             // Create module-defined globals.
-            var allGlobalSections = File.GetSections<GlobalSection>();
+            var allGlobalSections = file.GetSections<GlobalSection>();
             for (int i = 0; i < allGlobalSections.Count; i++)
             {
                 var globalSection = allGlobalSections[i];
@@ -280,12 +282,12 @@ namespace Wasm.Interpret
         /// <summary>
         /// Gets a list of all function types declared by the given WebAssembly file.
         /// </summary>
-        /// <param name="File">The WebAssembly file to examine.</param>
+        /// <param name="file">The WebAssembly file to examine.</param>
         /// <returns>The list of function types.</returns>
-        private static List<FunctionType> GetFunctionTypes(WasmFile File)
+        private static List<FunctionType> GetFunctionTypes(WasmFile file)
         {
             var allFuncTypes = new List<FunctionType>();
-            var allTypeSections = File.GetSections<TypeSection>();
+            var allTypeSections = file.GetSections<TypeSection>();
             for (int i = 0; i < allTypeSections.Count; i++)
             {
                 allFuncTypes.AddRange(allTypeSections[i].FunctionTypes);
@@ -296,23 +298,23 @@ namespace Wasm.Interpret
         /// <summary>
         /// Instantiates all function definitions from the given WebAssembly file.
         /// </summary>
-        /// <param name="File">A WebAssembly file.</param>
-        /// <param name="FunctionTypes">The list of all function types declared by the WebAssembly file.</param>
-        private void InstantiateFunctionDefs(WasmFile File, List<FunctionType> FunctionTypes)
+        /// <param name="file">A WebAssembly file.</param>
+        /// <param name="functionTypes">The list of all function types declared by the WebAssembly file.</param>
+        private void InstantiateFunctionDefs(WasmFile file, List<FunctionType> functionTypes)
         {
             var funcSignatures = new List<FunctionType>();
             var funcBodies = new List<FunctionBody>();
 
-            var allFuncSections = File.GetSections<FunctionSection>();
+            var allFuncSections = file.GetSections<FunctionSection>();
             for (int i = 0; i < allFuncSections.Count; i++)
             {
                 foreach (var funcSpec in allFuncSections[i].FunctionTypes)
                 {
-                    funcSignatures.Add(FunctionTypes[(int)funcSpec]);
+                    funcSignatures.Add(functionTypes[(int)funcSpec]);
                 }
             }
 
-            var allCodeSections = File.GetSections<CodeSection>();
+            var allCodeSections = file.GetSections<CodeSection>();
             for (int i = 0; i < allCodeSections.Count; i++)
             {
                 funcBodies.AddRange(allCodeSections[i].Bodies);
@@ -334,21 +336,21 @@ namespace Wasm.Interpret
         /// <summary>
         /// Defines a function with the given signature and function body.
         /// </summary>
-        /// <param name="Signature">The function's signature.</param>
-        /// <param name="Body">The function's body.</param>
-        private void DefineFunction(FunctionType Signature, FunctionBody Body)
+        /// <param name="signature">The function's signature.</param>
+        /// <param name="body">The function's body.</param>
+        private void DefineFunction(FunctionType signature, FunctionBody body)
         {
-            definedFuncs.Add(new WasmFunctionDefinition(Signature, Body, this));
+            definedFuncs.Add(new WasmFunctionDefinition(signature, body, this));
         }
 
         /// <summary>
         /// Instantiates the tables in the given WebAssembly file.
         /// </summary>
-        /// <param name="File">The file whose tables are to be instantiated.</param>
-        private void InstantiateTables(WasmFile File)
+        /// <param name="file">The file whose tables are to be instantiated.</param>
+        private void InstantiateTables(WasmFile file)
         {
             // Create module-defined tables.
-            var allTableSections = File.GetSections<TableSection>();
+            var allTableSections = file.GetSections<TableSection>();
             for (int i = 0; i < allTableSections.Count; i++)
             {
                 foreach (var tableSpec in allTableSections[i].Tables)
@@ -358,7 +360,7 @@ namespace Wasm.Interpret
             }
 
             // Initialize tables by applying the segments defined by element sections.
-            var allElementSections = File.GetSections<ElementSection>();
+            var allElementSections = file.GetSections<ElementSection>();
             for (int i = 0; i < allElementSections.Count; i++)
             {
                 foreach (var segment in allElementSections[i].Segments)
@@ -376,10 +378,10 @@ namespace Wasm.Interpret
         /// <summary>
         /// Exports values specified by the given WebAssembly file.
         /// </summary>
-        /// <param name="File">The file that specifies which values are to be exported and how.</param>
-        private void RegisterExports(WasmFile File)
+        /// <param name="file">The file that specifies which values are to be exported and how.</param>
+        private void RegisterExports(WasmFile file)
         {
-            var allExportSections = File.GetSections<ExportSection>();
+            var allExportSections = file.GetSections<ExportSection>();
             for (int i = 0; i < allExportSections.Count; i++)
             {
                 foreach (var export in allExportSections[i].Exports)

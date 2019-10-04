@@ -12,16 +12,16 @@ namespace Wasm.Interpret
         /// Creates a function table from the given resizable limits.
         /// The table's initial contents are trap values.
         /// </summary>
-        /// <param name="Limits">The table's limits.</param>
-        public FunctionTable(ResizableLimits Limits)
+        /// <param name="limits">The table's limits.</param>
+        public FunctionTable(ResizableLimits limits)
         {
-            this.Limits = Limits;
-            this.contents = new List<FunctionDefinition>((int)Limits.Initial);
+            this.Limits = limits;
+            this.contents = new List<FunctionDefinition>((int)limits.Initial);
             var funcDef = new ThrowFunctionDefinition(
                 new WasmValueType[0],
                 new WasmValueType[0],
                 new WasmException("Indirect call target not initialized yet."));
-            for (int i = 0; i < Limits.Initial; i++)
+            for (int i = 0; i < limits.Initial; i++)
             {
                 contents.Add(funcDef);
             }
@@ -38,10 +38,10 @@ namespace Wasm.Interpret
         /// <summary>
         /// Gets or sets the function definition at the given index in the table.
         /// </summary>
-        public FunctionDefinition this[uint Index]
+        public FunctionDefinition this[uint index]
         {
-            get { return contents[(int)Index]; }
-            set { contents[(int)Index] = value; }
+            get { return contents[(int)index]; }
+            set { contents[(int)index] = value; }
         }
     }
 }

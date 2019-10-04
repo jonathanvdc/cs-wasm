@@ -10,14 +10,14 @@ namespace Wasm.Interpret
         /// <summary>
         /// Creates a variable with the given value, type and mutability.
         /// </summary>
-        /// <param name="Value">The variable's value.</param>
-        /// <param name="Type">The variable's type.</param>
-        /// <param name="IsMutable">The variable's mutability.</param>
-        private Variable(object Value, WasmValueType Type, bool IsMutable)
+        /// <param name="value">The variable's value.</param>
+        /// <param name="type">The variable's type.</param>
+        /// <param name="isMutable">The variable's mutability.</param>
+        private Variable(object value, WasmValueType type, bool isMutable)
         {
-            this.val = Value;
-            this.Type = Type;
-            this.IsMutable = IsMutable;
+            this.val = value;
+            this.Type = type;
+            this.IsMutable = isMutable;
         }
 
         /// <summary>
@@ -70,42 +70,42 @@ namespace Wasm.Interpret
         /// <summary>
         /// Creates a new variable from the given value.
         /// </summary>
-        /// <param name="Type">The variable's type.</param>
-        /// <param name="IsMutable">The variable's mutability.</param>
-        /// <param name="Value">The variable's initial value.</param>
+        /// <param name="type">The variable's type.</param>
+        /// <param name="isMutable">The variable's mutability.</param>
+        /// <param name="value">The variable's initial value.</param>
         /// <returns>The newly-created variable.</returns>
-        public static Variable Create<T>(WasmValueType Type, bool IsMutable, T Value)
+        public static Variable Create<T>(WasmValueType type, bool isMutable, T value)
         {
-            if (!IsInstanceOf<T>(Value, Type))
+            if (!IsInstanceOf<T>(value, type))
             {
                 throw new WasmException(
-                    "Cannot create a variable of type '" + ((object)Type).ToString() +
-                    "' with an initial value of type '" + GetTypeName(Value) + "'.");
+                    "Cannot create a variable of type '" + ((object)type).ToString() +
+                    "' with an initial value of type '" + GetTypeName(value) + "'.");
             }
 
-            return new Variable(Value, Type, IsMutable);
+            return new Variable(value, type, isMutable);
         }
 
         /// <summary>
         /// Creates a new variable of the given type and mutability, and initializes
         /// it with the default value for the given type.
         /// </summary>
-        /// <param name="Type">The variable's type.</param>
-        /// <param name="IsMutable">The variable's mutability.</param>
+        /// <param name="type">The variable's type.</param>
+        /// <param name="isMutable">The variable's mutability.</param>
         /// <returns>The newly-created variable.</returns>
-        public static Variable CreateDefault(WasmValueType Type, bool IsMutable)
+        public static Variable CreateDefault(WasmValueType type, bool isMutable)
         {
-            return Create<object>(Type, IsMutable, GetDefaultValue(Type));
+            return Create<object>(type, isMutable, GetDefaultValue(type));
         }
 
         /// <summary>
         /// Gets the default value for the given WebAssembly value tyoe.
         /// </summary>
-        /// <param name="Type">A WebAssembly value type.</param>
+        /// <param name="type">A WebAssembly value type.</param>
         /// <returns>The default value.</returns>
-        public static object GetDefaultValue(WasmValueType Type)
+        public static object GetDefaultValue(WasmValueType type)
         {
-            switch (Type)
+            switch (type)
             {
                 case WasmValueType.Int32:
                     return default(int);
@@ -116,39 +116,39 @@ namespace Wasm.Interpret
                 case WasmValueType.Float64:
                     return default(double);
                 default:
-                    throw new WasmException("Unknown value type: " + Type);
+                    throw new WasmException("Unknown value type: " + type);
             }
         }
 
         /// <summary>
         /// Checks if the given value is an instance of the given WebAssembly value type.
         /// </summary>
-        /// <param name="Value">A value.</param>
-        /// <param name="Type">A WebAssembly value type.</param>
+        /// <param name="value">A value.</param>
+        /// <param name="type">A WebAssembly value type.</param>
         /// <returns>
         /// <c>true</c> if the given value is an instance of the given WebAssembly value type;
         /// otherwise, <c>false</c>.
         /// </returns>
-        public static bool IsInstanceOf<T>(T Value, WasmValueType Type)
+        public static bool IsInstanceOf<T>(T value, WasmValueType type)
         {
-            switch (Type)
+            switch (type)
             {
                 case WasmValueType.Int32:
-                    return Value is int;
+                    return value is int;
                 case WasmValueType.Int64:
-                    return Value is long;
+                    return value is long;
                 case WasmValueType.Float32:
-                    return Value is float;
+                    return value is float;
                 case WasmValueType.Float64:
-                    return Value is double;
+                    return value is double;
                 default:
-                    throw new WasmException("Unknown value type: " + Type);
+                    throw new WasmException("Unknown value type: " + type);
             }
         }
 
-        private static string GetTypeName(object Value)
+        private static string GetTypeName(object value)
         {
-            return Value.GetType().Name;
+            return value.GetType().Name;
         }
     }
 }

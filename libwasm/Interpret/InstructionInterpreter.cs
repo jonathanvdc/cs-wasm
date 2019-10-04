@@ -10,8 +10,8 @@ namespace Wasm.Interpret
         /// <summary>
         /// Interprets the given instruction within the specified context.
         /// </summary>
-        /// <param name="Value">The instruction to interpret.</param>
-        /// <param name="Context">The interpreter context.</param>
-        public abstract void Interpret(Instruction Value, InterpreterContext Context);
+        /// <param name="value">The instruction to interpret.</param>
+        /// <param name="context">The interpreter context.</param>
+        public abstract void Interpret(Instruction value, InterpreterContext context);
     }
 }

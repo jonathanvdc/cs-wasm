@@ -14,13 +14,13 @@ namespace Wasm.Interpret
         /// Creates a tracing instruction interpreter from the given inner interpreter
         /// and a trace writer.
         /// </summary>
-        /// <param name="Interpreter">The inner interpreter that is used to run instructions.</param>
-        /// <param name="TraceWriter">The text writer to which execution traces are written.</param>
+        /// <param name="interpreter">The inner interpreter that is used to run instructions.</param>
+        /// <param name="traceWriter">The text writer to which execution traces are written.</param>
         public TracingInstructionInterpreter(
-            InstructionInterpreter Interpreter, TextWriter TraceWriter)
+            InstructionInterpreter interpreter, TextWriter traceWriter)
         {
-            this.Interpreter = Interpreter;
-            this.TraceWriter = TraceWriter;
+            this.Interpreter = interpreter;
+            this.TraceWriter = traceWriter;
         }
 
         /// <summary>
@@ -38,31 +38,31 @@ namespace Wasm.Interpret
         /// <summary>
         /// Writes an instruction to the trace writer.
         /// </summary>
-        /// <param name="Value">The instruction.</param>
-        protected virtual void Trace(Instruction Value)
+        /// <param name="value">The instruction.</param>
+        protected virtual void Trace(Instruction value)
         {
-            if (Value is BlockInstruction || Value is IfElseInstruction)
+            if (value is BlockInstruction || value is IfElseInstruction)
             {
-                Value.Op.Dump(TraceWriter);
+                value.Op.Dump(TraceWriter);
             }
             else
             {
-                Value.Dump(TraceWriter);
+                value.Dump(TraceWriter);
             }
             TraceWriter.WriteLine();
         }
 
         /// <inheritdoc/>
-        public override void Interpret(Instruction Value, InterpreterContext Context)
+        public override void Interpret(Instruction value, InterpreterContext context)
         {
             // Trace the instruction.
-            if (!Context.HasReturned)
+            if (!context.HasReturned)
             {
-                Trace(Value);
+                Trace(value);
             }
 
             // Actually interpret the instruction.
-            Interpreter.Interpret(Value, Context);
+            Interpreter.Interpret(value, context);
         }
     }
 }

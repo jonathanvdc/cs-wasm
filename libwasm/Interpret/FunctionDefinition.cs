@@ -22,8 +22,8 @@ namespace Wasm.Interpret
         /// <summary>
         /// Invokes this function with the given argument list.
         /// </summary>
-        /// <param name="Arguments">The list of arguments for this function's parameters.</param>
+        /// <param name="arguments">The list of arguments for this function's parameters.</param>
         /// <returns>The list of return values.</returns>
-        public abstract IReadOnlyList<object> Invoke(IReadOnlyList<object> Arguments);
+        public abstract IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments);
     }
 }

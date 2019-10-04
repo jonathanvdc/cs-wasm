@@ -22,11 +22,11 @@ namespace Wasm.Interpret
         /// Creates an instruction interpreter that clones the given interpreter's
         /// operator implementations.
         /// </summary>
-        public DefaultInstructionInterpreter(DefaultInstructionInterpreter Other)
+        public DefaultInstructionInterpreter(DefaultInstructionInterpreter other)
         {
             this.operatorImpls =
                 new Dictionary<Operator, Action<Instruction, InterpreterContext>>(
-                    Other.operatorImpls);
+                    other.operatorImpls);
         }
 
         /// <summary>
@@ -37,42 +37,42 @@ namespace Wasm.Interpret
         /// <summary>
         /// Implements the given operator as the specified action.
         /// </summary>
-        /// <param name="Op">The operator to implement.</param>
-        /// <param name="Implementation">The action that implements the operator.</param>
+        /// <param name="op">The operator to implement.</param>
+        /// <param name="implementation">The action that implements the operator.</param>
         public void ImplementOperator(
-            Operator Op,
-            Action<Instruction, InterpreterContext> Implementation)
+            Operator op,
+            Action<Instruction, InterpreterContext> implementation)
         {
-            operatorImpls[Op] = Implementation;
+            operatorImpls[op] = implementation;
         }
 
         /// <summary>
         /// Checks if this instruction interpreter implements the given operator.
         /// </summary>
-        /// <param name="Op">A WebAssembly operator.</param>
+        /// <param name="op">A WebAssembly operator.</param>
         /// <returns><c>true</c> if the given operator is implemented by this interpreter; otherwise, <c>false</c>.</returns>
-        public bool IsImplemented(Operator Op) => operatorImpls.ContainsKey(Op);
+        public bool IsImplemented(Operator op) => operatorImpls.ContainsKey(op);
 
         /// <summary>
         /// Interprets the given instruction within the specified context.
         /// </summary>
-        /// <param name="Value">The instruction to interpret.</param>
-        /// <param name="Context">The interpreter context.</param>
-        public override void Interpret(Instruction Value, InterpreterContext Context)
+        /// <param name="value">The instruction to interpret.</param>
+        /// <param name="context">The interpreter context.</param>
+        public override void Interpret(Instruction value, InterpreterContext context)
         {
-            if (Context.HasReturned)
+            if (context.HasReturned)
             {
                 return;
             }
 
             Action<Instruction, InterpreterContext> impl;
-            if (operatorImpls.TryGetValue(Value.Op, out impl))
+            if (operatorImpls.TryGetValue(value.Op, out impl))
             {
-                impl(Value, Context);
+                impl(value, context);
             }
             else
             {
-                throw new WasmException("Operator not implemented by interpreter: " + Value.Op.ToString());
+                throw new WasmException("Operator not implemented by interpreter: " + value.Op.ToString());
             }
         }
 

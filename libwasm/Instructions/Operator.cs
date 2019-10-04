@@ -9,11 +9,17 @@ namespace Wasm.Instructions
     /// </summary>
     public abstract class Operator
     {
-        public Operator(byte OpCode, WasmType DeclaringType, string Mnemonic)
+        /// <summary>
+        /// Creates an operator.
+        /// </summary>
+        /// <param name="opCode">The operator's opcode.</param>
+        /// <param name="declaringType">A type that defines the operator, if any.</param>
+        /// <param name="mnemonic">The operator's mnemonic.</param>
+        public Operator(byte opCode, WasmType declaringType, string mnemonic)
         {
-            this.OpCode = OpCode;
-            this.DeclaringType = DeclaringType;
-            this.Mnemonic = Mnemonic;
+            this.OpCode = opCode;
+            this.DeclaringType = declaringType;
+            this.Mnemonic = mnemonic;
         }
 
         /// <summary>
@@ -25,7 +31,7 @@ namespace Wasm.Instructions
         /// <summary>
         /// Gets the type that defines this operator, if any.
         /// </summary>
-        /// <returns>The type that defines this operator, if any; otherwise, <c>WasmType.Empty</c>.</returns>
+        /// <returns>The type that defines this operator, if any; otherwise, <cref name="WasmType.Empty"/>.</returns>
         public WasmType DeclaringType { get; private set; }
 
         /// <summary>
@@ -44,24 +50,24 @@ namespace Wasm.Instructions
         /// for this operator from the given reader and returns the result as an
         /// instruction.
         /// </summary>
-        /// <param name="Reader">The WebAssembly file reader to read immediates from.</param>
+        /// <param name="reader">The WebAssembly file reader to read immediates from.</param>
         /// <returns>A WebAssembly instruction.</returns>
-        public abstract Instruction ReadImmediates(BinaryWasmReader Reader);
+        public abstract Instruction ReadImmediates(BinaryWasmReader reader);
 
         /// <summary>
         /// Writes a string representation of this operator to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this operator is written.
         /// </param>
-        public virtual void Dump(TextWriter Writer)
+        public virtual void Dump(TextWriter writer)
         {
             if (HasDeclaringType)
             {
-                DumpHelpers.DumpWasmType(DeclaringType, Writer);
-                Writer.Write(".");
+                DumpHelpers.DumpWasmType(DeclaringType, writer);
+                writer.Write(".");
             }
-            Writer.Write(Mnemonic);
+            writer.Write(Mnemonic);
         }
 
         /// <summary>

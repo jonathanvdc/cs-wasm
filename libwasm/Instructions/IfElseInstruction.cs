@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -15,17 +14,17 @@ namespace Wasm.Instructions
         /// Creates an if-else instruction from the given type, if-branch and
         /// else-branch.
         /// </summary>
-        /// <param name="Type">The type of value returned by the if-else instruction.</param>
-        /// <param name="IfBranch">The if-else instruction's 'if' branch.</param>
-        /// <param name="ElseBranch">The if-else instruction's 'else' branch.</param>
+        /// <param name="type">The type of value returned by the if-else instruction.</param>
+        /// <param name="ifBranch">The if-else instruction's 'if' branch.</param>
+        /// <param name="elseBranch">The if-else instruction's 'else' branch.</param>
         public IfElseInstruction(
-            WasmType Type,
-            IEnumerable<Instruction> IfBranch,
-            IEnumerable<Instruction> ElseBranch)
+            WasmType type,
+            IEnumerable<Instruction> ifBranch,
+            IEnumerable<Instruction> elseBranch)
         {
-            this.Type = Type;
-            this.IfBranch = new List<Instruction>(IfBranch);
-            this.ElseBranch = ElseBranch == null ? null : new List<Instruction>(ElseBranch);
+            this.Type = type;
+            this.IfBranch = new List<Instruction>(ifBranch);
+            this.ElseBranch = elseBranch == null ? null : new List<Instruction>(elseBranch);
         }
 
         /// <summary>
@@ -64,65 +63,65 @@ namespace Wasm.Instructions
         /// Writes this instruction's immediates (but not its opcode)
         /// to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
-        public override void WriteImmediatesTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's immediates to.</param>
+        public override void WriteImmediatesTo(BinaryWasmWriter writer)
         {
-            Writer.WriteWasmType(Type);
-            WriteContentsTo(Writer);
+            writer.WriteWasmType(Type);
+            WriteContentsTo(writer);
         }
 
         /// <summary>
         /// Writes this instruction's child instructions to the given WebAssembly file writer,
         /// followed by an 'end' opcode.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's child instructions to.</param>
-        public void WriteContentsTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's child instructions to.</param>
+        public void WriteContentsTo(BinaryWasmWriter writer)
         {
             foreach (var instr in IfBranch)
             {
-                instr.WriteTo(Writer);
+                instr.WriteTo(writer);
             }
             if (HasElseBranch)
             {
-                Writer.Writer.Write(Operators.ElseOpCode);
+                writer.Writer.Write(Operators.ElseOpCode);
                 foreach (var instr in ElseBranch)
                 {
-                    instr.WriteTo(Writer);
+                    instr.WriteTo(writer);
                 }
             }
-            Writer.Writer.Write(Operators.EndOpCode);
+            writer.Writer.Write(Operators.EndOpCode);
         }
 
         /// <summary>
         /// Writes a string representation of this instruction to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this instruction is written.
         /// </param>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Op.Dump(Writer);
-            Writer.Write(" (result: ");
-            DumpHelpers.DumpWasmType(Type, Writer);
-            Writer.Write(")");
-            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+            Op.Dump(writer);
+            writer.Write(" (result: ");
+            DumpHelpers.DumpWasmType(Type, writer);
+            writer.Write(")");
+            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(writer);
             foreach (var instr in IfBranch)
             {
                 indentedWriter.WriteLine();
                 instr.Dump(indentedWriter);
             }
-            Writer.WriteLine();
+            writer.WriteLine();
             if (HasElseBranch)
             {
-                Writer.Write("else");
+                writer.Write("else");
                 foreach (var instr in ElseBranch)
                 {
                     indentedWriter.WriteLine();
                     instr.Dump(indentedWriter);
                 }
-                Writer.WriteLine();
+                writer.WriteLine();
             }
-            Writer.Write("end");
+            writer.Write("end");
         }
     }
 }

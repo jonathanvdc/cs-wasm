@@ -207,31 +207,31 @@ namespace Wasm.Instructions
         /// <summary>
         /// Registers the given operator.
         /// </summary>
-        /// <param name="Op">The operator to register.</param>
+        /// <param name="op">The operator to register.</param>
         /// <returns>The operator.</returns>
-        private static T Register<T>(T Op)
+        private static T Register<T>(T op)
             where T : Operator
         {
-            opsByOpCode.Add(Op.OpCode, Op);
-            return Op;
+            opsByOpCode.Add(op.OpCode, op);
+            return op;
         }
 
         /// <summary>
         /// Gets the operator with the given opcode.
         /// </summary>
-        /// <param name="OpCode">The opcode to find an operator for.</param>
+        /// <param name="opCode">The opcode to find an operator for.</param>
         /// <returns>The operator with the given opcode.</returns>
-        public static Operator GetOperatorByOpCode(byte OpCode)
+        public static Operator GetOperatorByOpCode(byte opCode)
         {
             Operator result;
-            if (OperatorsByOpCode.TryGetValue(OpCode, out result))
+            if (OperatorsByOpCode.TryGetValue(opCode, out result))
             {
                 return result;
             }
             else
             {
                 throw new WasmException(
-                    string.Format("Unknown opcode: {0}", DumpHelpers.FormatHex(OpCode)));
+                    string.Format("Unknown opcode: {0}", DumpHelpers.FormatHex(opCode)));
             }
         }
 

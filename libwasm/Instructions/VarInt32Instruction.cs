@@ -10,13 +10,18 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class VarInt32Instruction : Instruction
     {
-        public VarInt32Instruction(Operator Op, int Immediate)
+        /// <summary>
+        /// Creates an instruction that takes a variable-length 32-bit signed integer immediate.
+        /// </summary>
+        /// <param name="op">An appropriate operator.</param>
+        /// <param name="immediate">A decoded immediate.</param>
+        public VarInt32Instruction(VarInt32Operator op, int immediate)
         {
-            this.opValue = Op;
-            this.Immediate = Immediate;
+            this.opValue = op;
+            this.Immediate = immediate;
         }
 
-        private Operator opValue;
+        private VarInt32Operator opValue;
 
         /// <summary>
         /// Gets the operator for this instruction.
@@ -34,23 +39,23 @@ namespace Wasm.Instructions
         /// Writes this instruction's immediates (but not its opcode)
         /// to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
-        public override void WriteImmediatesTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's immediates to.</param>
+        public override void WriteImmediatesTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarInt32(Immediate);
+            writer.WriteVarInt32(Immediate);
         }
 
         /// <summary>
         /// Writes a string representation of this instruction to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this instruction is written.
         /// </param>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Op.Dump(Writer);
-            Writer.Write(" ");
-            Writer.Write(Immediate);
+            Op.Dump(writer);
+            writer.Write(" ");
+            writer.Write(Immediate);
         }
     }
 }

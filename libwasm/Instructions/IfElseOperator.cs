@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -10,8 +8,8 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class IfElseOperator : Operator
     {
-        public IfElseOperator(byte OpCode, WasmType DeclaringType, string Mnemonic)
-            : base(OpCode, DeclaringType, Mnemonic)
+        internal IfElseOperator(byte opCode, WasmType declaringType, string mnemonic)
+            : base(opCode, declaringType, mnemonic)
         { }
 
         /// <summary>
@@ -19,30 +17,30 @@ namespace Wasm.Instructions
         /// for this operator from the given reader and returns the result as an
         /// instruction.
         /// </summary>
-        /// <param name="Reader">The WebAssembly file reader to read immediates from.</param>
+        /// <param name="reader">The WebAssembly file reader to read immediates from.</param>
         /// <returns>A WebAssembly instruction.</returns>
-        public override Instruction ReadImmediates(BinaryWasmReader Reader)
+        public override Instruction ReadImmediates(BinaryWasmReader reader)
         {
-            var type = Reader.ReadWasmType();
-            return ReadBlockContents(type, Reader);
+            var type = reader.ReadWasmType();
+            return ReadBlockContents(type, reader);
         }
 
         /// <summary>
         /// Reads the child instructions of a WebAssembly block from the given reader.
         /// </summary>
-        /// <param name="BlockType">The type of value returned by the resulting block.</param>
-        /// <param name="Reader">The WebAssembly file reader.</param>
+        /// <param name="blockType">The type of value returned by the resulting block.</param>
+        /// <param name="reader">The WebAssembly file reader.</param>
         /// <returns>A WebAssembly block instruction.</returns>
-        public static IfElseInstruction ReadBlockContents(WasmType BlockType, BinaryWasmReader Reader)
+        public static IfElseInstruction ReadBlockContents(WasmType blockType, BinaryWasmReader reader)
         {
             var ifBranch = new List<Instruction>();
             List<Instruction> elseBranch = null;
             while (true)
             {
-                byte opCode = Reader.ReadByte();
+                byte opCode = reader.ReadByte();
                 if (opCode == Operators.EndOpCode)
                 {
-                    return new IfElseInstruction(BlockType, ifBranch, elseBranch);
+                    return new IfElseInstruction(blockType, ifBranch, elseBranch);
                 }
                 else if (opCode == Operators.ElseOpCode)
                 {
@@ -56,7 +54,7 @@ namespace Wasm.Instructions
                 else
                 {
                     var op = Operators.GetOperatorByOpCode(opCode);
-                    (elseBranch == null ? ifBranch : elseBranch).Add(op.ReadImmediates(Reader));
+                    (elseBranch == null ? ifBranch : elseBranch).Add(op.ReadImmediates(reader));
                 }
             }
         }
@@ -65,25 +63,25 @@ namespace Wasm.Instructions
         /// Creates an if-else instruction from the given type, if-branch and
         /// else-branch.
         /// </summary>
-        /// <param name="Type">The type of value returned by the if-else instruction.</param>
-        /// <param name="IfBranch">The if-else instruction's 'if' branch.</param>
-        /// <param name="ElseBranch">The if-else instruction's 'else' branch.</param>
+        /// <param name="type">The type of value returned by the if-else instruction.</param>
+        /// <param name="ifBranch">The if-else instruction's 'if' branch.</param>
+        /// <param name="elseBranch">The if-else instruction's 'else' branch.</param>
         public IfElseInstruction Create(
-            WasmType Type,
-            IEnumerable<Instruction> IfBranch,
-            IEnumerable<Instruction> ElseBranch)
+            WasmType type,
+            IEnumerable<Instruction> ifBranch,
+            IEnumerable<Instruction> elseBranch)
         {
-            return new IfElseInstruction(Type, IfBranch, ElseBranch);
+            return new IfElseInstruction(type, ifBranch, elseBranch);
         }
 
         /// <summary>
         /// Casts the given instruction to this operator's instruction type.
         /// </summary>
-        /// <param name="Value">The instruction to cast.</param>
+        /// <param name="value">The instruction to cast.</param>
         /// <returns>The given instruction as this operator's instruction type.</returns>
-        public IfElseInstruction CastInstruction(Instruction Value)
+        public IfElseInstruction CastInstruction(Instruction value)
         {
-            return (IfElseInstruction)Value;
+            return (IfElseInstruction)value;
         }
     }
 }

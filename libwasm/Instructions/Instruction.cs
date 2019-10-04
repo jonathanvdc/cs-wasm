@@ -9,6 +9,9 @@ namespace Wasm.Instructions
     /// </summary>
     public abstract class Instruction
     {
+        /// <summary>
+        /// Creates an instruction.
+        /// </summary>
         public Instruction()
         { }
 
@@ -22,29 +25,29 @@ namespace Wasm.Instructions
         /// Writes this instruction's immediates (but not its opcode)
         /// to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
-        public abstract void WriteImmediatesTo(BinaryWasmWriter Writer);
+        /// <param name="writer">The writer to write this instruction's immediates to.</param>
+        public abstract void WriteImmediatesTo(BinaryWasmWriter writer);
 
         /// <summary>
         /// Writes this instruction's opcode and immediates to the given
         /// WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction to.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction to.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.Writer.Write(Op.OpCode);
-            WriteImmediatesTo(Writer);
+            writer.Writer.Write(Op.OpCode);
+            WriteImmediatesTo(writer);
         }
 
         /// <summary>
         /// Writes a string representation of this instruction to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this instruction is written.
         /// </param>
-        public virtual void Dump(TextWriter Writer)
+        public virtual void Dump(TextWriter writer)
         {
-            Op.Dump(Writer);
+            Op.Dump(writer);
         }
 
         /// <summary>

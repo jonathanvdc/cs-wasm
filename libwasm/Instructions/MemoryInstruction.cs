@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -13,19 +12,19 @@ namespace Wasm.Instructions
         /// Creates a memory instruction from the given operator, alignment
         /// and offset.
         /// </summary>
-        /// <param name="Op">The operator for this memory instruction.</param>
-        /// <param name="Log2Alignment">The log2 of the memory alignment for this instruction.</param>
-        /// <param name="Offset">
+        /// <param name="op">The operator for this memory instruction.</param>
+        /// <param name="log2Alignment">The log2 of the memory alignment for this instruction.</param>
+        /// <param name="offset">
         /// The offset of the memory location relative to the pointer that is accessed.
         /// </param>
-        public MemoryInstruction(Operator Op, uint Log2Alignment, uint Offset)
+        public MemoryInstruction(MemoryOperator op, uint log2Alignment, uint offset)
         {
-            this.opValue = Op;
-            this.Log2Alignment = Log2Alignment;
-            this.Offset = Offset;
+            this.opValue = op;
+            this.Log2Alignment = log2Alignment;
+            this.Offset = offset;
         }
 
-        private Operator opValue;
+        private MemoryOperator opValue;
 
         /// <summary>
         /// Gets the operator for this instruction.
@@ -66,26 +65,26 @@ namespace Wasm.Instructions
         /// Writes this instruction's immediates (but not its opcode)
         /// to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
-        public override void WriteImmediatesTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's immediates to.</param>
+        public override void WriteImmediatesTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32(Log2Alignment);
-            Writer.WriteVarUInt32(Offset);
+            writer.WriteVarUInt32(Log2Alignment);
+            writer.WriteVarUInt32(Offset);
         }
 
         /// <summary>
         /// Writes a string representation of this instruction to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this instruction is written.
         /// </param>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Op.Dump(Writer);
-            Writer.Write(" offset=");
-            Writer.Write(Offset);
-            Writer.Write(" align=");
-            Writer.Write(Alignment);
+            Op.Dump(writer);
+            writer.Write(" offset=");
+            writer.Write(Offset);
+            writer.Write(" align=");
+            writer.Write(Alignment);
         }
     }
 }

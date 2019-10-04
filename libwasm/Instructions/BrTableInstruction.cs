@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -14,21 +13,21 @@ namespace Wasm.Instructions
         /// Creates a break table instruction from the given operator, table of
         /// break targets and a default target.
         /// </summary>
-        /// <param name="Op">The operator for this instruction.</param>
-        /// <param name="TargetTable">
+        /// <param name="op">The operator for this instruction.</param>
+        /// <param name="targetTable">
         /// A table of target entries that indicate an outer block or loop to which to break.
         /// </param>
-        /// <param name="DefaultTarget">
+        /// <param name="defaultTarget">
         /// The default target: an outer block or loop to which to break in the default case.
         /// </param>
-        public BrTableInstruction(Operator Op, IEnumerable<uint> TargetTable, uint DefaultTarget)
+        public BrTableInstruction(BrTableOperator op, IEnumerable<uint> targetTable, uint defaultTarget)
         {
-            this.opValue = Op;
-            this.TargetTable = new List<uint>(TargetTable);
-            this.DefaultTarget = DefaultTarget;
+            this.opValue = op;
+            this.TargetTable = new List<uint>(targetTable);
+            this.DefaultTarget = defaultTarget;
         }
 
-        private Operator opValue;
+        private BrTableOperator opValue;
 
         /// <summary>
         /// Gets the operator for this instruction.
@@ -52,29 +51,29 @@ namespace Wasm.Instructions
         /// Writes this instruction's immediates (but not its opcode)
         /// to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
-        public override void WriteImmediatesTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's immediates to.</param>
+        public override void WriteImmediatesTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32((uint)TargetTable.Count);
+            writer.WriteVarUInt32((uint)TargetTable.Count);
             foreach (var entry in TargetTable)
             {
-                Writer.WriteVarUInt32(entry);
+                writer.WriteVarUInt32(entry);
             }
-            Writer.WriteVarUInt32(DefaultTarget);
+            writer.WriteVarUInt32(DefaultTarget);
         }
 
         /// <summary>
         /// Writes a string representation of this instruction to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this instruction is written.
         /// </param>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Op.Dump(Writer);
-            Writer.Write(" default=");
-            Writer.Write(DefaultTarget);
-            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+            Op.Dump(writer);
+            writer.Write(" default=");
+            writer.Write(DefaultTarget);
+            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(writer);
             for (int i = 0; i < TargetTable.Count; i++)
             {
                 indentedWriter.WriteLine();
@@ -82,7 +81,7 @@ namespace Wasm.Instructions
                 indentedWriter.Write(" -> ");
                 indentedWriter.Write(TargetTable[i]);
             }
-            Writer.WriteLine();
+            writer.WriteLine();
         }
     }
 }

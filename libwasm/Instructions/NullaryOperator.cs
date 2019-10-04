@@ -1,5 +1,3 @@
-using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -9,8 +7,14 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class NullaryOperator : Operator
     {
-        public NullaryOperator(byte OpCode, WasmType DeclaringType, string Mnemonic)
-            : base(OpCode, DeclaringType, Mnemonic)
+        /// <summary>
+        /// Creates a nullary operator.
+        /// </summary>
+        /// <param name="opCode">The operator's opcode.</param>
+        /// <param name="declaringType">A type that defines the operator, if any.</param>
+        /// <param name="mnemonic">The operator's mnemonic.</param>
+        public NullaryOperator(byte opCode, WasmType declaringType, string mnemonic)
+            : base(opCode, declaringType, mnemonic)
         {
             this.instruction = new NullaryInstruction(this);
         }
@@ -35,9 +39,9 @@ namespace Wasm.Instructions
         /// for this operator from the given reader and returns the result as an
         /// instruction.
         /// </summary>
-        /// <param name="Reader">The WebAssembly file reader to read immediates from.</param>
+        /// <param name="reader">The WebAssembly file reader to read immediates from.</param>
         /// <returns>A WebAssembly instruction.</returns>
-        public override Instruction ReadImmediates(BinaryWasmReader Reader)
+        public override Instruction ReadImmediates(BinaryWasmReader reader)
         {
             // Return the shared nullary instruction.
             return instruction;

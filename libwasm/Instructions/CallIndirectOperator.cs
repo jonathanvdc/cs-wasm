@@ -1,5 +1,3 @@
-using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -9,8 +7,14 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class CallIndirectOperator : Operator
     {
-        public CallIndirectOperator(byte OpCode, WasmType DeclaringType, string Mnemonic)
-            : base(OpCode, DeclaringType, Mnemonic)
+        /// <summary>
+        /// Creates an indirect call operator.
+        /// </summary>
+        /// <param name="opCode">The operator's opcode.</param>
+        /// <param name="declaringType">A type that defines the operator, if any.</param>
+        /// <param name="mnemonic">The operator's mnemonic.</param>
+        public CallIndirectOperator(byte opCode, WasmType declaringType, string mnemonic)
+            : base(opCode, declaringType, mnemonic)
         { }
 
         /// <summary>
@@ -18,31 +22,31 @@ namespace Wasm.Instructions
         /// for this operator from the given reader and returns the result as an
         /// instruction.
         /// </summary>
-        /// <param name="Reader">The WebAssembly file reader to read immediates from.</param>
+        /// <param name="reader">The WebAssembly file reader to read immediates from.</param>
         /// <returns>A WebAssembly instruction.</returns>
-        public override Instruction ReadImmediates(BinaryWasmReader Reader)
+        public override Instruction ReadImmediates(BinaryWasmReader reader)
         {
-            return new CallIndirectInstruction(this, Reader.ReadVarUInt32(), Reader.ReadVarUInt32());
+            return new CallIndirectInstruction(this, reader.ReadVarUInt32(), reader.ReadVarUInt32());
         }
 
         /// <summary>
         /// Creates an indirect call instruction from this operator and
         /// an index into the 'type' table.
         /// </summary>
-        /// <param name="TypeIndex">The index of the callee's signature in the type table.</param>
-        public CallIndirectInstruction Create(uint TypeIndex)
+        /// <param name="typeIndex">The index of the callee's signature in the type table.</param>
+        public CallIndirectInstruction Create(uint typeIndex)
         {
-            return new CallIndirectInstruction(this, TypeIndex);
+            return new CallIndirectInstruction(this, typeIndex);
         }
 
         /// <summary>
         /// Casts the given instruction to this operator's instruction type.
         /// </summary>
-        /// <param name="Value">The instruction to cast.</param>
+        /// <param name="value">The instruction to cast.</param>
         /// <returns>The given instruction as this operator's instruction type.</returns>
-        public CallIndirectInstruction CastInstruction(Instruction Value)
+        public CallIndirectInstruction CastInstruction(Instruction value)
         {
-            return (CallIndirectInstruction)Value;
+            return (CallIndirectInstruction)value;
         }
     }
 }

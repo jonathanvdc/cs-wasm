@@ -10,10 +10,15 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class VarInt64Instruction : Instruction
     {
-        public VarInt64Instruction(Operator Op, long Immediate)
+        /// <summary>
+        /// Creates an instruction that takes a variable-length 64-bit signed integer immediate.
+        /// </summary>
+        /// <param name="op">An appropriate operator.</param>
+        /// <param name="immediate">A decoded immediate.</param>
+        public VarInt64Instruction(Operator op, long immediate)
         {
-            this.opValue = Op;
-            this.Immediate = Immediate;
+            this.opValue = op;
+            this.Immediate = immediate;
         }
 
         private Operator opValue;
@@ -34,23 +39,23 @@ namespace Wasm.Instructions
         /// Writes this instruction's immediates (but not its opcode)
         /// to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
-        public override void WriteImmediatesTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's immediates to.</param>
+        public override void WriteImmediatesTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarInt64(Immediate);
+            writer.WriteVarInt64(Immediate);
         }
 
         /// <summary>
         /// Writes a string representation of this instruction to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this instruction is written.
         /// </param>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Op.Dump(Writer);
-            Writer.Write(" ");
-            Writer.Write(Immediate);
+            Op.Dump(writer);
+            writer.Write(" ");
+            writer.Write(Immediate);
         }
     }
 }

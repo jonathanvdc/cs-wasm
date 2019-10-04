@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -11,14 +10,20 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class BlockInstruction : Instruction
     {
-        public BlockInstruction(Operator Op, WasmType Type, IEnumerable<Instruction> Contents)
+        /// <summary>
+        /// Creates a block instruction.
+        /// </summary>
+        /// <param name="op">The operator performed by the block instruction.</param>
+        /// <param name="type">The block instruction's result type.</param>
+        /// <param name="contents">The block instruction's contents, as a sequence of instructions.</param>
+        public BlockInstruction(BlockOperator op, WasmType type, IEnumerable<Instruction> contents)
         {
-            this.opValue = Op;
-            this.Type = Type;
-            this.Contents = new List<Instruction>(Contents);
+            this.opValue = op;
+            this.Type = type;
+            this.Contents = new List<Instruction>(contents);
         }
 
-        private Operator opValue;
+        private BlockOperator opValue;
 
         /// <summary>
         /// Gets the operator for this instruction.
@@ -42,47 +47,47 @@ namespace Wasm.Instructions
         /// Writes this instruction's immediates (but not its opcode)
         /// to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
-        public override void WriteImmediatesTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's immediates to.</param>
+        public override void WriteImmediatesTo(BinaryWasmWriter writer)
         {
-            Writer.WriteWasmType(Type);
-            WriteContentsTo(Writer);
+            writer.WriteWasmType(Type);
+            WriteContentsTo(writer);
         }
 
         /// <summary>
         /// Writes this instruction's child instructions to the given WebAssembly file writer,
         /// followed by an 'end' opcode.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's child instructions to.</param>
-        public void WriteContentsTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's child instructions to.</param>
+        public void WriteContentsTo(BinaryWasmWriter writer)
         {
             foreach (var instr in Contents)
             {
-                instr.WriteTo(Writer);
+                instr.WriteTo(writer);
             }
-            Writer.Writer.Write(Operators.EndOpCode);
+            writer.Writer.Write(Operators.EndOpCode);
         }
 
         /// <summary>
         /// Writes a string representation of this instruction to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this instruction is written.
         /// </param>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Op.Dump(Writer);
-            Writer.Write(" (result: ");
-            DumpHelpers.DumpWasmType(Type, Writer);
-            Writer.Write(")");
-            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+            Op.Dump(writer);
+            writer.Write(" (result: ");
+            DumpHelpers.DumpWasmType(Type, writer);
+            writer.Write(")");
+            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(writer);
             foreach (var instr in Contents)
             {
                 indentedWriter.WriteLine();
                 instr.Dump(indentedWriter);
             }
-            Writer.WriteLine();
-            Writer.Write("end");
+            writer.WriteLine();
+            writer.Write("end");
         }
     }
 }

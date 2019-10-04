@@ -1,5 +1,3 @@
-using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -9,8 +7,14 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class Float64Operator : Operator
     {
-        public Float64Operator(byte OpCode, WasmType DeclaringType, string Mnemonic)
-            : base(OpCode, DeclaringType, Mnemonic)
+        /// <summary>
+        /// Creates an operator that takes a 64-bit floating-point number immediate.
+        /// </summary>
+        /// <param name="opCode">The operator's opcode.</param>
+        /// <param name="declaringType">A type that defines the operator, if any.</param>
+        /// <param name="mnemonic">The operator's mnemonic.</param>
+        public Float64Operator(byte opCode, WasmType declaringType, string mnemonic)
+            : base(opCode, declaringType, mnemonic)
         { }
 
         /// <summary>

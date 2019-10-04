@@ -1,5 +1,3 @@
-using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -9,12 +7,16 @@ namespace Wasm.Instructions
     /// </summary>
     public sealed class NullaryInstruction : Instruction
     {
-        public NullaryInstruction(Operator Op)
+        /// <summary>
+        /// Creates a nullary instruction: an instruction that does not take any immediates.
+        /// </summary>
+        /// <param name="op">The nullary instruction's operator.</param>
+        public NullaryInstruction(NullaryOperator op)
         {
-            this.opValue = Op;
+            this.opValue = op;
         }
 
-        private Operator opValue;
+        private NullaryOperator opValue;
 
         /// <summary>
         /// Gets the operator for this instruction.
@@ -26,8 +28,8 @@ namespace Wasm.Instructions
         /// Writes this instruction's immediates (but not its opcode)
         /// to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
-        public override void WriteImmediatesTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's immediates to.</param>
+        public override void WriteImmediatesTo(BinaryWasmWriter writer)
         {
             // Do nothing. This instruction doesn't have any immediates.
         }

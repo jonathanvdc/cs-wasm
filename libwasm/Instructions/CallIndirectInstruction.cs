@@ -1,5 +1,4 @@
 using System.IO;
-using System.Text;
 using Wasm.Binary;
 
 namespace Wasm.Instructions
@@ -13,27 +12,27 @@ namespace Wasm.Instructions
         /// Creates an indirect call instruction from the given operator and
         /// an index into the 'type' table.
         /// </summary>
-        /// <param name="Op">The operator for this instruction.</param>
-        /// <param name="TypeIndex">The index of the callee's signature in the type table.</param>
-        public CallIndirectInstruction(Operator Op, uint TypeIndex)
-            : this(Op, TypeIndex, 0)
+        /// <param name="op">The operator for this instruction.</param>
+        /// <param name="typeIndex">The index of the callee's signature in the type table.</param>
+        public CallIndirectInstruction(CallIndirectOperator op, uint typeIndex)
+            : this(op, typeIndex, 0)
         { }
 
         /// <summary>
         /// Creates an indirect call instruction from the given operator,
         /// an index into the 'type' table and a value for the reserved field.
         /// </summary>
-        /// <param name="Op">The operator for this instruction.</param>
-        /// <param name="TypeIndex">The index of the callee's signature in the type table.</param>
-        /// <param name="Reserved">A reserved value, which should always be zero.</param>
-        public CallIndirectInstruction(Operator Op, uint TypeIndex, uint Reserved)
+        /// <param name="op">The operator for this instruction.</param>
+        /// <param name="typeIndex">The index of the callee's signature in the type table.</param>
+        /// <param name="reserved">A reserved value, which should always be zero.</param>
+        public CallIndirectInstruction(CallIndirectOperator op, uint typeIndex, uint reserved)
         {
-            this.opValue = Op;
-            this.TypeIndex = TypeIndex;
-            this.Reserved = Reserved;
+            this.opValue = op;
+            this.TypeIndex = typeIndex;
+            this.Reserved = reserved;
         }
 
-        private Operator opValue;
+        private CallIndirectOperator opValue;
 
         /// <summary>
         /// Gets the operator for this instruction.
@@ -57,29 +56,29 @@ namespace Wasm.Instructions
         /// Writes this instruction's immediates (but not its opcode)
         /// to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The writer to write this instruction's immediates to.</param>
-        public override void WriteImmediatesTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write this instruction's immediates to.</param>
+        public override void WriteImmediatesTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32(TypeIndex);
-            Writer.WriteVarUInt32(Reserved);
+            writer.WriteVarUInt32(TypeIndex);
+            writer.WriteVarUInt32(Reserved);
         }
 
         /// <summary>
         /// Writes a string representation of this instruction to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this instruction is written.
         /// </param>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Op.Dump(Writer);
-            Writer.Write(" ");
-            Writer.Write(TypeIndex);
+            Op.Dump(writer);
+            writer.Write(" ");
+            writer.Write(TypeIndex);
             if (Reserved != 0)
             {
-                Writer.Write(" (reserved=");
-                Writer.Write(Reserved);
-                Writer.Write(")");
+                writer.Write(" (reserved=");
+                writer.Write(Reserved);
+                writer.Write(")");
             }
         }
     }

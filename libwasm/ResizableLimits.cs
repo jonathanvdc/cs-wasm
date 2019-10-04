@@ -14,33 +14,33 @@ namespace Wasm
         /// Creates resizable limits with the given initial size and no maximal
         /// size.
         /// </summary>
-        /// <param name="Initial">The initial size of the resizable limits.</param>
-        public ResizableLimits(uint Initial)
+        /// <param name="initial">The initial size of the resizable limits.</param>
+        public ResizableLimits(uint initial)
         {
-            this.Initial = Initial;
+            this.Initial = initial;
             this.Maximum = default(Nullable<uint>);
         }
 
         /// <summary>
         /// Creates resizable limits with the given initial and maximal sizes.
         /// </summary>
-        /// <param name="Initial">The initial size of the resizable limits.</param>
-        /// <param name="Maximum">The maximal size of the resizable limits.</param>
-        public ResizableLimits(uint Initial, uint Maximum)
+        /// <param name="initial">The initial size of the resizable limits.</param>
+        /// <param name="maximum">The maximal size of the resizable limits.</param>
+        public ResizableLimits(uint initial, uint maximum)
         {
-            this.Initial = Initial;
-            this.Maximum = new Nullable<uint>(Maximum);
+            this.Initial = initial;
+            this.Maximum = new Nullable<uint>(maximum);
         }
 
         /// <summary>
         /// Creates resizable limits with the given initial and maximal sizes.
         /// </summary>
-        /// <param name="Initial">The initial size of the resizable limits.</param>
-        /// <param name="Maximum">The optional maximal size of the resizable limits.</param>
-        public ResizableLimits(uint Initial, Nullable<uint> Maximum)
+        /// <param name="initial">The initial size of the resizable limits.</param>
+        /// <param name="maximum">The optional maximal size of the resizable limits.</param>
+        public ResizableLimits(uint initial, Nullable<uint> maximum)
         {
-            this.Initial = Initial;
-            this.Maximum = Maximum;
+            this.Initial = initial;
+            this.Maximum = maximum;
         }
 
         /// <summary>
@@ -64,31 +64,31 @@ namespace Wasm
         /// <summary>
         /// Writes these resizable limits to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The WebAssembly file writer.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The WebAssembly file writer.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt1(HasMaximum);
-            Writer.WriteVarUInt32(Initial);
+            writer.WriteVarUInt1(HasMaximum);
+            writer.WriteVarUInt32(Initial);
             if (HasMaximum)
             {
-                Writer.WriteVarUInt32(Maximum.Value);
+                writer.WriteVarUInt32(Maximum.Value);
             }
         }
 
         /// <summary>
         /// Writes a textual representation of these resizable limits to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to which text is written.</param>
-        public void Dump(TextWriter Writer)
+        /// <param name="writer">The writer to which text is written.</param>
+        public void Dump(TextWriter writer)
         {
-            Writer.Write("{initial: ");
-            Writer.Write(Initial);
+            writer.Write("{initial: ");
+            writer.Write(Initial);
             if (HasMaximum)
             {
-                Writer.Write(", max: ");
-                Writer.Write(Maximum.Value);
+                writer.Write(", max: ");
+                writer.Write(Maximum.Value);
             }
-            Writer.Write("}");
+            writer.Write("}");
         }
 
         /// <inheritdoc/>

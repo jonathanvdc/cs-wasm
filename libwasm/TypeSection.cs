@@ -21,21 +21,21 @@ namespace Wasm
         /// <summary>
         /// Creates a type section from the given list of function types.
         /// </summary>
-        /// <param name="FunctionTypes">The list of function types in this type section.</param>
-        public TypeSection(IEnumerable<FunctionType> FunctionTypes)
-            : this(FunctionTypes, new byte[0])
+        /// <param name="functionTypes">The list of function types in this type section.</param>
+        public TypeSection(IEnumerable<FunctionType> functionTypes)
+            : this(functionTypes, new byte[0])
         {
         }
 
         /// <summary>
         /// Creates a type section from the given list of function types and an additional payload.
         /// </summary>
-        /// <param name="FunctionTypes">The list of function types in this type section.</param>
-        /// <param name="ExtraPayload">The additional payload for this section, as an array of bytes.</param>
-        public TypeSection(IEnumerable<FunctionType> FunctionTypes, byte[] ExtraPayload)
+        /// <param name="functionTypes">The list of function types in this type section.</param>
+        /// <param name="extraPayload">The additional payload for this section, as an array of bytes.</param>
+        public TypeSection(IEnumerable<FunctionType> functionTypes, byte[] extraPayload)
         {
-            this.FunctionTypes = new List<FunctionType>(FunctionTypes);
-            this.ExtraPayload = ExtraPayload;
+            this.FunctionTypes = new List<FunctionType>(functionTypes);
+            this.ExtraPayload = extraPayload;
         }
 
         /// <summary>
@@ -54,56 +54,56 @@ namespace Wasm
         public override SectionName Name => new SectionName(SectionCode.Type);
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32((uint)FunctionTypes.Count);
+            writer.WriteVarUInt32((uint)FunctionTypes.Count);
             foreach (var type in FunctionTypes)
-                type.WriteTo(Writer);
+                type.WriteTo(writer);
 
-            Writer.Writer.Write(ExtraPayload);
+            writer.Writer.Write(ExtraPayload);
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; number of entries: ");
-            Writer.Write(FunctionTypes.Count);
-            Writer.WriteLine();
+            writer.Write(Name.ToString());
+            writer.Write("; number of entries: ");
+            writer.Write(FunctionTypes.Count);
+            writer.WriteLine();
             for (int i = 0; i < FunctionTypes.Count; i++)
             {
-                Writer.Write("#");
-                Writer.Write(i);
-                Writer.Write(" -> ");
-                FunctionTypes[i].Dump(Writer);
-                Writer.WriteLine();
+                writer.Write("#");
+                writer.Write(i);
+                writer.Write(" -> ");
+                FunctionTypes[i].Dump(writer);
+                writer.WriteLine();
             }
             if (ExtraPayload.Length > 0)
             {
-                Writer.Write("Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
 
         /// <summary>
         /// Reads a type section's payload from the given binary WebAssembly reader.
         /// </summary>
-        /// <param name="Header">The type section's header.</param>
-        /// <param name="Reader">A reader for a binary WebAssembly file.</param>
+        /// <param name="header">The type section's header.</param>
+        /// <param name="reader">A reader for a binary WebAssembly file.</param>
         /// <returns>A parsed type section.</returns>
-        public static TypeSection ReadSectionPayload(SectionHeader Header, BinaryWasmReader Reader)
+        public static TypeSection ReadSectionPayload(SectionHeader header, BinaryWasmReader reader)
         {
-            long initPos = Reader.Position;
-            uint typeCount = Reader.ReadVarUInt32();
+            long initPos = reader.Position;
+            uint typeCount = reader.ReadVarUInt32();
             var types = new List<FunctionType>((int)typeCount);
             for (uint i = 0; i < typeCount; i++)
             {
-                types.Add(FunctionType.ReadFrom(Reader));
+                types.Add(FunctionType.ReadFrom(reader));
             }
-            var extraBytes = Reader.ReadRemainingPayload(initPos, Header);
+            var extraBytes = reader.ReadRemainingPayload(initPos, header);
             return new TypeSection(types, extraBytes);
         }
     }
@@ -125,27 +125,27 @@ namespace Wasm
         /// <summary>
         /// Creates a function type from the given parameter types and return types.
         /// </summary>
-        /// <param name="ParameterTypes">This function type's list of parameter types.</param>
-        /// <param name="ReturnTypes">This function type's list of return types.</param>
+        /// <param name="parameterTypes">This function type's list of parameter types.</param>
+        /// <param name="returnTypes">This function type's list of return types.</param>
         public FunctionType(
-            IEnumerable<WasmValueType> ParameterTypes,
-            IEnumerable<WasmValueType> ReturnTypes)
+            IEnumerable<WasmValueType> parameterTypes,
+            IEnumerable<WasmValueType> returnTypes)
         {
-            this.ParameterTypes = new List<WasmValueType>(ParameterTypes);
-            this.ReturnTypes = new List<WasmValueType>(ReturnTypes);
+            this.ParameterTypes = new List<WasmValueType>(parameterTypes);
+            this.ReturnTypes = new List<WasmValueType>(returnTypes);
         }
 
         /// <summary>
         /// Creates a function type that takes ownership of the given parameter types and return types.
         /// </summary>
-        /// <param name="ParameterTypes">This function type's list of parameter types.</param>
-        /// <param name="ReturnTypes">This function type's list of return types.</param>
+        /// <param name="parameterTypes">This function type's list of parameter types.</param>
+        /// <param name="returnTypes">This function type's list of return types.</param>
         private FunctionType(
-            List<WasmValueType> ParameterTypes,
-            List<WasmValueType> ReturnTypes)
+            List<WasmValueType> parameterTypes,
+            List<WasmValueType> returnTypes)
         {
-            this.ParameterTypes = ParameterTypes;
-            this.ReturnTypes = ReturnTypes;
+            this.ParameterTypes = parameterTypes;
+            this.ReturnTypes = returnTypes;
         }
 
         /// <summary>
@@ -168,66 +168,66 @@ namespace Wasm
         /// <summary>
         /// Writes this function type to the given binary WebAssembly file.
         /// </summary>
-        /// <param name="Writer">The writer for a binary WebAssembly file.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer for a binary WebAssembly file.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteWasmType(Form);
-            Writer.WriteVarUInt32((uint)ParameterTypes.Count);
+            writer.WriteWasmType(Form);
+            writer.WriteVarUInt32((uint)ParameterTypes.Count);
             foreach (var item in ParameterTypes)
-                Writer.WriteWasmValueType(item);
+                writer.WriteWasmValueType(item);
 
-            Writer.WriteVarUInt32((uint)ReturnTypes.Count);
+            writer.WriteVarUInt32((uint)ReturnTypes.Count);
             foreach (var item in ReturnTypes)
-                Writer.WriteWasmValueType(item);
+                writer.WriteWasmValueType(item);
         }
 
         /// <summary>
         /// Writes a textual representation of this exported value to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to which text is written.</param>
-        public void Dump(TextWriter Writer)
+        /// <param name="writer">The writer to which text is written.</param>
+        public void Dump(TextWriter writer)
         {
-            Writer.Write("func(");
+            writer.Write("func(");
             for (int i = 0; i < ParameterTypes.Count; i++)
             {
                 if (i > 0)
-                    Writer.Write(", ");
+                    writer.Write(", ");
 
-                DumpHelpers.DumpWasmType(ParameterTypes[i], Writer);
+                DumpHelpers.DumpWasmType(ParameterTypes[i], writer);
             }
-            Writer.Write(") returns (");
+            writer.Write(") returns (");
             for (int i = 0; i < ReturnTypes.Count; i++)
             {
                 if (i > 0)
-                    Writer.Write(", ");
+                    writer.Write(", ");
 
-                DumpHelpers.DumpWasmType(ReturnTypes[i], Writer);
+                DumpHelpers.DumpWasmType(ReturnTypes[i], writer);
             }
-            Writer.Write(")");
+            writer.Write(")");
         }
 
         /// <summary>
         /// Reads a single function type from the given reader.
         /// </summary>
         /// <returns>The function type.</returns>
-        public static FunctionType ReadFrom(BinaryWasmReader Reader)
+        public static FunctionType ReadFrom(BinaryWasmReader reader)
         {
-            WasmType form = (WasmType)Reader.ReadWasmType();
+            WasmType form = (WasmType)reader.ReadWasmType();
             if (form != WasmType.Func)
                 throw new WasmException("Invalid 'form' value ('" + form + "') for function type.");
 
-            uint paramCount = Reader.ReadVarUInt32();
+            uint paramCount = reader.ReadVarUInt32();
             var paramTypes = new List<WasmValueType>((int)paramCount);
             for (uint i = 0; i < paramCount; i++)
             {
-                paramTypes.Add(Reader.ReadWasmValueType());
+                paramTypes.Add(reader.ReadWasmValueType());
             }
 
-            uint retCount = Reader.ReadVarUInt32();
+            uint retCount = reader.ReadVarUInt32();
             var retTypes = new List<WasmValueType>((int)retCount);
             for (uint i = 0; i < retCount; i++)
             {
-                retTypes.Add(Reader.ReadWasmValueType());
+                retTypes.Add(reader.ReadWasmValueType());
             }
 
             return new FunctionType(paramTypes, retTypes);

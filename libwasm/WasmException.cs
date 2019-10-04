@@ -10,10 +10,9 @@ namespace Wasm
         /// <summary>
         /// Initializes a new instance of the <see cref="Wasm.WasmException"/> class.
         /// </summary>
-        /// <param name="Message">The error message.</param>
-        public WasmException(string Message)
-            : base(Message)
+        /// <param name="message">The error message.</param>
+        public WasmException(string message)
+            : base(message)
         { }
     }
 }
-

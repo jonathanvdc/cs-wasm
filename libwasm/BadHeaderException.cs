@@ -25,4 +25,3 @@ namespace Wasm
         public VersionHeader Header { get; private set; }
     }
 }
-

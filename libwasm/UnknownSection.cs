@@ -11,12 +11,12 @@ namespace Wasm
         /// <summary>
         /// Creates an unknown section from the given section name and payload.
         /// </summary>
-        /// <param name="Code">The unknown section's code.</param>
-        /// <param name="Payload">The unknown section's payload.</param>
-        public UnknownSection(SectionCode Code, byte[] Payload)
+        /// <param name="code">The unknown section's code.</param>
+        /// <param name="payload">The unknown section's payload.</param>
+        public UnknownSection(SectionCode code, byte[] payload)
         {
-            this.Code = Code;
-            this.Payload = Payload;
+            this.Code = code;
+            this.Payload = payload;
         }
 
         /// <summary>
@@ -37,10 +37,10 @@ namespace Wasm
         /// <summary>
         /// Writes this WebAssembly section's payload to the given binary WebAssembly writer.
         /// </summary>
-        /// <param name="Writer">The writer to which the payload is written.</param>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to which the payload is written.</param>
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.Writer.Write(Payload);
+            writer.Writer.Write(Payload);
         }
     }
 }

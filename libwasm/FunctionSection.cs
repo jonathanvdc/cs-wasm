@@ -21,21 +21,21 @@ namespace Wasm
         /// <summary>
         /// Creates a function from the given list of function types.
         /// </summary>
-        /// <param name="FunctionTypes">The function section's list of types.</param>
-        public FunctionSection(IEnumerable<uint> FunctionTypes)
-            : this(FunctionTypes, new byte[0])
+        /// <param name="functionTypes">The function section's list of types.</param>
+        public FunctionSection(IEnumerable<uint> functionTypes)
+            : this(functionTypes, new byte[0])
         {
         }
 
         /// <summary>
         /// Creates a function from the given list of function types and additional payload.
         /// </summary>
-        /// <param name="FunctionTypes">The function section's list of types.</param>
-        /// <param name="ExtraPayload">The function section's additional payload.</param>
-        public FunctionSection(IEnumerable<uint> FunctionTypes, byte[] ExtraPayload)
+        /// <param name="functionTypes">The function section's list of types.</param>
+        /// <param name="extraPayload">The function section's additional payload.</param>
+        public FunctionSection(IEnumerable<uint> functionTypes, byte[] extraPayload)
         {
-            this.FunctionTypes = new List<uint>(FunctionTypes);
-            this.ExtraPayload = ExtraPayload;
+            this.FunctionTypes = new List<uint>(functionTypes);
+            this.ExtraPayload = extraPayload;
         }
 
         /// <inheritdoc/>
@@ -57,61 +57,61 @@ namespace Wasm
         /// <summary>
         /// Writes this WebAssembly section's payload to the given binary WebAssembly writer.
         /// </summary>
-        /// <param name="Writer">The writer to which the payload is written.</param>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to which the payload is written.</param>
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32((uint)FunctionTypes.Count);
+            writer.WriteVarUInt32((uint)FunctionTypes.Count);
             foreach (var index in FunctionTypes)
             {
-                Writer.WriteVarUInt32(index);
+                writer.WriteVarUInt32(index);
             }
-            Writer.Writer.Write(ExtraPayload);
+            writer.Writer.Write(ExtraPayload);
         }
 
         /// <summary>
         /// Reads the function section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <param name="Reader">The WebAssembly file reader.</param>
+        /// <param name="header">The section header.</param>
+        /// <param name="reader">The WebAssembly file reader.</param>
         /// <returns>The parsed section.</returns>
-        public static FunctionSection ReadSectionPayload(SectionHeader Header, BinaryWasmReader Reader)
+        public static FunctionSection ReadSectionPayload(SectionHeader header, BinaryWasmReader reader)
         {
-            long startPos = Reader.Position;
+            long startPos = reader.Position;
             // Read the function indices.
-            uint count = Reader.ReadVarUInt32();
+            uint count = reader.ReadVarUInt32();
             var funcTypes = new List<uint>();
             for (uint i = 0; i < count; i++)
             {
-                funcTypes.Add(Reader.ReadVarUInt32());
+                funcTypes.Add(reader.ReadVarUInt32());
             }
 
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
+            var extraPayload = reader.ReadRemainingPayload(startPos, header);
             return new FunctionSection(funcTypes, extraPayload);
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; number of entries: ");
-            Writer.Write(FunctionTypes.Count);
-            Writer.WriteLine();
+            writer.Write(Name.ToString());
+            writer.Write("; number of entries: ");
+            writer.Write(FunctionTypes.Count);
+            writer.WriteLine();
             for (int i = 0; i < FunctionTypes.Count; i++)
             {
-                Writer.Write("#");
-                Writer.Write(i);
-                Writer.Write(" -> type #");
-                Writer.Write(FunctionTypes[i]);
-                Writer.WriteLine();
+                writer.Write("#");
+                writer.Write(i);
+                writer.Write(" -> type #");
+                writer.Write(FunctionTypes[i]);
+                writer.WriteLine();
             }
             if (ExtraPayload.Length > 0)
             {
-                Writer.Write("Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
     }

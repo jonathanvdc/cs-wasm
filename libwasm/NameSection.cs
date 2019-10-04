@@ -22,10 +22,10 @@ namespace Wasm
         /// <summary>
         /// Creates a name section from the given sequence of name entries.
         /// </summary>
-        /// <param name="Names">The name entries to initialize this section with.</param>
-        public NameSection(IEnumerable<NameEntry> Names)
+        /// <param name="names">The name entries to initialize this section with.</param>
+        public NameSection(IEnumerable<NameEntry> names)
         {
-            this.Names = new List<NameEntry>(Names);
+            this.Names = new List<NameEntry>(names);
         }
 
         /// <summary>
@@ -43,45 +43,45 @@ namespace Wasm
         public List<NameEntry> Names { get; private set; }
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
             foreach (var entry in Names)
             {
-                entry.WriteTo(Writer);
+                entry.WriteTo(writer);
             }
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; number of entries: ");
-            Writer.Write(Names.Count);
-            Writer.WriteLine();
+            writer.Write(Name.ToString());
+            writer.Write("; number of entries: ");
+            writer.Write(Names.Count);
+            writer.WriteLine();
             for (int i = 0; i < Names.Count; i++)
             {
-                Writer.Write("#");
-                Writer.Write(i);
-                Writer.Write(" -> ");
-                Names[i].Dump(Writer);
-                Writer.WriteLine();
+                writer.Write("#");
+                writer.Write(i);
+                writer.Write(" -> ");
+                Names[i].Dump(writer);
+                writer.WriteLine();
             }
         }
 
         /// <summary>
         /// Reads the name section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <param name="Reader">The WebAssembly file reader.</param>
+        /// <param name="header">The section header.</param>
+        /// <param name="reader">The WebAssembly file reader.</param>
         /// <returns>The parsed section.</returns>
-        public static NameSection ReadSectionPayload(SectionHeader Header, BinaryWasmReader Reader)
+        public static NameSection ReadSectionPayload(SectionHeader header, BinaryWasmReader reader)
         {
             var section = new NameSection();
-            long startPos = Reader.Position;
-            while (Reader.Position - startPos < Header.PayloadLength)
+            long startPos = reader.Position;
+            while (reader.Position - startPos < header.PayloadLength)
             {
                 // Read entries until we've read the entire section.
-                section.Names.Add(NameEntry.Read(Reader));
+                section.Names.Add(NameEntry.Read(reader));
             }
             return section;
         }
@@ -122,14 +122,14 @@ namespace Wasm
         /// <summary>
         /// Writes this name entry's payload to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to write the payload to.</param>
-        public abstract void WritePayloadTo(BinaryWasmWriter Writer);
+        /// <param name="writer">The writer to write the payload to.</param>
+        public abstract void WritePayloadTo(BinaryWasmWriter writer);
 
         /// <summary>
         /// Writes a textual representation of this name entry to the given writer.
         /// </summary>
-        /// <param name="Writer">The text writer.</param>
-        public virtual void Dump(TextWriter Writer)
+        /// <param name="writer">The text writer.</param>
+        public virtual void Dump(TextWriter writer)
         {
             using (var memStream = new MemoryStream())
             {
@@ -137,9 +137,9 @@ namespace Wasm
                 {
                     WritePayloadTo(new BinaryWasmWriter(binaryWriter));
                     memStream.Seek(0, SeekOrigin.Begin);
-                    Writer.WriteLine("entry kind '{0}', payload size: {1}", Kind, memStream.Length);
-                    var instructionWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
-                    DumpHelpers.DumpStream(memStream, Writer);
+                    writer.WriteLine("entry kind '{0}', payload size: {1}", Kind, memStream.Length);
+                    var instructionWriter = DumpHelpers.CreateIndentedTextWriter(writer);
+                    DumpHelpers.DumpStream(memStream, writer);
                 }
             }
         }
@@ -147,11 +147,11 @@ namespace Wasm
         /// <summary>
         /// Writes this name entry's header and payload to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to write the header and payload to.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to write the header and payload to.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt7((byte)Kind);
-            Writer.WriteLengthPrefixed(WritePayloadTo);
+            writer.WriteVarUInt7((byte)Kind);
+            writer.WriteLengthPrefixed(WritePayloadTo);
         }
 
         /// <inheritdoc/>
@@ -166,18 +166,18 @@ namespace Wasm
         /// Reads a name entry's header and payload from the given binary
         /// WebAssembly reader.
         /// </summary>
-        /// <param name="Reader">The reader to read the name entry from.</param>
+        /// <param name="reader">The reader to read the name entry from.</param>
         /// <returns>A name entry.</returns>
-        public static NameEntry Read(BinaryWasmReader Reader)
+        public static NameEntry Read(BinaryWasmReader reader)
         {
-            NameEntryKind kind = (NameEntryKind)Reader.ReadVarUInt7();
-            uint length = Reader.ReadVarUInt32();
+            NameEntryKind kind = (NameEntryKind)reader.ReadVarUInt7();
+            uint length = reader.ReadVarUInt32();
             switch (kind)
             {
                 case NameEntryKind.Module:
-                    return ModuleNameEntry.ReadPayload(Reader, length);
+                    return ModuleNameEntry.ReadPayload(reader, length);
                 default:
-                    return UnknownNameEntry.ReadPayload(Reader, kind, length);
+                    return UnknownNameEntry.ReadPayload(reader, kind, length);
             }
         }
     }
@@ -190,10 +190,10 @@ namespace Wasm
         /// <summary>
         /// Creates an unknown name entry from the given entry kind and payload.
         /// </summary>
-        public UnknownNameEntry(NameEntryKind Kind, byte[] Payload)
+        public UnknownNameEntry(NameEntryKind kind, byte[] payload)
         {
-            this.entryKind = Kind;
-            this.Payload = Payload;
+            this.entryKind = kind;
+            this.Payload = payload;
         }
 
         private NameEntryKind entryKind;
@@ -208,21 +208,21 @@ namespace Wasm
         public override NameEntryKind Kind => entryKind;
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.Writer.Write(Payload);
+            writer.Writer.Write(Payload);
         }
 
         /// <summary>
         /// Reads an unknown name entry's payload.
         /// </summary>
-        /// <param name="Reader">The reader to read the name entry payload from.</param>
-        /// <param name="Kind">The kind of name entry to read.</param>
-        /// <param name="Length">The length of the name entry's payload, in bytes.</param>
+        /// <param name="reader">The reader to read the name entry payload from.</param>
+        /// <param name="kind">The kind of name entry to read.</param>
+        /// <param name="length">The length of the name entry's payload, in bytes.</param>
         /// <returns>An unknown name entry.</returns>
-        public static UnknownNameEntry ReadPayload(BinaryWasmReader Reader, NameEntryKind Kind, uint Length)
+        public static UnknownNameEntry ReadPayload(BinaryWasmReader reader, NameEntryKind kind, uint length)
         {
-            return new UnknownNameEntry(Kind, Reader.ReadBytes((int)Length));
+            return new UnknownNameEntry(kind, reader.ReadBytes((int)length));
         }
     }
 
@@ -234,9 +234,9 @@ namespace Wasm
         /// <summary>
         /// Creates a module name entry from the given name.
         /// </summary>
-        public ModuleNameEntry(string ModuleName)
+        public ModuleNameEntry(string moduleName)
         {
-            this.ModuleName = ModuleName;
+            this.ModuleName = moduleName;
         }
 
         /// <inheritdoc/>
@@ -249,26 +249,26 @@ namespace Wasm
         public string ModuleName { get; set; }
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteString(ModuleName);
+            writer.WriteString(ModuleName);
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write("module name: {0}", ModuleName);
+            writer.Write("module name: {0}", ModuleName);
         }
 
         /// <summary>
         /// Reads a module name entry's payload.
         /// </summary>
-        /// <param name="Reader">The reader to read the name entry payload from.</param>
-        /// <param name="Length">The length of the name entry's payload, in bytes.</param>
+        /// <param name="reader">The reader to read the name entry payload from.</param>
+        /// <param name="length">The length of the name entry's payload, in bytes.</param>
         /// <returns>A module name entry.</returns>
-        public static ModuleNameEntry ReadPayload(BinaryWasmReader Reader, uint Length)
+        public static ModuleNameEntry ReadPayload(BinaryWasmReader reader, uint length)
         {
-            return new ModuleNameEntry(Reader.ReadString());
+            return new ModuleNameEntry(reader.ReadString());
         }
     }
 }

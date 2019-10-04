@@ -10,21 +10,36 @@ namespace Wasm
     /// </summary>
     public sealed class ImportSection : Section
     {
+        /// <summary>
+        /// Creates an empty import section.
+        /// </summary>
         public ImportSection()
         {
             this.Imports = new List<ImportedValue>();
             this.ExtraPayload = new byte[0];
         }
 
-        public ImportSection(IEnumerable<ImportedValue> Imports)
-            : this(Imports, new byte[0])
+        /// <summary>
+        /// Creates an import section from a sequence of imports.
+        /// </summary>
+        /// <param name="imports">A sequence of imports to put in the import section.</param>
+        public ImportSection(IEnumerable<ImportedValue> imports)
+            : this(imports, new byte[0])
         {
         }
 
-        public ImportSection(IEnumerable<ImportedValue> Imports, byte[] ExtraPayload)
+        /// <summary>
+        /// Creates an import section from a sequence of imports and a trailing payload.
+        /// </summary>
+        /// <param name="imports">A sequence of imports to put in the import section.</param>
+        /// <param name="extraPayload">
+        /// A sequence of bytes that have no intrinsic meaning; they are part
+        /// of the import section but are placed after the import section's actual contents.
+        /// </param>
+        public ImportSection(IEnumerable<ImportedValue> imports, byte[] extraPayload)
         {
-            this.Imports = new List<ImportedValue>(Imports);
-            this.ExtraPayload = ExtraPayload;
+            this.Imports = new List<ImportedValue>(imports);
+            this.ExtraPayload = extraPayload;
         }
 
         /// <inheritdoc/>

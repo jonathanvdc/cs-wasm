@@ -24,21 +24,21 @@ namespace Wasm
         /// <summary>
         /// Writes this WebAssembly section's payload to the given binary WebAssembly writer.
         /// </summary>
-        /// <param name="Writer">The writer to which the payload is written.</param>
-        public abstract void WritePayloadTo(BinaryWasmWriter Writer);
+        /// <param name="writer">The writer to which the payload is written.</param>
+        public abstract void WritePayloadTo(BinaryWasmWriter writer);
 
         /// <summary>
         /// Writes this WebAssembly section's optional custom name and payload to the given
         /// WebAssembly writer.
         /// </summary>
-        /// <param name="Writer">The writer to which the custom name and payload are written.</param>
-        internal void WriteCustomNameAndPayloadTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer to which the custom name and payload are written.</param>
+        internal void WriteCustomNameAndPayloadTo(BinaryWasmWriter writer)
         {
             if (Name.IsCustom)
             {
-                Writer.WriteString(Name.CustomName);
+                writer.WriteString(Name.CustomName);
             }
-            WritePayloadTo(Writer);
+            WritePayloadTo(writer);
         }
 
         /// <summary>
@@ -56,31 +56,31 @@ namespace Wasm
         /// <summary>
         /// Writes a string representation of this section to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this section is written.
         /// </param>
-        public virtual void Dump(TextWriter Writer)
+        public virtual void Dump(TextWriter writer)
         {
-            DumpNameAndPayload(Writer);
+            DumpNameAndPayload(writer);
         }
 
         /// <summary>
         /// Writes a string representation of this section and its payload to the given text writer.
         /// </summary>
-        /// <param name="Writer">
+        /// <param name="writer">
         /// The writer to which a representation of this section is written.
         /// </param>
         /// <remarks>This is the default 'Dump' implementation.</remarks>
-        public void DumpNameAndPayload(TextWriter Writer)
+        public void DumpNameAndPayload(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; payload length: ");
+            writer.Write(Name.ToString());
+            writer.Write("; payload length: ");
             using (var memStream = PayloadAsMemoryStream())
             {
-                Writer.Write(memStream.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpStream(memStream, Writer);
-                Writer.WriteLine();
+                writer.Write(memStream.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpStream(memStream, writer);
+                writer.WriteLine();
             }
         }
 

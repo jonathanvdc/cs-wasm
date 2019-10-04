@@ -12,21 +12,36 @@ namespace Wasm
     /// </summary>
     public sealed class ElementSection : Section
     {
+        /// <summary>
+        /// Creates an empty element section.
+        /// </summary>
         public ElementSection()
         {
             this.Segments = new List<ElementSegment>();
             this.ExtraPayload = new byte[0];
         }
 
-        public ElementSection(IEnumerable<ElementSegment> Segments)
-            : this(Segments, new byte[0])
+        /// <summary>
+        /// Creates an element section from a sequence of segments.
+        /// </summary>
+        /// <param name="segments">The segments to put in the elements section.</param>
+        public ElementSection(IEnumerable<ElementSegment> segments)
+            : this(segments, new byte[0])
         {
         }
 
-        public ElementSection(IEnumerable<ElementSegment> Segments, byte[] ExtraPayload)
+        /// <summary>
+        /// Creates an element section from a sequence of segments and a trailing payload.
+        /// </summary>
+        /// <param name="segments">The segments to put in the elements section.</param>
+        /// <param name="extraPayload">
+        /// A sequence of bytes that have no intrinsic meaning; they are part
+        /// of the element section but are placed after the element section's actual contents.
+        /// </param>
+        public ElementSection(IEnumerable<ElementSegment> segments, byte[] extraPayload)
         {
-            this.Segments = new List<ElementSegment>(Segments);
-            this.ExtraPayload = ExtraPayload;
+            this.Segments = new List<ElementSegment>(segments);
+            this.ExtraPayload = extraPayload;
         }
 
         /// <inheritdoc/>
@@ -45,61 +60,61 @@ namespace Wasm
         public byte[] ExtraPayload { get; set; }
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32((uint)Segments.Count);
+            writer.WriteVarUInt32((uint)Segments.Count);
             foreach (var segment in Segments)
             {
-                segment.WriteTo(Writer);
+                segment.WriteTo(writer);
             }
-            Writer.Writer.Write(ExtraPayload);
+            writer.Writer.Write(ExtraPayload);
         }
 
         /// <summary>
         /// Reads the element section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <param name="Reader">A reader for a binary WebAssembly file.</param>
+        /// <param name="header">The section header.</param>
+        /// <param name="reader">A reader for a binary WebAssembly file.</param>
         /// <returns>The parsed section.</returns>
         public static ElementSection ReadSectionPayload(
-            SectionHeader Header, BinaryWasmReader Reader)
+            SectionHeader header, BinaryWasmReader reader)
         {
-            long startPos = Reader.Position;
+            long startPos = reader.Position;
             // Read the element segments.
-            uint count = Reader.ReadVarUInt32();
+            uint count = reader.ReadVarUInt32();
             var segments = new List<ElementSegment>();
             for (uint i = 0; i < count; i++)
             {
-                segments.Add(ElementSegment.ReadFrom(Reader));
+                segments.Add(ElementSegment.ReadFrom(reader));
             }
 
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
+            var extraPayload = reader.ReadRemainingPayload(startPos, header);
             return new ElementSection(segments, extraPayload);
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; number of entries: ");
-            Writer.Write(Segments.Count);
-            Writer.WriteLine();
-            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+            writer.Write(Name.ToString());
+            writer.Write("; number of entries: ");
+            writer.Write(Segments.Count);
+            writer.WriteLine();
+            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(writer);
             for (int i = 0; i < Segments.Count; i++)
             {
-                Writer.Write("#{0}:", i);
+                writer.Write("#{0}:", i);
                 indentedWriter.WriteLine();
                 Segments[i].Dump(indentedWriter);
-                Writer.WriteLine();
+                writer.WriteLine();
             }
             if (ExtraPayload.Length > 0)
             {
-                Writer.Write("Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
     }
@@ -112,14 +127,14 @@ namespace Wasm
         /// <summary>
         /// Creates an element segment from the given table index, offset and data.
         /// </summary>
-        /// <param name="TableIndex">The table index.</param>
-        /// <param name="Offset">An i32 initializer expression that computes the offset at which to place the data.</param>
-        /// <param name="Elements">A sequence of function indices to which a segment of the table is initialized.</param>
-        public ElementSegment(uint TableIndex, InitializerExpression Offset, IEnumerable<uint> Elements)
+        /// <param name="tableIndex">The table index.</param>
+        /// <param name="offset">An i32 initializer expression that computes the offset at which to place the data.</param>
+        /// <param name="elements">A sequence of function indices to which a segment of the table is initialized.</param>
+        public ElementSegment(uint tableIndex, InitializerExpression offset, IEnumerable<uint> elements)
         {
-            this.TableIndex = TableIndex;
-            this.Offset = Offset;
-            this.Elements = new List<uint>(Elements);
+            this.TableIndex = tableIndex;
+            this.Offset = offset;
+            this.Elements = new List<uint>(elements);
         }
 
         /// <summary>
@@ -143,32 +158,32 @@ namespace Wasm
         /// <summary>
         /// Writes this element segment to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The WebAssembly file writer.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The WebAssembly file writer.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32(TableIndex);
-            Offset.WriteTo(Writer);
-            Writer.WriteVarUInt32((uint)Elements.Count);
+            writer.WriteVarUInt32(TableIndex);
+            Offset.WriteTo(writer);
+            writer.WriteVarUInt32((uint)Elements.Count);
             foreach (var item in Elements)
             {
-                Writer.WriteVarUInt32(item);
+                writer.WriteVarUInt32(item);
             }
         }
 
         /// <summary>
         /// Reads an element segment from the given WebAssembly reader.
         /// </summary>
-        /// <param name="Reader">The WebAssembly reader.</param>
+        /// <param name="reader">The WebAssembly reader.</param>
         /// <returns>The element segment that was read from the reader.</returns>
-        public static ElementSegment ReadFrom(BinaryWasmReader Reader)
+        public static ElementSegment ReadFrom(BinaryWasmReader reader)
         {
-            var index = Reader.ReadVarUInt32();
-            var offset = InitializerExpression.ReadFrom(Reader);
-            var dataLength = Reader.ReadVarUInt32();
+            var index = reader.ReadVarUInt32();
+            var offset = InitializerExpression.ReadFrom(reader);
+            var dataLength = reader.ReadVarUInt32();
             var elements = new List<uint>((int)dataLength);
             for (uint i = 0; i < dataLength; i++)
             {
-                elements.Add(Reader.ReadVarUInt32());
+                elements.Add(reader.ReadVarUInt32());
             }
             return new ElementSegment(index, offset, elements);
         }
@@ -176,21 +191,21 @@ namespace Wasm
         /// <summary>
         /// Writes a textual representation of this element segment to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to which text is written.</param>
-        public void Dump(TextWriter Writer)
+        /// <param name="writer">The writer to which text is written.</param>
+        public void Dump(TextWriter writer)
         {
-            Writer.Write("- Table index: ");
-            Writer.Write(TableIndex);
-            Writer.WriteLine();
-            Writer.Write("- Offset:");
-            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+            writer.Write("- Table index: ");
+            writer.Write(TableIndex);
+            writer.WriteLine();
+            writer.Write("- Offset:");
+            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(writer);
             foreach (var instruction in Offset.BodyInstructions)
             {
                 indentedWriter.WriteLine();
                 instruction.Dump(indentedWriter);
             }
-            Writer.WriteLine();
-            Writer.Write("- Elements:");
+            writer.WriteLine();
+            writer.Write("- Elements:");
             for (int i = 0; i < Elements.Count; i++)
             {
                 indentedWriter.WriteLine();

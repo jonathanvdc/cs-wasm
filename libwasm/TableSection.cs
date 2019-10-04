@@ -21,21 +21,21 @@ namespace Wasm
         /// <summary>
         /// Creates a table section from the given list of table descriptions.
         /// </summary>
-        /// <param name="Tables">The list of table descriptions in this type section.</param>
-        public TableSection(IEnumerable<TableType> Tables)
-            : this(Tables, new byte[0])
+        /// <param name="tables">The list of table descriptions in this type section.</param>
+        public TableSection(IEnumerable<TableType> tables)
+            : this(tables, new byte[0])
         {
         }
 
         /// <summary>
         /// Creates a type section from the given list of table descriptions and an additional payload.
         /// </summary>
-        /// <param name="Tables">The list of table descriptions in this type section.</param>
-        /// <param name="ExtraPayload">The additional payload for this section, as an array of bytes.</param>
-        public TableSection(IEnumerable<TableType> Tables, byte[] ExtraPayload)
+        /// <param name="tables">The list of table descriptions in this type section.</param>
+        /// <param name="extraPayload">The additional payload for this section, as an array of bytes.</param>
+        public TableSection(IEnumerable<TableType> tables, byte[] extraPayload)
         {
-            this.Tables = new List<TableType>(Tables);
-            this.ExtraPayload = ExtraPayload;
+            this.Tables = new List<TableType>(tables);
+            this.ExtraPayload = extraPayload;
         }
 
         /// <summary>
@@ -54,56 +54,56 @@ namespace Wasm
         public override SectionName Name => new SectionName(SectionCode.Table);
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32((uint)Tables.Count);
+            writer.WriteVarUInt32((uint)Tables.Count);
             foreach (var type in Tables)
-                type.WriteTo(Writer);
+                type.WriteTo(writer);
 
-            Writer.Writer.Write(ExtraPayload);
+            writer.Writer.Write(ExtraPayload);
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; number of entries: ");
-            Writer.Write(Tables.Count);
-            Writer.WriteLine();
+            writer.Write(Name.ToString());
+            writer.Write("; number of entries: ");
+            writer.Write(Tables.Count);
+            writer.WriteLine();
             for (int i = 0; i < Tables.Count; i++)
             {
-                Writer.Write("#");
-                Writer.Write(i);
-                Writer.Write(" -> ");
-                Tables[i].Dump(Writer);
-                Writer.WriteLine();
+                writer.Write("#");
+                writer.Write(i);
+                writer.Write(" -> ");
+                Tables[i].Dump(writer);
+                writer.WriteLine();
             }
             if (ExtraPayload.Length > 0)
             {
-                Writer.Write("Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
 
         /// <summary>
         /// Reads a table section's payload from the given binary WebAssembly reader.
         /// </summary>
-        /// <param name="Header">The type section's header.</param>
-        /// <param name="Reader">A reader for a binary WebAssembly file.</param>
+        /// <param name="header">The type section's header.</param>
+        /// <param name="reader">A reader for a binary WebAssembly file.</param>
         /// <returns>A parsed type section.</returns>
-        public static TableSection ReadSectionPayload(SectionHeader Header, BinaryWasmReader Reader)
+        public static TableSection ReadSectionPayload(SectionHeader header, BinaryWasmReader reader)
         {
-            long initPos = Reader.Position;
-            uint typeCount = Reader.ReadVarUInt32();
+            long initPos = reader.Position;
+            uint typeCount = reader.ReadVarUInt32();
             var tables = new List<TableType>((int)typeCount);
             for (uint i = 0; i < typeCount; i++)
             {
-                tables.Add(TableType.ReadFrom(Reader));
+                tables.Add(TableType.ReadFrom(reader));
             }
-            var extraBytes = Reader.ReadRemainingPayload(initPos, Header);
+            var extraBytes = reader.ReadRemainingPayload(initPos, header);
             return new TableSection(tables, extraBytes);
         }
     }
@@ -116,12 +116,12 @@ namespace Wasm
         /// <summary>
         /// Creates a table description from the given element type and limits.
         /// </summary>
-        /// <param name="ElementType">The table's element type.</param>
-        /// <param name="Limits">The table's limits.</param>
-        public TableType(WasmType ElementType, ResizableLimits Limits)
+        /// <param name="elementType">The table's element type.</param>
+        /// <param name="limits">The table's limits.</param>
+        public TableType(WasmType elementType, ResizableLimits limits)
         {
-            this.ElementType = ElementType;
-            this.Limits = Limits;
+            this.ElementType = elementType;
+            this.Limits = limits;
         }
 
         /// <summary>
@@ -139,34 +139,34 @@ namespace Wasm
         /// <summary>
         /// Writes this table description to the given binary WebAssembly file.
         /// </summary>
-        /// <param name="Writer">The writer for a binary WebAssembly file.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The writer for a binary WebAssembly file.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteWasmType(ElementType);
-            Limits.WriteTo(Writer);
+            writer.WriteWasmType(ElementType);
+            Limits.WriteTo(writer);
         }
 
         /// <summary>
         /// Writes a textual representation of this table description to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to which text is written.</param>
-        public void Dump(TextWriter Writer)
+        /// <param name="writer">The writer to which text is written.</param>
+        public void Dump(TextWriter writer)
         {
-            Writer.Write("(elem_type: ");
-            DumpHelpers.DumpWasmType(ElementType, Writer);
-            Writer.Write(", limits: ");
-            Limits.Dump(Writer);
-            Writer.Write(")");
+            writer.Write("(elem_type: ");
+            DumpHelpers.DumpWasmType(ElementType, writer);
+            writer.Write(", limits: ");
+            Limits.Dump(writer);
+            writer.Write(")");
         }
 
         /// <summary>
         /// Reads a single table description from the given reader.
         /// </summary>
         /// <returns>The table description.</returns>
-        public static TableType ReadFrom(BinaryWasmReader Reader)
+        public static TableType ReadFrom(BinaryWasmReader reader)
         {
-            var elemType = (WasmType)Reader.ReadWasmType();
-            var limits = Reader.ReadResizableLimits();
+            var elemType = (WasmType)reader.ReadWasmType();
+            var limits = reader.ReadResizableLimits();
             return new TableType(elemType, limits);
         }
     }

@@ -11,12 +11,12 @@ namespace Wasm
         /// <summary>
         /// Initializes a new instance of the <see cref="VersionHeader"/> struct.
         /// </summary>
-        /// <param name="Magic">The magic number.</param>
-        /// <param name="Version">The version number.</param>
-        public VersionHeader(uint Magic, uint Version)
+        /// <param name="magic">The magic number.</param>
+        /// <param name="version">The version number.</param>
+        public VersionHeader(uint magic, uint version)
         {
-            this.Magic = Magic;
-            this.Version = Version;
+            this.Magic = magic;
+            this.Version = version;
         }
 
         /// <summary>
@@ -74,4 +74,3 @@ namespace Wasm
         public static VersionHeader MvpHeader => new VersionHeader(WasmMagic, MvpVersion);
     }
 }
-

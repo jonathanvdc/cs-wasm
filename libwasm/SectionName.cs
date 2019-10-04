@@ -10,21 +10,21 @@ namespace Wasm
         /// <summary>
         /// Creates a section name for a non-custom section with the given section code.
         /// </summary>
-        /// <param name="Code">The section code.</param>
-        public SectionName(SectionCode Code)
+        /// <param name="code">The section code.</param>
+        public SectionName(SectionCode code)
         {
-            this.Code = Code;
+            this.Code = code;
             this.CustomName = null;
         }
 
         /// <summary>
         /// Creates a section header for a custom section with the given name.
         /// </summary>
-        /// <param name="CustomName">The name of the custom section.</param>
-        public SectionName(string CustomName)
+        /// <param name="customName">The name of the custom section.</param>
+        public SectionName(string customName)
         {
             this.Code = SectionCode.Custom;
-            this.CustomName = CustomName;
+            this.CustomName = customName;
         }
 
         /// <summary>
@@ -48,17 +48,17 @@ namespace Wasm
         /// <summary>
         /// Checks if this section name is equal to the given section name.
         /// </summary>
-        /// <param name="Other">The other section name.</param>
+        /// <param name="other">The other section name.</param>
         /// <returns><c>true</c> if this section name is equal to the given section name; otherwise, <c>false</c>.</returns>
-        public bool Equals(SectionName Other)
+        public bool Equals(SectionName other)
         {
             if (IsCustom)
             {
-                return Other.IsCustom && CustomName == Other.CustomName;
+                return other.IsCustom && CustomName == other.CustomName;
             }
             else
             {
-                return Code == Other.Code;
+                return Code == other.Code;
             }
         }
 
@@ -76,31 +76,31 @@ namespace Wasm
         }
 
         /// <inheritdoc/>
-        public override bool Equals(object Other)
+        public override bool Equals(object other)
         {
-            return Other is SectionName && Equals((SectionName)Other);
+            return other is SectionName && Equals((SectionName)other);
         }
 
         /// <summary>
         /// Checks if the given section names are the same.
         /// </summary>
-        /// <param name="First">The first section name.</param>
-        /// <param name="Second">The second section name.</param>
+        /// <param name="first">The first section name.</param>
+        /// <param name="second">The second section name.</param>
         /// <returns><c>true</c> if the given section names are the same; otherwise, <c>false</c>.</returns>
-        public static bool operator==(SectionName First, SectionName Second)
+        public static bool operator==(SectionName first, SectionName second)
         {
-            return First.Equals(Second);
+            return first.Equals(second);
         }
 
         /// <summary>
         /// Checks if the given section names not are the same.
         /// </summary>
-        /// <param name="First">The first section name.</param>
-        /// <param name="Second">The second section name.</param>
+        /// <param name="first">The first section name.</param>
+        /// <param name="second">The second section name.</param>
         /// <returns><c>true</c> if the given section names are not the same; otherwise, <c>false</c>.</returns>
-        public static bool operator!=(SectionName First, SectionName Second)
+        public static bool operator!=(SectionName first, SectionName second)
         {
-            return !First.Equals(Second);
+            return !first.Equals(second);
         }
 
         /// <inheritdoc/>

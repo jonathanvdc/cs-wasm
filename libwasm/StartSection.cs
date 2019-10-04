@@ -10,15 +10,27 @@ namespace Wasm
     /// </summary>
     public sealed class StartSection : Section
     {
-        public StartSection(uint StartFunctionIndex)
-            : this(StartFunctionIndex, new byte[0])
+        /// <summary>
+        /// Creates a section that identifies a particular function as the entry point.
+        /// </summary>
+        /// <param name="startFunctionIndex">The index of a function to define as the entry point.</param>
+        public StartSection(uint startFunctionIndex)
+            : this(startFunctionIndex, new byte[0])
         {
         }
 
-        public StartSection(uint StartFunctionIndex, byte[] ExtraPayload)
+        /// <summary>
+        /// Creates a section that identifies a particular function as the entry point.
+        /// </summary>
+        /// <param name="startFunctionIndex">The index of a function to define as the entry point.</param>
+        /// <param name="extraPayload">
+        /// A sequence of bytes that have no intrinsic meaning; they are part
+        /// of the start section but are placed after the start section's actual contents.
+        /// </param>
+        public StartSection(uint startFunctionIndex, byte[] extraPayload)
         {
-            this.StartFunctionIndex = StartFunctionIndex;
-            this.ExtraPayload = ExtraPayload;
+            this.StartFunctionIndex = startFunctionIndex;
+            this.ExtraPayload = extraPayload;
         }
 
         /// <inheritdoc/>
@@ -37,43 +49,43 @@ namespace Wasm
         public byte[] ExtraPayload { get; set; }
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32(StartFunctionIndex);
-            Writer.Writer.Write(ExtraPayload);
+            writer.WriteVarUInt32(StartFunctionIndex);
+            writer.Writer.Write(ExtraPayload);
         }
 
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; entry point: function #");
-            Writer.Write(StartFunctionIndex);
-            Writer.WriteLine();
+            writer.Write(Name.ToString());
+            writer.Write("; entry point: function #");
+            writer.Write(StartFunctionIndex);
+            writer.WriteLine();
             if (ExtraPayload.Length > 0)
             {
-                Writer.Write("Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
 
         /// <summary>
         /// Reads the start section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <param name="Reader">The WebAssembly file reader.</param>
+        /// <param name="header">The section header.</param>
+        /// <param name="reader">The WebAssembly file reader.</param>
         /// <returns>The parsed section.</returns>
-        public static StartSection ReadSectionPayload(SectionHeader Header, BinaryWasmReader Reader)
+        public static StartSection ReadSectionPayload(SectionHeader header, BinaryWasmReader reader)
         {
-            long startPos = Reader.Position;
+            long startPos = reader.Position;
             // Read the start function index.
-            uint startIndex = Reader.ReadVarUInt32();
+            uint startIndex = reader.ReadVarUInt32();
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
+            var extraPayload = reader.ReadRemainingPayload(startPos, header);
             return new StartSection(startIndex, extraPayload);
         }
     }

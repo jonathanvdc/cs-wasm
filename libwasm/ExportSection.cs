@@ -10,21 +10,36 @@ namespace Wasm
     /// </summary>
     public sealed class ExportSection : Section
     {
+        /// <summary>
+        /// Creates an empty export section.
+        /// </summary>
         public ExportSection()
         {
             this.Exports = new List<ExportedValue>();
             this.ExtraPayload = new byte[0];
         }
 
-        public ExportSection(IEnumerable<ExportedValue> Exports)
-            : this(Exports, new byte[0])
+        /// <summary>
+        /// Creates an export section from a sequence of exports.
+        /// </summary>
+        /// <param name="exports">The exports to put in the export section.</param>
+        public ExportSection(IEnumerable<ExportedValue> exports)
+            : this(exports, new byte[0])
         {
         }
 
-        public ExportSection(IEnumerable<ExportedValue> Exports, byte[] ExtraPayload)
+        /// <summary>
+        /// Creates an export section from a sequence of exports and a trailing payload.
+        /// </summary>
+        /// <param name="exports">The exports to put in the export section.</param>
+        /// <param name="extraPayload">
+        /// A sequence of bytes that have no intrinsic meaning; they are part
+        /// of the element section but are placed after the element section's actual contents.
+        /// </param>
+        public ExportSection(IEnumerable<ExportedValue> exports, byte[] extraPayload)
         {
-            this.Exports = new List<ExportedValue>(Exports);
-            this.ExtraPayload = ExtraPayload;
+            this.Exports = new List<ExportedValue>(exports);
+            this.ExtraPayload = extraPayload;
         }
 
         /// <inheritdoc/>
@@ -43,65 +58,65 @@ namespace Wasm
         public byte[] ExtraPayload { get; set; }
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32((uint)Exports.Count);
+            writer.WriteVarUInt32((uint)Exports.Count);
             foreach (var export in Exports)
             {
-                export.WriteTo(Writer);
+                export.WriteTo(writer);
             }
-            Writer.Writer.Write(ExtraPayload);
+            writer.Writer.Write(ExtraPayload);
         }
 
         /// <summary>
         /// Reads the export section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <param name="Reader">A reader for a binary WebAssembly file.</param>
+        /// <param name="header">The section header.</param>
+        /// <param name="reader">A reader for a binary WebAssembly file.</param>
         /// <returns>The parsed section.</returns>
         public static ExportSection ReadSectionPayload(
-            SectionHeader Header, BinaryWasmReader Reader)
+            SectionHeader header, BinaryWasmReader reader)
         {
-            long startPos = Reader.Position;
+            long startPos = reader.Position;
             // Read the function indices.
-            uint count = Reader.ReadVarUInt32();
+            uint count = reader.ReadVarUInt32();
             var exportedVals = new List<ExportedValue>();
             for (uint i = 0; i < count; i++)
             {
                 exportedVals.Add(
                     new ExportedValue(
-                        Reader.ReadString(),
-                        (ExternalKind)Reader.ReadByte(),
-                        Reader.ReadVarUInt32()));
+                        reader.ReadString(),
+                        (ExternalKind)reader.ReadByte(),
+                        reader.ReadVarUInt32()));
             }
 
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
+            var extraPayload = reader.ReadRemainingPayload(startPos, header);
             return new ExportSection(exportedVals, extraPayload);
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; number of entries: ");
-            Writer.Write(Exports.Count);
-            Writer.WriteLine();
+            writer.Write(Name.ToString());
+            writer.Write("; number of entries: ");
+            writer.Write(Exports.Count);
+            writer.WriteLine();
             for (int i = 0; i < Exports.Count; i++)
             {
-                Writer.Write("#");
-                Writer.Write(i);
-                Writer.Write(" -> ");
-                Exports[i].Dump(Writer);
-                Writer.WriteLine();
+                writer.Write("#");
+                writer.Write(i);
+                writer.Write(" -> ");
+                Exports[i].Dump(writer);
+                writer.WriteLine();
             }
             if (ExtraPayload.Length > 0)
             {
-                Writer.Write("Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
     }
@@ -114,14 +129,14 @@ namespace Wasm
         /// <summary>
         /// Creates an exported value from the given name, kind and index.
         /// </summary>
-        /// <param name="Name">The name of the exported value.</param>
-        /// <param name="Kind">The kind of value that is exported.</param>
-        /// <param name="Index">The index into the index space for the value's kind.</param>
-        public ExportedValue(string Name, ExternalKind Kind, uint Index)
+        /// <param name="name">The name of the exported value.</param>
+        /// <param name="kind">The kind of value that is exported.</param>
+        /// <param name="index">The index into the index space for the value's kind.</param>
+        public ExportedValue(string name, ExternalKind kind, uint index)
         {
-            this.Name = Name;
-            this.Kind = Kind;
-            this.Index = Index;
+            this.Name = name;
+            this.Kind = kind;
+            this.Index = index;
         }
 
         /// <summary>
@@ -145,26 +160,26 @@ namespace Wasm
         /// <summary>
         /// Writes this exported value to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The WebAssembly file writer.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The WebAssembly file writer.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteString(Name);
-            Writer.Writer.Write((byte)Kind);
-            Writer.WriteVarUInt32(Index);
+            writer.WriteString(Name);
+            writer.Writer.Write((byte)Kind);
+            writer.WriteVarUInt32(Index);
         }
 
         /// <summary>
         /// Writes a textual representation of this exported value to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to which text is written.</param>
-        public void Dump(TextWriter Writer)
+        /// <param name="writer">The writer to which text is written.</param>
+        public void Dump(TextWriter writer)
         {
-            Writer.Write("\"");
-            Writer.Write(Name);
-            Writer.Write("\", ");
-            Writer.Write(((object)Kind).ToString().ToLower());
-            Writer.Write(" #");
-            Writer.Write(Index);
+            writer.Write("\"");
+            writer.Write(Name);
+            writer.Write("\", ");
+            writer.Write(((object)Kind).ToString().ToLower());
+            writer.Write(" #");
+            writer.Write(Index);
         }
     }
 }

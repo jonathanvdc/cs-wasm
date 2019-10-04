@@ -24,10 +24,10 @@ install:
   - set PATH=%PATH%;C:\cygwin\bin
 
 build_script:
-  # Restore NuGet packages
+  # Restore NuGet packages.
   - nuget restore cs-wasm.sln
-  # Build cs-wasm
-  - make all
+  # Build cs-wasm.
+  - msbuild /p:Configuration=Release /verbosity:quiet /nologo cs-wasm.sln
 
 after_build:
   # Create a folder that contains all tools and zip it.
@@ -42,7 +42,7 @@ after_build:
 
 test_script:
   # Run the tests
-  - make test
+  - compare-test run-tests.test
 
 artifacts:
   - path: cs-wasm-tools.zip

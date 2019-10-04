@@ -30,6 +30,7 @@ build_script:
   # Restore NuGet packages.
   - nuget restore cs-wasm.sln
   # Build cs-wasm.
+  - msbuild /p:Configuration=Debug /verbosity:quiet /nologo cs-wasm.sln
   - msbuild /p:Configuration=Release /verbosity:quiet /nologo cs-wasm.sln
 
 after_build:

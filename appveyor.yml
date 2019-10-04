@@ -1,5 +1,8 @@
 version: 0.1.5.{build}
 
+image:
+  - Visual Studio 2017
+
 # git clone recursively. Fix taken from Sergey S. Betke's answer to
 # https://github.com/appveyor/ci/issues/899
 clone_script:

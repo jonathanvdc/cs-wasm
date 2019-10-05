@@ -32,6 +32,14 @@ namespace Wasm.Text
         }
 
         [Test]
+        public void ParseKeyword()
+        {
+            AssertParsesAsKind(Lexer.TokenKind.Keyword, "module");
+            AssertParsesAs("module", "module");
+            AssertParsesAs("i32.add", "i32.add");
+        }
+
+        [Test]
         public void ParseReserved()
         {
             AssertParsesAsKind(Lexer.TokenKind.Reserved, "0$x");

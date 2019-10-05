@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
@@ -81,6 +82,10 @@ namespace Wasm.Text
                 else if (firstChar == '$')
                 {
                     token = ReadIdentifierToken();
+                }
+                else if (firstChar >= 'a' && firstChar <= 'z')
+                {
+                    token = ReadKeywordToken();
                 }
                 else
                 {
@@ -228,8 +233,13 @@ namespace Wasm.Text
 
         private bool Expect(char expected)
         {
+            return Expect(c => c == expected);
+        }
+
+        private bool Expect(Predicate<char> predicate)
+        {
             char c;
-            if (TryPeekChar(out c) && c == expected)
+            if (TryPeekChar(out c) && predicate(c))
             {
                 SkipChar();
                 return true;
@@ -272,6 +282,26 @@ namespace Wasm.Text
                 result = (char)c;
                 return true;
             }
+        }
+
+        private Token ReadKeywordToken()
+        {
+            var spanStart = offset;
+            char c;
+            if (!TryPeekChar(out c) || c < 'a' || c > 'z')
+            {
+                return ReadReservedToken(spanStart);
+            }
+
+            var builder = new StringBuilder();
+            while (TryReadIdentifierChar(out c))
+            {
+                builder.Append(c);
+            }
+            return new Token(
+                TokenKind.Keyword,
+                new SourceSpan(document, spanStart, offset - spanStart),
+                builder.ToString());
         }
 
         private Token ReadIdentifierToken()
@@ -556,6 +586,11 @@ namespace Wasm.Text
         /// </summary>
         public enum TokenKind
         {
+            /// <summary>
+            /// Indicates that a token represents a keyword.
+            /// </summary>
+            Keyword,
+
             /// <summary>
             /// Indicates that a token represents a signed integer.
             /// </summary>

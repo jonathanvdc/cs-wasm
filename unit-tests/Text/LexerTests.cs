@@ -35,6 +35,7 @@ namespace Wasm.Text
         public void ParseReserved()
         {
             AssertParsesAsKind(Lexer.TokenKind.Reserved, "0$x");
+            AssertParsesAsKind(Lexer.TokenKind.Reserved, "\"hello\\u{20x}there\"");
         }
 
         [Test]

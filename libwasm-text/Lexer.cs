@@ -313,35 +313,38 @@ namespace Wasm.Text
         private Token ReadNumberToken()
         {
             var spanStart = offset;
-            if (Expect("0x"))
+            BigInteger num;
+            if (ReadUnsignedInteger(out num))
             {
-                BigInteger num;
-                if (TryReadHexNum(out num))
+                return new Token(
+                    TokenKind.UnsignedInteger,
+                    new SourceSpan(document, spanStart, offset - spanStart),
+                    num);
+            }
+            else if (IsNext("+") || IsNext("-"))
+            {
+                bool isNegated = IsNext("-");
+                SkipChar();
+                if (ReadUnsignedInteger(out num))
                 {
                     return new Token(
-                        TokenKind.UnsignedInteger,
+                        TokenKind.SignedInteger,
                         new SourceSpan(document, spanStart, offset - spanStart),
-                        num);
+                        isNegated ? -num : num);
                 }
-                else
-                {
-                    return ReadReservedToken(spanStart);
-                }
+            }
+            return ReadReservedToken(spanStart);
+        }
+
+        private bool ReadUnsignedInteger(out BigInteger num)
+        {
+            if (Expect("0x"))
+            {
+                return TryReadHexNum(out num);
             }
             else
             {
-                BigInteger num;
-                if (TryReadNum(out num))
-                {
-                    return new Token(
-                        TokenKind.UnsignedInteger,
-                        new SourceSpan(document, spanStart, offset - spanStart),
-                        num);
-                }
-                else
-                {
-                    return ReadReservedToken(spanStart);
-                }
+                return TryReadNum(out num);
             }
         }
 

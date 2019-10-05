@@ -51,6 +51,21 @@ namespace Wasm.Text
         }
 
         [Test]
+        public void ParseSignedIntegers()
+        {
+            AssertParsesAsKind(Lexer.TokenKind.SignedInteger, "+10");
+            AssertParsesAsKind(Lexer.TokenKind.SignedInteger, "+0x10");
+            AssertParsesAs(new BigInteger(10), "+10");
+            AssertParsesAs(new BigInteger(0x10), "+0x10");
+            AssertParsesAs(new BigInteger(0xff), "+0xff");
+            AssertParsesAsKind(Lexer.TokenKind.SignedInteger, "-10");
+            AssertParsesAsKind(Lexer.TokenKind.SignedInteger, "-0x10");
+            AssertParsesAs(new BigInteger(-10), "-10");
+            AssertParsesAs(new BigInteger(-0x10), "-0x10");
+            AssertParsesAs(new BigInteger(-0xff), "-0xff");
+        }
+
+        [Test]
         public void ParseReserved()
         {
             AssertParsesAsKind(Lexer.TokenKind.Reserved, "0$x");

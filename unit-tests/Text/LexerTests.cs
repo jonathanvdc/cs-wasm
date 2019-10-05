@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Numerics;
 using Loyc.MiniTest;
 
 namespace Wasm.Text
@@ -37,6 +38,16 @@ namespace Wasm.Text
             AssertParsesAsKind(Lexer.TokenKind.Keyword, "module");
             AssertParsesAs("module", "module");
             AssertParsesAs("i32.add", "i32.add");
+        }
+
+        [Test]
+        public void ParseUnsignedIntegers()
+        {
+            AssertParsesAsKind(Lexer.TokenKind.UnsignedInteger, "10");
+            AssertParsesAsKind(Lexer.TokenKind.UnsignedInteger, "0x10");
+            AssertParsesAs(new BigInteger(10), "10");
+            AssertParsesAs(new BigInteger(0x10), "0x10");
+            AssertParsesAs(new BigInteger(0xff), "0xff");
         }
 
         [Test]

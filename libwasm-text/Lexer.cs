@@ -67,13 +67,15 @@ namespace Wasm.Text
             char firstChar;
             if (TryPeekChar(out firstChar))
             {
+                var startOffset = offset;
                 if (firstChar == '(' || firstChar == ')')
                 {
                     SkipChar();
                     token = new Token(
                         firstChar == '(' ? TokenKind.LeftParenthesis : TokenKind.RightParenthesis,
-                        new SourceSpan(document, offset - 1, 1),
+                        new SourceSpan(document, startOffset, 1),
                         null);
+                    return true;
                 }
                 else if (firstChar == '"')
                 {
@@ -89,7 +91,18 @@ namespace Wasm.Text
                 }
                 else
                 {
-                    token = ReadReservedToken(offset);
+                    token = ReadNumberToken();
+                }
+                if (!SkipWhitespace() && TryPeekChar(out firstChar) && firstChar != '(' && firstChar != ')')
+                {
+                    // According to the spec:
+                    //
+                    // The effect of defining the set of reserved tokens is that all tokens must be
+                    // separated by either parentheses or white space. For example, ‘𝟶$𝚡’ is a single
+                    // reserved token. Consequently, it is not recognized as two separate tokens ‘𝟶’
+                    // and ‘$𝚡’, but instead disallowed. This property of tokenization is not affected
+                    // by the fact that the definition of reserved tokens overlaps with other token classes.
+                    token = ReadReservedToken(startOffset);
                 }
                 return true;
             }
@@ -183,6 +196,19 @@ namespace Wasm.Text
             string actual;
             return TryPeekString(expected.Length, out actual)
                 && actual == expected;
+        }
+
+        private bool Expect(string expected)
+        {
+            if (IsNext(expected))
+            {
+                SkipChars(expected.Length);
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         private bool TryPeekString(int length, out string result)
@@ -281,6 +307,41 @@ namespace Wasm.Text
             {
                 result = (char)c;
                 return true;
+            }
+        }
+
+        private Token ReadNumberToken()
+        {
+            var spanStart = offset;
+            if (Expect("0x"))
+            {
+                BigInteger num;
+                if (TryReadHexNum(out num))
+                {
+                    return new Token(
+                        TokenKind.UnsignedInteger,
+                        new SourceSpan(document, spanStart, offset - spanStart),
+                        num);
+                }
+                else
+                {
+                    return ReadReservedToken(spanStart);
+                }
+            }
+            else
+            {
+                BigInteger num;
+                if (TryReadNum(out num))
+                {
+                    return new Token(
+                        TokenKind.UnsignedInteger,
+                        new SourceSpan(document, spanStart, offset - spanStart),
+                        num);
+                }
+                else
+                {
+                    return ReadReservedToken(spanStart);
+                }
             }
         }
 
@@ -471,32 +532,66 @@ namespace Wasm.Text
             return new Token(TokenKind.Reserved, new SourceSpan(document, start, count), null);
         }
 
-        private bool TryReadHexNum(out BigInteger num)
+        private bool TryReadNum(
+            out BigInteger num,
+            Func<BigInteger, char, BigInteger?> tryAccumulate)
         {
             bool parsed = false;
             var acc = BigInteger.Zero;
             char c;
             while (TryPeekChar(out c))
             {
-                int digit;
                 if (c == '_')
                 {
                     parsed = true;
                     SkipChar();
                 }
-                else if (TryParseHexDigit(c, out digit))
-                {
-                    acc = acc * 16 + digit;
-                    parsed = true;
-                    SkipChar();
-                }
                 else
                 {
-                    break;
+                    var maybeAcc = tryAccumulate(acc, c);
+                    if (maybeAcc.HasValue)
+                    {
+                        acc = maybeAcc.Value;
+                        parsed = true;
+                        SkipChar();
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
             num = acc;
             return parsed;
+        }
+
+        private bool TryReadNum(out BigInteger num)
+        {
+            return TryReadNum(out num, (i, c) => {
+                if (c >= '0' && c <= '9')
+                {
+                    return i * 10 + (c - '0');
+                }
+                else
+                {
+                    return null;
+                }
+            });
+        }
+
+        private bool TryReadHexNum(out BigInteger num)
+        {
+            return TryReadNum(out num, (i, c) => {
+                int digit;
+                if (TryParseHexDigit(c, out digit))
+                {
+                    return i * 16 + digit;
+                }
+                else
+                {
+                    return null;
+                }
+            });
         }
 
         private bool TryReadHexDigit(out int result)

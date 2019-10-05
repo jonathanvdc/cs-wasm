@@ -98,10 +98,12 @@ namespace Wasm.Text
             AssertParsesAs(16.0625, "0x10.10");
             AssertParsesAs(16.0625, "+0x10.10");
             AssertParsesAs(-16.0625, "-0x10.10");
+            AssertParsesAs(10.0 * 10, "10E1");
             AssertParsesAs(10.0 * 10, "10.e1");
             AssertParsesAs(10.10 * 10, "10.10e1");
             AssertParsesAs(10.10 * 10, "+10.10e1");
             AssertParsesAs(-10.10 * 10, "-10.10e1");
+            AssertParsesAs(16.0 * 2, "0x10P1");
             AssertParsesAs(16.0 * 2, "0x10.p1");
             AssertParsesAs(16.0625 * 2, "0x10.10p1");
             AssertParsesAs(16.0625 * 2, "+0x10.10p1");

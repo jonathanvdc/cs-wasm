@@ -313,38 +313,94 @@ namespace Wasm.Text
         private Token ReadNumberToken()
         {
             var spanStart = offset;
-            BigInteger num;
-            if (ReadUnsignedInteger(out num))
+
+            bool isNegated = false;
+            bool isSigned = false;
+            if (Expect('+'))
+            {
+                isSigned = true;
+            }
+            else if (Expect('-'))
+            {
+                isSigned = true;
+                isNegated = true;
+            }
+
+            object val;
+            if (TryReadUnsignedNumber(isNegated, out val))
             {
                 return new Token(
-                    TokenKind.UnsignedInteger,
+                    val is BigInteger ? (isSigned ? TokenKind.SignedInteger : TokenKind.UnsignedInteger) : TokenKind.Float,
                     new SourceSpan(document, spanStart, offset - spanStart),
-                    num);
-            }
-            else if (IsNext("+") || IsNext("-"))
-            {
-                bool isNegated = IsNext("-");
-                SkipChar();
-                if (ReadUnsignedInteger(out num))
-                {
-                    return new Token(
-                        TokenKind.SignedInteger,
-                        new SourceSpan(document, spanStart, offset - spanStart),
-                        isNegated ? -num : num);
-                }
-            }
-            return ReadReservedToken(spanStart);
-        }
-
-        private bool ReadUnsignedInteger(out BigInteger num)
-        {
-            if (Expect("0x"))
-            {
-                return TryReadHexNum(out num);
+                    val);
             }
             else
             {
-                return TryReadNum(out num);
+                return ReadReservedToken(spanStart);
+            }
+        }
+
+        private bool TryReadUnsignedNumber(bool negate, out object result)
+        {
+            if (Expect("0x"))
+            {
+                return TryReadUnsignedNumber(
+                    negate,
+                    out result,
+                    TryReadHexNum,
+                    TryReadHexFrac);
+            }
+            else
+            {
+                return TryReadUnsignedNumber(
+                    negate,
+                    out result,
+                    TryReadNum,
+                    TryReadFrac);
+            }
+        }
+
+        private delegate bool IntegerReader(out BigInteger result);
+        private delegate bool FloatReader(out double result);
+
+        private bool TryReadUnsignedNumber(
+            bool negate,
+            out object result,
+            IntegerReader tryReadNum,
+            FloatReader tryReadFrac)
+        {
+            BigInteger num;
+            if (tryReadNum(out num))
+            {
+                if (Expect('.'))
+                {
+                    double frac;
+                    if (!tryReadFrac(out frac))
+                    {
+                        frac = 0.0;
+                    }
+                    var floatNum = (double)num + frac;
+                    if (negate)
+                    {
+                        floatNum = -floatNum;
+                    }
+                    result = floatNum;
+                }
+                else
+                {
+                    if (negate)
+                    {
+                        num = -num;
+                    }
+
+                    result = num;
+                }
+                return true;
+            }
+            else
+            {
+                result = null;
+                return false;
             }
         }
 
@@ -535,12 +591,77 @@ namespace Wasm.Text
             return new Token(TokenKind.Reserved, new SourceSpan(document, start, count), null);
         }
 
-        private bool TryReadNum(
-            out BigInteger num,
-            Func<BigInteger, char, BigInteger?> tryAccumulate)
+        private bool TryReadHexFrac(out double frac)
+        {
+            return TryReadFrac(out frac, 16, (i, c) =>
+            {
+                int digit;
+                if (TryParseHexDigit(c, out digit))
+                {
+                    return i * 16 + digit;
+                }
+                else
+                {
+                    return null;
+                }
+            });
+        }
+
+        private bool TryReadFrac(out double frac)
+        {
+            return TryReadFrac(out frac, 10, (i, c) =>
+            {
+                if (c >= '0' && c <= '9')
+                {
+                    return i * 10 + (c - '0');
+                }
+                else
+                {
+                    return null;
+                }
+            });
+        }
+
+        private bool TryReadFrac(
+            out double frac,
+            int fracBase,
+            Func<BigInteger, char, BigInteger?> tryAccumulateFracDigit)
+        {
+            (BigInteger, int) pair;
+            bool parsed = TryReadNum(out pair, (BigInteger.Zero, 0), (acc, c) => {
+                var (i, n) = acc;
+                var maybeAcc = tryAccumulateFracDigit(i, c);
+                if (maybeAcc.HasValue)
+                {
+                    return (maybeAcc.Value, n + 1);
+                }
+                else
+                {
+                    return null;
+                }
+            });
+
+            if (parsed)
+            {
+                var (i, n) = pair;
+                frac = (double)i / Math.Pow(fracBase, n);
+                return true;
+            }
+            else
+            {
+                frac = 0.0;
+                return false;
+            }
+        }
+
+        private bool TryReadNum<T>(
+            out T num,
+            T init,
+            Func<T, char, T?> tryAccumulate)
+            where T : struct
         {
             bool parsed = false;
-            var acc = BigInteger.Zero;
+            var acc = init;
             char c;
             while (TryPeekChar(out c))
             {
@@ -568,9 +689,17 @@ namespace Wasm.Text
             return parsed;
         }
 
+        private bool TryReadNum(
+            out BigInteger num,
+            Func<BigInteger, char, BigInteger?> tryAccumulate)
+        {
+            return TryReadNum(out num, BigInteger.Zero, tryAccumulate);
+        }
+
         private bool TryReadNum(out BigInteger num)
         {
-            return TryReadNum(out num, (i, c) => {
+            return TryReadNum(out num, (i, c) =>
+            {
                 if (c >= '0' && c <= '9')
                 {
                     return i * 10 + (c - '0');
@@ -584,7 +713,8 @@ namespace Wasm.Text
 
         private bool TryReadHexNum(out BigInteger num)
         {
-            return TryReadNum(out num, (i, c) => {
+            return TryReadNum(out num, (i, c) =>
+            {
                 int digit;
                 if (TryParseHexDigit(c, out digit))
                 {

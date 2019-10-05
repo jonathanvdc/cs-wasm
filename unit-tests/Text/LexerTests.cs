@@ -66,6 +66,27 @@ namespace Wasm.Text
         }
 
         [Test]
+        public void ParseFloats()
+        {
+            AssertParsesAsKind(Lexer.TokenKind.Float, "10.");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "10.10");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "+10.10");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "-10.10");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "0x10.");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "0x10.10");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "+0x10.10");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "-0x10.10");
+            AssertParsesAs(10.0, "10.");
+            AssertParsesAs(10.10, "10.10");
+            AssertParsesAs(10.10, "+10.10");
+            AssertParsesAs(-10.10, "-10.10");
+            AssertParsesAs(16.0, "0x10.");
+            AssertParsesAs(16.0625, "0x10.10");
+            AssertParsesAs(16.0625, "+0x10.10");
+            AssertParsesAs(-16.0625, "-0x10.10");
+        }
+
+        [Test]
         public void ParseReserved()
         {
             AssertParsesAsKind(Lexer.TokenKind.Reserved, "0$x");

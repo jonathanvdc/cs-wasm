@@ -76,6 +76,14 @@ namespace Wasm.Text
             AssertParsesAsKind(Lexer.TokenKind.Float, "0x10.10");
             AssertParsesAsKind(Lexer.TokenKind.Float, "+0x10.10");
             AssertParsesAsKind(Lexer.TokenKind.Float, "-0x10.10");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "10.e1");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "10.10e1");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "+10.10e1");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "-10.10e1");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "0x10.p1");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "0x10.10p1");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "+0x10.10p1");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "-0x10.10p1");
             AssertParsesAs(10.0, "10.");
             AssertParsesAs(10.10, "10.10");
             AssertParsesAs(10.10, "+10.10");
@@ -84,6 +92,14 @@ namespace Wasm.Text
             AssertParsesAs(16.0625, "0x10.10");
             AssertParsesAs(16.0625, "+0x10.10");
             AssertParsesAs(-16.0625, "-0x10.10");
+            AssertParsesAs(10.0 * 10, "10.e1");
+            AssertParsesAs(10.10 * 10, "10.10e1");
+            AssertParsesAs(10.10 * 10, "+10.10e1");
+            AssertParsesAs(-10.10 * 10, "-10.10e1");
+            AssertParsesAs(16.0 * 2, "0x10.p1");
+            AssertParsesAs(16.0625 * 2, "0x10.10p1");
+            AssertParsesAs(16.0625 * 2, "+0x10.10p1");
+            AssertParsesAs(-16.0625 * 2, "-0x10.10p1");
         }
 
         [Test]

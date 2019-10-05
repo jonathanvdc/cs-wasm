@@ -348,7 +348,9 @@ namespace Wasm.Text
                     negate,
                     out result,
                     TryReadHexNum,
-                    TryReadHexFrac);
+                    TryReadHexFrac,
+                    'p',
+                    2);
             }
             else
             {
@@ -356,7 +358,9 @@ namespace Wasm.Text
                     negate,
                     out result,
                     TryReadNum,
-                    TryReadFrac);
+                    TryReadFrac,
+                    'e',
+                    10);
             }
         }
 
@@ -367,7 +371,9 @@ namespace Wasm.Text
             bool negate,
             out object result,
             IntegerReader tryReadNum,
-            FloatReader tryReadFrac)
+            FloatReader tryReadFrac,
+            char exponentChar,
+            int exponent)
         {
             BigInteger num;
             if (tryReadNum(out num))
@@ -380,9 +386,34 @@ namespace Wasm.Text
                         frac = 0.0;
                     }
                     var floatNum = (double)num + frac;
+
+                    if (Expect(exponentChar) || Expect(char.ToUpperInvariant(exponentChar)))
+                    {
+                        if (!TryAppendExponent(floatNum, exponent, out floatNum))
+                        {
+                            result = null;
+                            return false;
+                        }
+                    }
+
                     if (negate)
                     {
                         floatNum = -floatNum;
+                    }
+                    result = floatNum;
+                }
+                else if (Expect(exponentChar) || Expect(char.ToUpperInvariant(exponentChar)))
+                {
+                    double floatNum;
+                    if (!TryAppendExponent((double)num, exponent, out floatNum))
+                    {
+                        result = null;
+                        return false;
+                    }
+
+                    if (negate)
+                    {
+                        num = -num;
                     }
                     result = floatNum;
                 }
@@ -401,6 +432,37 @@ namespace Wasm.Text
             {
                 result = null;
                 return false;
+            }
+        }
+
+        private bool TryAppendExponent(
+            double floatNum,
+            int exponent,
+            out double result)
+        {
+            bool negateExp = false;
+            if (Expect('-'))
+            {
+                negateExp = true;
+            }
+            else
+            {
+                Expect('+');
+            }
+            BigInteger exp;
+            if (!TryReadNum(out exp))
+            {
+                result = 0.0;
+                return false;
+            }
+            else
+            {
+                if (negateExp)
+                {
+                    exp = -exp;
+                }
+                result = floatNum * Math.Pow(exponent, (double)exp);
+                return true;
             }
         }
 
@@ -628,7 +690,8 @@ namespace Wasm.Text
             Func<BigInteger, char, BigInteger?> tryAccumulateFracDigit)
         {
             (BigInteger, int) pair;
-            bool parsed = TryReadNum(out pair, (BigInteger.Zero, 0), (acc, c) => {
+            bool parsed = TryReadNum(out pair, (BigInteger.Zero, 0), (acc, c) =>
+            {
                 var (i, n) = acc;
                 var maybeAcc = tryAccumulateFracDigit(i, c);
                 if (maybeAcc.HasValue)

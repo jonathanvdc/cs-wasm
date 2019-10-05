@@ -68,6 +68,11 @@ namespace Wasm.Text
         [Test]
         public void ParseFloats()
         {
+            AssertParsesAsKind(Lexer.TokenKind.Float, "inf");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "+inf");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "-inf");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "nan");
+            AssertParsesAsKind(Lexer.TokenKind.Float, "nan:0x2");
             AssertParsesAsKind(Lexer.TokenKind.Float, "10.");
             AssertParsesAsKind(Lexer.TokenKind.Float, "10.10");
             AssertParsesAsKind(Lexer.TokenKind.Float, "+10.10");
@@ -84,6 +89,7 @@ namespace Wasm.Text
             AssertParsesAsKind(Lexer.TokenKind.Float, "0x10.10p1");
             AssertParsesAsKind(Lexer.TokenKind.Float, "+0x10.10p1");
             AssertParsesAsKind(Lexer.TokenKind.Float, "-0x10.10p1");
+            AssertParsesAs(double.NegativeInfinity, "-inf");
             AssertParsesAs(10.0, "10.");
             AssertParsesAs(10.10, "10.10");
             AssertParsesAs(10.10, "+10.10");

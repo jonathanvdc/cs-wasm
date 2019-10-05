@@ -342,7 +342,31 @@ namespace Wasm.Text
 
         private bool TryReadUnsignedNumber(bool negate, out object result)
         {
-            if (Expect("0x"))
+            if (Expect("nan:0x"))
+            {
+                BigInteger hexNum;
+                if (TryReadHexNum(out hexNum))
+                {
+                    result = MaybeNegate(CreateNaNWithSignificand((long)hexNum), negate);
+                    return true;
+                }
+                else
+                {
+                    result = 0.0;
+                    return false;
+                }
+            }
+            else if (Expect("nan"))
+            {
+                result = MaybeNegate(double.NaN, negate);
+                return true;
+            }
+            else if (Expect("inf"))
+            {
+                result = MaybeNegate(double.PositiveInfinity, negate);
+                return true;
+            }
+            else if (Expect("0x"))
             {
                 return TryReadUnsignedNumber(
                     negate,
@@ -362,6 +386,28 @@ namespace Wasm.Text
                     'e',
                     10);
             }
+        }
+
+        private double MaybeNegate(double v, bool negate)
+        {
+            return negate ? -v : v;
+        }
+
+        private BigInteger MaybeNegate(BigInteger v, bool negate)
+        {
+            return negate ? -v : v;
+        }
+
+        private static double CreateNaNWithSignificand(long significand)
+        {
+            // We're going to create a NaN with a special significand.
+            long bits = BitConverter.DoubleToInt64Bits(double.NaN);
+            long oldSignificand = bits & 0xfffffffffffffL;
+            // Wipe out the bits originally in the significand.
+            bits ^= oldSignificand;
+            // Put in our bits.
+            bits |= (long)significand;
+            return BitConverter.Int64BitsToDouble(bits);
         }
 
         private delegate bool IntegerReader(out BigInteger result);
@@ -396,11 +442,7 @@ namespace Wasm.Text
                         }
                     }
 
-                    if (negate)
-                    {
-                        floatNum = -floatNum;
-                    }
-                    result = floatNum;
+                    result = MaybeNegate(floatNum, negate);
                 }
                 else if (Expect(exponentChar) || Expect(char.ToUpperInvariant(exponentChar)))
                 {
@@ -411,20 +453,11 @@ namespace Wasm.Text
                         return false;
                     }
 
-                    if (negate)
-                    {
-                        num = -num;
-                    }
-                    result = floatNum;
+                    result = MaybeNegate(floatNum, negate);
                 }
                 else
                 {
-                    if (negate)
-                    {
-                        num = -num;
-                    }
-
-                    result = num;
+                    result = MaybeNegate(num, negate);
                 }
                 return true;
             }
@@ -457,11 +490,7 @@ namespace Wasm.Text
             }
             else
             {
-                if (negateExp)
-                {
-                    exp = -exp;
-                }
-                result = floatNum * Math.Pow(exponent, (double)exp);
+                result = floatNum * Math.Pow(exponent, (double)MaybeNegate(exp, negateExp));
                 return true;
             }
         }
@@ -480,10 +509,46 @@ namespace Wasm.Text
             {
                 builder.Append(c);
             }
-            return new Token(
-                TokenKind.Keyword,
-                new SourceSpan(document, spanStart, offset - spanStart),
-                builder.ToString());
+
+            var span = new SourceSpan(document, spanStart, offset - spanStart);
+            var result = builder.ToString();
+
+            // Some floating point tokens look like keywords, so we'll handle
+            // them here as well as in the FP parsing routine.
+            if (result == "nan")
+            {
+                return new Token(TokenKind.Float, span, double.NaN);
+            }
+            else if (result.StartsWith("nan:0x"))
+            {
+                var payload = result.Substring("nan:0x".Length);
+                long newBits = 0;
+                for (int i = 0; i < payload.Length; i++)
+                {
+                    int digit;
+                    if (payload[i] == '_')
+                    {
+                        continue;
+                    }
+                    else if (TryParseHexDigit(payload[i], out digit))
+                    {
+                        newBits = newBits * 16 + digit;
+                    }
+                    else
+                    {
+                        return new Token(TokenKind.Keyword, span, result);
+                    }
+                }
+                return new Token(TokenKind.Float, span, CreateNaNWithSignificand(newBits));
+            }
+            else if (result == "inf")
+            {
+                return new Token(TokenKind.Float, span, double.PositiveInfinity);
+            }
+            else
+            {
+                return new Token(TokenKind.Keyword, span, result);
+            }
         }
 
         private Token ReadIdentifierToken()

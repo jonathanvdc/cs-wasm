@@ -23,6 +23,15 @@ namespace Wasm.Text
         }
 
         [Test]
+        public void ParseIdentifier()
+        {
+            AssertParsesAsKind(Lexer.TokenKind.Identifier, "$hi");
+            AssertParsesAs("hi", "$hi");
+            AssertParsesAs("variable_name", "$variable_name");
+            AssertParsesAs("variable_name123ABC", "$variable_name123ABC");
+        }
+
+        [Test]
         public void ParseReserved()
         {
             AssertParsesAsKind(Lexer.TokenKind.Reserved, "0$x");

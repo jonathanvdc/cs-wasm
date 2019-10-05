@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
@@ -189,7 +188,7 @@ namespace Wasm.Text
                 char c;
                 if (TryPeekChar(i, out c))
                 {
-                    builder.Append(i);
+                    builder.Append(c);
                 }
                 else
                 {
@@ -536,6 +535,12 @@ namespace Wasm.Text
             /// </summary>
             /// <value>A parsed value.</value>
             public object Value { get; private set; }
+
+            /// <inheritdoc/>
+            public override string ToString()
+            {
+                return $"[{Kind}{(Value == null ? "" : " " + Value)} ('{Span.Text}')]";
+            }
         }
 
         /// <summary>

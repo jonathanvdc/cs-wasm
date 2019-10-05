@@ -6,6 +6,7 @@ using Loyc.MiniTest;
 using Loyc.Syntax;
 using Wasm.Interpret;
 using Wasm.Optimize;
+using Wasm.Text;
 
 namespace Wasm.UnitTests
 {
@@ -16,7 +17,8 @@ namespace Wasm.UnitTests
         public static readonly List<Pair<string, Func<int>>> Menu = new List<Pair<string, Func<int>>>()
         {
             new Pair<string, Func<int>>("Run libwasm-interpret unit tests", LibwasmInterpret),
-            new Pair<string, Func<int>>("Run libwasm-optimize unit tests", LibwasmOptimize)
+            new Pair<string, Func<int>>("Run libwasm-optimize unit tests", LibwasmOptimize),
+            new Pair<string, Func<int>>("Run libwasm-text unit tests", LibwasmText)
         };
 
         public static void Main(string[] args)
@@ -82,6 +84,12 @@ namespace Wasm.UnitTests
         {
             return RunTests.RunMany(
                 new FunctionBodyOptimizationTests());
+        }
+
+        public static int LibwasmText()
+        {
+            return RunTests.RunMany(
+                new LexerTests());
         }
     }
 }

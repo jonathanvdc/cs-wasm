@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wasm-interp", "wasm-interp\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wasm-opt", "wasm-opt\wasm-opt.csproj", "{3EE7C5B4-8A68-4EAD-85BA-7A43FBC104C4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libwasm-text", "libwasm-text\libwasm-text.csproj", "{69588C27-5E98-4E9E-B979-65E61841EF25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,5 +65,9 @@ Global
 		{D7C88555-88A1-45C3-855B-F86C24A4773C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7C88555-88A1-45C3-855B-F86C24A4773C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7C88555-88A1-45C3-855B-F86C24A4773C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69588C27-5E98-4E9E-B979-65E61841EF25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69588C27-5E98-4E9E-B979-65E61841EF25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69588C27-5E98-4E9E-B979-65E61841EF25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69588C27-5E98-4E9E-B979-65E61841EF25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

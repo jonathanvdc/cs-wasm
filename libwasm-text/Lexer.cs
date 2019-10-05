@@ -391,7 +391,7 @@ namespace Wasm.Text
                             return ReadReservedToken(spanStart);
                         default:
                             int firstDigit, secondDigit;
-                            if (TryReadHexDigit(out firstDigit) && TryReadHexDigit(out secondDigit))
+                            if (TryParseHexDigit(c, out firstDigit) && TryReadHexDigit(out secondDigit))
                             {
                                 builder.Append((char)(16 * firstDigit + secondDigit));
                                 break;
@@ -471,9 +471,17 @@ namespace Wasm.Text
 
         private bool TryReadHexDigit(out int result)
         {
-            result = 0;
             char c;
-            return TryPeekChar(out c) && TryParseHexDigit(c, out result);
+            if (TryPeekChar(out c) && TryParseHexDigit(c, out result))
+            {
+                SkipChar();
+                return true;
+            }
+            else
+            {
+                result = 0;
+                return false;
+            }
         }
 
         private static bool TryParseHexDigit(char c, out int result)

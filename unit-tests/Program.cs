@@ -89,6 +89,7 @@ namespace Wasm.UnitTests
         public static int LibwasmText()
         {
             return RunTests.RunMany(
+                new AssemblerTests(),
                 new LexerTests(),
                 new ParserTests());
         }

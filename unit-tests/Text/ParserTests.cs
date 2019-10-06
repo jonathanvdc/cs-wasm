@@ -38,7 +38,7 @@ namespace Wasm.Text
             Assert.AreEqual(Lexer.TokenKind.UnsignedInteger, nestedExpr.Tail[0].Tail[1].Head.Kind);
         }
 
-        private Parser.SExpression ParseSingleSExpression(string text)
+        private SExpression ParseSingleSExpression(string text)
         {
             var tokens = Lexer.Tokenize(text).ToArray();
             var log = new TestLog(new[] { Severity.Error }, NullLog.Instance);

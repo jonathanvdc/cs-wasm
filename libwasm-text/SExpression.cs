@@ -30,7 +30,7 @@ namespace Wasm.Text
         }
 
         /// <summary>
-        /// Tests if this S-expression represents a call .
+        /// Tests if this S-expression represents a call.
         /// </summary>
         public bool IsCall { get; private set; }
 
@@ -45,6 +45,11 @@ namespace Wasm.Text
         /// Note that this tail may be empty even for S-expressions that are calls.
         /// </summary>
         public IReadOnlyList<SExpression> Tail { get; private set; }
+
+        /// <summary>
+        /// Tells if this S-expression represents a single identifier token.
+        /// </summary>
+        public bool IsIdentifier => !IsCall && Head.Kind == Lexer.TokenKind.Identifier;
 
         /// <summary>
         /// Tests if this S-expression is a call to a keyword with a particular name.

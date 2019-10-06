@@ -50,6 +50,57 @@ namespace Wasm
         public List<Section> Sections { get; private set; }
 
         /// <summary>
+        /// Gets or sets this module's name as defined in the names section.
+        /// </summary>
+        /// <value>
+        /// The module's name if the names section defines a module name entry;
+        /// otherwise, <c>null</c>.
+        /// </value>
+        public string ModuleName
+        {
+            get
+            {
+                return ModuleNameEntryOrNull?.ModuleName;
+            }
+            set
+            {
+                var entry = ModuleNameEntryOrNull;
+                if (entry == null)
+                {
+                    AddNameEntry(new ModuleNameEntry(value));
+                }
+                else
+                {
+                    entry.ModuleName = value;
+                }
+            }
+        }
+
+        private ModuleNameEntry ModuleNameEntryOrNull
+        {
+            get
+            {
+                var nameSection = GetFirstSectionOrNull<NameSection>();
+                if (nameSection == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    var firstModuleNameEntry = nameSection.Names.OfType<ModuleNameEntry>().FirstOrDefault();
+                    if (firstModuleNameEntry == null)
+                    {
+                        return null;
+                    }
+                    else
+                    {
+                        return firstModuleNameEntry;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets a list of all sections of the given type.
         /// </summary>
         /// <returns>A list of sections with the given type.</returns>
@@ -123,6 +174,21 @@ namespace Wasm
                 }
             }
             return default(T);
+        }
+
+        /// <summary>
+        /// Adds a name entry to the names section, defining a new names section
+        /// if one doesn't exist already.
+        /// </summary>
+        /// <param name="entry">A name entry to add.</param>
+        public void AddNameEntry(NameEntry entry)
+        {
+            var names = GetFirstSectionOrNull<NameSection>();
+            if (names == null)
+            {
+                Sections.Add(names = new NameSection());
+            }
+            names.Names.Add(entry);
         }
 
         /// <summary>

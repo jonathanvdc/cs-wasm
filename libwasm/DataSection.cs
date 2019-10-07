@@ -127,11 +127,19 @@ namespace Wasm
         /// <summary>
         /// Creates an initializer expression from the given list of instructions.
         /// </summary>
-        /// <param name="Body">The list of instructions for this expression.</param>
-        public InitializerExpression(IEnumerable<Instruction> Body)
+        /// <param name="body">The list of instructions for this expression.</param>
+        public InitializerExpression(IEnumerable<Instruction> body)
         {
-            this.BodyInstructions = new List<Instruction>(Body);
+            this.BodyInstructions = new List<Instruction>(body);
         }
+
+        /// <summary>
+        /// Creates an initializer expression from the given list of instructions.
+        /// </summary>
+        /// <param name="body">The list of instructions for this expression.</param>
+        public InitializerExpression(params Instruction[] body)
+            : this((IEnumerable<Instruction>)body)
+        { }
 
         /// <summary>
         /// Gets the body of this initializer expression as a list instruction.
@@ -142,21 +150,21 @@ namespace Wasm
         /// <summary>
         /// Reads an initializer expression from the given WebAssembly reader.
         /// </summary>
-        /// <param name="Reader">The WebAssembly reader.</param>
+        /// <param name="reader">The WebAssembly reader.</param>
         /// <returns>The parsed initializer expression.</returns>
-        public static InitializerExpression ReadFrom(BinaryWasmReader Reader)
+        public static InitializerExpression ReadFrom(BinaryWasmReader reader)
         {
             return new InitializerExpression(
-                Operators.Block.ReadBlockContents(WasmType.Empty, Reader).Contents);
+                Operators.Block.ReadBlockContents(WasmType.Empty, reader).Contents);
         }
 
         /// <summary>
         /// Writes the initializer expression to the given WebAssembly writer.
         /// </summary>
-        /// <param name="Writer">The WebAssembly writer.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The WebAssembly writer.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Operators.Block.Create(WasmType.Empty, BodyInstructions).WriteContentsTo(Writer);
+            Operators.Block.Create(WasmType.Empty, BodyInstructions).WriteContentsTo(writer);
         }
     }
 
@@ -168,30 +176,30 @@ namespace Wasm
         /// <summary>
         /// Creates a data segment from the given memory index, offset and data.
         /// </summary>
-        /// <param name="MemoryIndex">The memory index.</param>
-        /// <param name="Offset">An i32 initializer expression that computes the offset at which to place the data.</param>
-        /// <param name="Data">The data to which a segment of the linear memory is initialized.</param>
-        public DataSegment(uint MemoryIndex, InitializerExpression Offset, byte[] Data)
+        /// <param name="memoryIndex">The memory index.</param>
+        /// <param name="offset">An i32 initializer expression that computes the offset at which to place the data.</param>
+        /// <param name="data">The data to which a segment of the linear memory is initialized.</param>
+        public DataSegment(uint memoryIndex, InitializerExpression offset, byte[] data)
         {
-            this.MemoryIndex = MemoryIndex;
-            this.Offset = Offset;
-            this.Data = Data;
+            this.MemoryIndex = memoryIndex;
+            this.Offset = offset;
+            this.Data = data;
         }
 
         /// <summary>
-        /// Gets the linear memory index.
+        /// Gets or sets the linear memory index.
         /// </summary>
         /// <returns>The linear memory index.</returns>
         public uint MemoryIndex { get; set; }
 
         /// <summary>
-        /// Gets an i32 initializer expression that computes the offset at which to place the data.
+        /// Gets or sets an i32 initializer expression that computes the offset at which to place the data.
         /// </summary>
         /// <returns>An i32 initializer expression.</returns>
         public InitializerExpression Offset { get; set; }
 
         /// <summary>
-        /// Gets the data to which a segment of the linear memory is initialized.
+        /// Gets or sets the data to which a segment of the linear memory is initialized.
         /// </summary>
         /// <returns>Initial data for a segment of the linear memory.</returns>
         public byte[] Data { get; set; }
@@ -199,47 +207,47 @@ namespace Wasm
         /// <summary>
         /// Writes this exported value to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The WebAssembly file writer.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The WebAssembly file writer.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32(MemoryIndex);
-            Offset.WriteTo(Writer);
-            Writer.WriteVarUInt32((uint)Data.Length);
-            Writer.Writer.Write(Data);
+            writer.WriteVarUInt32(MemoryIndex);
+            Offset.WriteTo(writer);
+            writer.WriteVarUInt32((uint)Data.Length);
+            writer.Writer.Write(Data);
         }
 
         /// <summary>
         /// Reads a data segment from the given WebAssembly reader.
         /// </summary>
-        /// <param name="Reader">The WebAssembly reader.</param>
+        /// <param name="reader">The WebAssembly reader.</param>
         /// <returns>The data segment that was read from the reader.</returns>
-        public static DataSegment ReadFrom(BinaryWasmReader Reader)
+        public static DataSegment ReadFrom(BinaryWasmReader reader)
         {
-            var index = Reader.ReadVarUInt32();
-            var offset = InitializerExpression.ReadFrom(Reader);
-            var dataLength = Reader.ReadVarUInt32();
-            var data = Reader.ReadBytes((int)dataLength);
+            var index = reader.ReadVarUInt32();
+            var offset = InitializerExpression.ReadFrom(reader);
+            var dataLength = reader.ReadVarUInt32();
+            var data = reader.ReadBytes((int)dataLength);
             return new DataSegment(index, offset, data);
         }
 
         /// <summary>
         /// Writes a textual representation of this exported value to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to which text is written.</param>
-        public void Dump(TextWriter Writer)
+        /// <param name="writer">The writer to which text is written.</param>
+        public void Dump(TextWriter writer)
         {
-            Writer.Write("- Memory index: ");
-            Writer.Write(MemoryIndex);
-            Writer.WriteLine();
-            Writer.Write("- Offset:");
-            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(Writer);
+            writer.Write("- Memory index: ");
+            writer.Write(MemoryIndex);
+            writer.WriteLine();
+            writer.Write("- Offset:");
+            var indentedWriter = DumpHelpers.CreateIndentedTextWriter(writer);
             foreach (var instruction in Offset.BodyInstructions)
             {
                 indentedWriter.WriteLine();
                 instruction.Dump(indentedWriter);
             }
-            Writer.WriteLine();
-            Writer.Write("- Data:");
+            writer.WriteLine();
+            writer.Write("- Data:");
             indentedWriter.WriteLine();
             DumpHelpers.DumpBytes(Data, indentedWriter);
         }

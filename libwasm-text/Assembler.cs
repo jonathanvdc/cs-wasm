@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using Pixie;
 using Pixie.Code;
 using Pixie.Markup;
+using Wasm.Instructions;
 
 namespace Wasm.Text
 {
@@ -283,6 +285,20 @@ namespace Wasm.Text
             }
 
             /// <summary>
+            /// Introduces a new identifier use.
+            /// </summary>
+            /// <param name="token">A token that refers to an identifier or an index.</param>
+            /// <param name="patch">
+            /// An action that patches the user based on the index assigned to the token.
+            /// Will be executed once the module is fully assembled.
+            /// </param>
+            public void Use(Lexer.Token token, Action<uint> patch)
+            {
+                pendingIdentifierReferences.Add(
+                    new KeyValuePair<Lexer.Token, Action<uint>>(token, patch));
+            }
+
+            /// <summary>
             /// Resolves all pending references.
             /// </summary>
             /// <param name="log">A log to send diagnostics to.</param>
@@ -358,6 +374,12 @@ namespace Wasm.Text
                 {
                     return TryResolve((string)identifierOrIndex.Value, getIndex, out index);
                 }
+                else if (identifierOrIndex.Kind == Lexer.TokenKind.Synthetic
+                    && identifierOrIndex.Value is T)
+                {
+                    index = getIndex((T)identifierOrIndex.Value);
+                    return true;
+                }
                 else
                 {
                     index = 0;
@@ -398,7 +420,7 @@ namespace Wasm.Text
                     new LogEntry(
                         Severity.Error,
                         "syntax error",
-                        Quotation.QuoteEvenInBold("memory definition is empty."),
+                        Quotation.QuoteEvenInBold("memory definition is unexpectedly empty."),
                         Highlight(moduleField)));
                 return;
             }
@@ -406,15 +428,18 @@ namespace Wasm.Text
             if (tail[0].IsCallTo("limits"))
             {
                 memory.Limits = AssembleLimits(tail[0], context);
-                if (tail.Count > 1)
-                {
-                    context.Log.Log(
-                        new LogEntry(
-                            Severity.Error,
-                            "syntax error",
-                            Quotation.QuoteEvenInBold("memory definition has an unexpected trailing expression."),
-                            Highlight(tail[1])));
-                }
+                AssertEmpty(context, "memory definition", tail.Skip(1));
+            }
+            else if (tail[0].IsCallTo("data"))
+            {
+                var data = AssembleDataString(tail[0].Tail, context);
+                var pageCount = (uint)Math.Ceiling((double)data.Length / MemoryType.PageSize);
+                memory.Limits = new ResizableLimits(pageCount, pageCount);
+                var id = Lexer.Token.Synthesize(memory);
+                var dataSegment = new DataSegment(0, new InitializerExpression(Operators.Int32Const.Create(0)), data);
+                context.MemoryContext.Use(id, index => { dataSegment.MemoryIndex = index; });
+                module.AddDataSegment(dataSegment);
+                AssertEmpty(context, "memory definition", tail.Skip(1));
             }
             else
             {
@@ -424,8 +449,47 @@ namespace Wasm.Text
                         "syntax error",
                         Quotation.QuoteEvenInBold(
                             "unexpected expression in memory definition; expected ",
-                            "limits", "."),
+                            "data", " or ", "limits", "."),
                         Highlight(tail[0])));
+            }
+        }
+
+        private static byte[] AssembleDataString(
+            IReadOnlyList<SExpression> tail,
+            ModuleContext context)
+        {
+            var results = new List<byte>();
+            foreach (var item in tail)
+            {
+                if (item.IsCall || item.Head.Kind != Lexer.TokenKind.String)
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            "expected a string literal.",
+                            Highlight(item)));
+                    continue;
+                }
+                results.AddRange(Encoding.UTF8.GetBytes((string)item.Head.Value));
+            }
+            return results.ToArray();
+        }
+
+        private static void AssertEmpty(
+            ModuleContext context,
+            string kind,
+            IEnumerable<SExpression> tail)
+        {
+            var tailArray = tail.ToArray();
+            if (tailArray.Length > 0)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(kind + " has an unexpected trailing expression."),
+                        Highlight(tailArray[0])));
             }
         }
 

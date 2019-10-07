@@ -1,3 +1,4 @@
+using System.Text;
 using Loyc.MiniTest;
 using Pixie;
 
@@ -43,6 +44,22 @@ namespace Wasm.Text
             memory = memSection.Memories[0];
             Assert.AreEqual(10u, memory.Limits.Initial);
             Assert.IsFalse(memory.Limits.HasMaximum);
+
+            module = AssembleModule("(module (memory (data \"hello world\")))");
+            Assert.AreEqual(2, module.Sections.Count);
+            memSection = module.GetFirstSectionOrNull<MemorySection>();
+            Assert.IsNotNull(memSection);
+            Assert.AreEqual(1, memSection.Memories.Count);
+            memory = memSection.Memories[0];
+            Assert.AreEqual(1u, memory.Limits.Initial);
+            Assert.IsTrue(memory.Limits.HasMaximum);
+            Assert.AreEqual(1u, memory.Limits.Maximum);
+            var dataSection = module.GetFirstSectionOrNull<DataSection>();
+            Assert.IsNotNull(dataSection);
+            Assert.AreEqual(1, dataSection.Segments.Count);
+            var segment = dataSection.Segments[0];
+            Assert.AreEqual(0u, segment.MemoryIndex);
+            Assert.AreEqual("hello world", Encoding.UTF8.GetString(segment.Data));
         }
 
         [Test]

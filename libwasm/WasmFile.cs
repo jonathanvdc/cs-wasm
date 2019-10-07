@@ -303,7 +303,8 @@ namespace Wasm
         }
 
         /// <summary>
-        /// Adds a user-defined memory to this module.
+        /// Adds a user-defined memory to this module's memory section, defining
+        /// a new memory section if one doesn't exist already.
         /// </summary>
         /// <param name="memory">The memory to add.</param>
         public void AddMemory(MemoryType memory)
@@ -314,6 +315,21 @@ namespace Wasm
                 InsertSection(memories = new MemorySection());
             }
             memories.Memories.Add(memory);
+        }
+
+        /// <summary>
+        /// Adds a data segment to this module's data section, defining
+        /// a new data section if one doesn't exist already.
+        /// </summary>
+        /// <param name="segment">The data segment to add.</param>
+        public void AddDataSegment(DataSegment segment)
+        {
+            var data = GetFirstSectionOrNull<DataSection>();
+            if (data == null)
+            {
+                InsertSection(data = new DataSection());
+            }
+            data.Segments.Add(segment);
         }
     }
 }

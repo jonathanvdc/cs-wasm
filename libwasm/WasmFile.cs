@@ -331,5 +331,20 @@ namespace Wasm
             }
             data.Segments.Add(segment);
         }
+
+        /// <summary>
+        /// Adds an import to this module's import section, defining
+        /// a new import section if one doesn't exist already.
+        /// </summary>
+        /// <param name="import">The import to add.</param>
+        public void AddImport(ImportedValue import)
+        {
+            var imports = GetFirstSectionOrNull<ImportSection>();
+            if (imports == null)
+            {
+                InsertSection(imports = new ImportSection());
+            }
+            imports.Imports.Add(import);
+        }
     }
 }

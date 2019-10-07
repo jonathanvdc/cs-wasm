@@ -269,11 +269,12 @@ namespace Wasm.Text
             /// <param name="identifier">The identifier to define.</param>
             /// <param name="value">The value identified by the identifier.</param>
             /// <returns>
-            /// <c>true</c> if there was no previous definition of the identifier; otherwise, <c>false</c>.
+            /// <c>true</c> if <paramref name="identifier"/> is non-null and there is no
+            /// previous definition of the identifier; otherwise, <c>false</c>.
             /// </returns>
             public bool Define(string identifier, T value)
             {
-                if (identifierDefinitions.ContainsKey(identifier))
+                if (identifier == null || identifierDefinitions.ContainsKey(identifier))
                 {
                     return false;
                 }
@@ -402,44 +403,55 @@ namespace Wasm.Text
             WasmFile module,
             ModuleContext context)
         {
-            var memory = new MemoryType(new ResizableLimits(0));
-            module.AddMemory(memory);
+            const string kind = "memory definition";
 
             // Process the optional memory identifier.
+            string id = null;
             var tail = moduleField.Tail;
             if (tail.Count > 0 && tail[0].IsIdentifier)
             {
-                var id = (string)tail[0].Head.Value;
-                context.MemoryContext.Define(id, memory);
+                id = (string)tail[0].Head.Value;
                 tail = tail.Skip(1).ToArray();
             }
 
-            if (tail.Count == 0)
+            if (!AssertNonEmpty(moduleField, tail, kind, context))
             {
-                context.Log.Log(
-                    new LogEntry(
-                        Severity.Error,
-                        "syntax error",
-                        Quotation.QuoteEvenInBold("memory definition is unexpectedly empty."),
-                        Highlight(moduleField)));
                 return;
             }
 
             if (tail[0].IsCallTo("limits"))
             {
-                memory.Limits = AssembleLimits(tail[0], context);
-                AssertEmpty(context, "memory definition", tail.Skip(1));
+                var memory = new MemoryType(AssembleLimits(tail[0], context));
+                module.AddMemory(memory);
+                context.MemoryContext.Define(id, memory);
+                AssertEmpty(context, kind, tail.Skip(1));
             }
             else if (tail[0].IsCallTo("data"))
             {
                 var data = AssembleDataString(tail[0].Tail, context);
                 var pageCount = (uint)Math.Ceiling((double)data.Length / MemoryType.PageSize);
-                memory.Limits = new ResizableLimits(pageCount, pageCount);
-                var id = Lexer.Token.Synthesize(memory);
+                var memory = new MemoryType(new ResizableLimits(pageCount, pageCount));
+                module.AddMemory(memory);
+                context.MemoryContext.Define(id, memory);
+                var freshId = Lexer.Token.Synthesize(memory);
                 var dataSegment = new DataSegment(0, new InitializerExpression(Operators.Int32Const.Create(0)), data);
-                context.MemoryContext.Use(id, index => { dataSegment.MemoryIndex = index; });
+                context.MemoryContext.Use(freshId, index => { dataSegment.MemoryIndex = index; });
                 module.AddDataSegment(dataSegment);
-                AssertEmpty(context, "memory definition", tail.Skip(1));
+                AssertEmpty(context, kind, tail.Skip(1));
+            }
+            else if (tail[0].IsCallTo("import"))
+            {
+                var (moduleName, memoryName) = AssembleInlineImport(tail[0], context);
+                tail = tail.Skip(1).ToArray();
+                if (!AssertNonEmpty(moduleField, tail, kind, context))
+                {
+                    return;
+                }
+                var memory = new MemoryType(AssembleLimits(tail[0], context));
+                var import = new ImportedMemory(moduleName, memoryName, memory);
+                module.AddImport(import);
+                context.MemoryContext.Define(id, memory);
+                AssertEmpty(context, kind, tail.Skip(1).ToArray());
             }
             else
             {
@@ -449,8 +461,70 @@ namespace Wasm.Text
                         "syntax error",
                         Quotation.QuoteEvenInBold(
                             "unexpected expression in memory definition; expected ",
-                            "data", " or ", "limits", "."),
+                            "data", ",", "import", " or ", "limits", "."),
                         Highlight(tail[0])));
+            }
+        }
+
+        private static (string, string) AssembleInlineImport(SExpression import, ModuleContext context)
+        {
+            if (import.Tail.Count != 2)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "encountered ",
+                            import.Tail.Count.ToString(),
+                            " elements; expected exactly two names."),
+                        Highlight(import)));
+                return ("", "");
+            }
+            else
+            {
+                return (AssembleString(import.Tail[0], context), AssembleString(import.Tail[1], context));
+            }
+        }
+
+        private static string AssembleString(SExpression expression, ModuleContext context)
+        {
+            if (expression.IsCall || expression.Head.Kind != Lexer.TokenKind.String)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "expected a string literal."),
+                        Highlight(expression)));
+                return "";
+            }
+            else
+            {
+                return (string)expression.Head.Value;
+            }
+        }
+
+        private static bool AssertNonEmpty(
+            SExpression expression,
+            IReadOnlyList<SExpression> tail,
+            string kind,
+            ModuleContext context)
+        {
+            if (tail.Count == 0)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(kind + " is unexpectedly empty."),
+                        Highlight(expression)));
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 
@@ -461,17 +535,7 @@ namespace Wasm.Text
             var results = new List<byte>();
             foreach (var item in tail)
             {
-                if (item.IsCall || item.Head.Kind != Lexer.TokenKind.String)
-                {
-                    context.Log.Log(
-                        new LogEntry(
-                            Severity.Error,
-                            "syntax error",
-                            "expected a string literal.",
-                            Highlight(item)));
-                    continue;
-                }
-                results.AddRange(Encoding.UTF8.GetBytes((string)item.Head.Value));
+                results.AddRange(Encoding.UTF8.GetBytes(AssembleString(item, context)));
             }
             return results.ToArray();
         }

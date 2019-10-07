@@ -60,6 +60,20 @@ namespace Wasm.Text
             var segment = dataSection.Segments[0];
             Assert.AreEqual(0u, segment.MemoryIndex);
             Assert.AreEqual("hello world", Encoding.UTF8.GetString(segment.Data));
+
+            module = AssembleModule("(module (memory (import \"mod\" \"mem\") (limits 10 40)))");
+            Assert.AreEqual(1, module.Sections.Count);
+            var importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            var import = importSection.Imports[0];
+            Assert.AreEqual(ExternalKind.Memory, import.Kind);
+            Assert.AreEqual("mod", import.ModuleName);
+            Assert.AreEqual("mem", import.FieldName);
+            memory = ((ImportedMemory)import).Memory;
+            Assert.AreEqual(10u, memory.Limits.Initial);
+            Assert.IsTrue(memory.Limits.HasMaximum);
+            Assert.AreEqual(40u, memory.Limits.Maximum);
         }
 
         [Test]
@@ -72,6 +86,7 @@ namespace Wasm.Text
             AssertInvalidModule("(module (memory (limits +10 +40)))");
             AssertInvalidModule("(module (memory $mem1 $mem2 (limits 10 40)))");
             AssertInvalidModule("(module (memory (limits 10 40) (limits 10 40)))");
+            AssertInvalidModule("(module (memory (import \"mod\" \"mem\")))");
         }
 
         private static void AssertInvalidModule(string text)

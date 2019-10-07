@@ -177,21 +177,6 @@ namespace Wasm
         }
 
         /// <summary>
-        /// Adds a name entry to the names section, defining a new names section
-        /// if one doesn't exist already.
-        /// </summary>
-        /// <param name="entry">A name entry to add.</param>
-        public void AddNameEntry(NameEntry entry)
-        {
-            var names = GetFirstSectionOrNull<NameSection>();
-            if (names == null)
-            {
-                Sections.Add(names = new NameSection());
-            }
-            names.Names.Add(entry);
-        }
-
-        /// <summary>
         /// Writes this WebAssembly file to the given stream using the binary WebAssembly file encoding.
         /// </summary>
         /// <param name="target">The stream to write to.</param>
@@ -274,6 +259,61 @@ namespace Wasm
                 result = ReadBinary(fileStream);
             }
             return result;
+        }
+
+        /// <summary>
+        /// Inserts a new section into the WebAssembly file.
+        /// The section is inserted in a way that preserves the ordering
+        /// of sections as specified by the WebAssembly binary format.
+        /// </summary>
+        /// <param name="section">The section to insert.</param>
+        /// <returns>The index in the section list at which <paramref name="section"/> is inserted.</returns>
+        public int InsertSection(Section section)
+        {
+            if (!section.Name.IsCustom)
+            {
+                // The WebAssembly binary format requires that non-custom sections
+                // are ordered by their codes.
+                for (int i = 0; i < Sections.Count; i++)
+                {
+                    if (!Sections[i].Name.IsCustom && section.Name.Code < Sections[i].Name.Code)
+                    {
+                        Sections.Insert(i, section);
+                        return i;
+                    }
+                }
+            }
+            Sections.Add(section);
+            return Sections.Count - 1;
+        }
+
+        /// <summary>
+        /// Adds a name entry to the names section, defining a new names section
+        /// if one doesn't exist already.
+        /// </summary>
+        /// <param name="entry">A name entry to add.</param>
+        public void AddNameEntry(NameEntry entry)
+        {
+            var names = GetFirstSectionOrNull<NameSection>();
+            if (names == null)
+            {
+                InsertSection(names = new NameSection());
+            }
+            names.Names.Add(entry);
+        }
+
+        /// <summary>
+        /// Adds a user-defined memory to this module.
+        /// </summary>
+        /// <param name="memory">The memory to add.</param>
+        public void AddMemory(MemoryType memory)
+        {
+            var memories = GetFirstSectionOrNull<MemorySection>();
+            if (memories == null)
+            {
+                InsertSection(memories = new MemorySection());
+            }
+            memories.Memories.Add(memory);
         }
     }
 }

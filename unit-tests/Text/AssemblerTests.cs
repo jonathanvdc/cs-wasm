@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Loyc.MiniTest;
 using Pixie;
@@ -21,6 +22,49 @@ namespace Wasm.Text
             Assert.AreEqual(1, module.Sections.Count);
             Assert.AreEqual(1, module.GetFirstSectionOrNull<NameSection>().Names.Count);
             Assert.AreEqual("test_module", module.ModuleName);
+        }
+
+        [Test]
+        public void AssembleModulesWithMemory()
+        {
+            var module = AssembleModule("(module (memory $mem (limits 10 40)))");
+            Assert.AreEqual(1, module.Sections.Count);
+            var memSection = module.GetFirstSectionOrNull<MemorySection>();
+            Assert.IsNotNull(memSection);
+            Assert.AreEqual(1, memSection.Memories.Count);
+            var memory = memSection.Memories[0];
+            Assert.AreEqual(10u, memory.Limits.Initial);
+            Assert.IsTrue(memory.Limits.HasMaximum);
+            Assert.AreEqual(40u, memory.Limits.Maximum);
+
+            module = AssembleModule("(module (memory (limits 10)))");
+            Assert.AreEqual(1, module.Sections.Count);
+            memSection = module.GetFirstSectionOrNull<MemorySection>();
+            Assert.IsNotNull(memSection);
+            Assert.AreEqual(1, memSection.Memories.Count);
+            memory = memSection.Memories[0];
+            Assert.AreEqual(10u, memory.Limits.Initial);
+            Assert.IsFalse(memory.Limits.HasMaximum);
+        }
+
+        [Test]
+        public void AssembleBadMemoryModules()
+        {
+            Assert.Throws(
+                typeof(Exception),
+                () => AssembleModule("(module (memory))"));
+            Assert.Throws(
+                typeof(Exception),
+                () => AssembleModule("(module (memory (limits)))"));
+            Assert.Throws(
+                typeof(Exception),
+                () => AssembleModule("(module (memory $mem (limits 78359126329586239865823 725357639275693276582334525)))"));
+            Assert.Throws(
+                typeof(Exception),
+                () => AssembleModule("(module (memory $mem (limits 10e7 10e8)))"));
+            Assert.Throws(
+                typeof(Exception),
+                () => AssembleModule("(module (memory (limits +10 +40)))"));
         }
 
         private WasmFile AssembleModule(string text)

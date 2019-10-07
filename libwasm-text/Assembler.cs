@@ -64,7 +64,10 @@ namespace Wasm.Text
                     new LogEntry(
                         Severity.Error,
                         "syntax error",
-                        "top-level modules must be encoded as S-expressions that call 'module'.",
+                        Quotation.QuoteEvenInBold(
+                            "top-level modules must be encoded as S-expressions that call ",
+                            "module",
+                            "."),
                         Highlight(expression)));
             }
 
@@ -112,6 +115,7 @@ namespace Wasm.Text
                             Highlight(expression)));
                 }
             }
+            context.ResolveIdentifiers(file);
             return file;
         }
 
@@ -155,9 +159,14 @@ namespace Wasm.Text
             return AssembleModule(Lexer.Tokenize(document, fileName));
         }
 
+        private static HighlightedSource Highlight(Lexer.Token expression)
+        {
+            return new HighlightedSource(new SourceRegion(expression.Span));
+        }
+
         private static HighlightedSource Highlight(SExpression expression)
         {
-            return new HighlightedSource(new SourceRegion(expression.Head.Span));
+            return Highlight(expression.Head);
         }
 
         /// <summary>
@@ -182,84 +191,163 @@ namespace Wasm.Text
             /// <param name="assembler">The assembler that gives rise to this conetxt.</param>
             public ModuleContext(Assembler assembler)
             {
-                this.MemoryContext = IdentifierContext.Create();
+                this.Assembler = assembler;
+                this.MemoryContext = IdentifierContext<MemoryType>.Create();
             }
 
             /// <summary>
             /// Gets the memory context for the module.
             /// </summary>
             /// <value>A memory context.</value>
-            public IdentifierContext MemoryContext { get; private set; }
+            public IdentifierContext<MemoryType> MemoryContext { get; private set; }
 
             /// <summary>
             /// Gets the assembler that gives rise to this context.
             /// </summary>
             /// <value>An assembler.</value>
             public Assembler Assembler { get; private set; }
+
+            /// <summary>
+            /// Gets the log used by the assembler and, by extension, this context.
+            /// </summary>
+            public ILog Log => Assembler.Log;
+
+            /// <summary>
+            /// Resolves any pending references in the module.
+            /// </summary>
+            /// <param name="module">The module for which this context was created.</param>
+            public void ResolveIdentifiers(WasmFile module)
+            {
+                var importSection = module.GetFirstSectionOrNull<ImportSection>() ?? new ImportSection();
+                var memorySection = module.GetFirstSectionOrNull<MemorySection>() ?? new MemorySection();
+                var memoryIndices = new Dictionary<MemoryType, uint>();
+                foreach (var import in importSection.Imports)
+                {
+                    if (import is ImportedMemory importedMemory)
+                    {
+                        memoryIndices[importedMemory.Memory] = (uint)memoryIndices.Count;
+                    }
+                }
+                foreach (var memory in memorySection.Memories)
+                {
+                    memoryIndices[memory] = (uint)memoryIndices.Count;
+                }
+
+                // Resolve memories identifiers.
+                MemoryContext.ResolveAll(
+                    Assembler.Log,
+                    mem => memoryIndices[mem]);
+            }
         }
 
         /// <summary>
         /// An identifier context, which maps identifiers to indices.
         /// </summary>
-        public struct IdentifierContext
+        public struct IdentifierContext<T>
         {
             /// <summary>
             /// Creates an empty identifier context.
             /// </summary>
             /// <returns>An identifier context.</returns>
-            public static IdentifierContext Create()
+            public static IdentifierContext<T> Create()
             {
-                return new IdentifierContext()
+                return new IdentifierContext<T>()
                 {
-                    identifiers = new Dictionary<string, uint>()
+                    identifierDefinitions = new Dictionary<string, T>(),
+                    pendingIdentifierReferences = new List<KeyValuePair<Lexer.Token, Action<uint>>>()
                 };
             }
 
-            private Dictionary<string, uint> identifiers;
+            private Dictionary<string, T> identifierDefinitions;
+            private List<KeyValuePair<Lexer.Token, Action<uint>>> pendingIdentifierReferences;
 
             /// <summary>
             /// Defines a new identifier.
             /// </summary>
             /// <param name="identifier">The identifier to define.</param>
-            /// <param name="index">The index to associate with the identifier.</param>
+            /// <param name="value">The value identified by the identifier.</param>
             /// <returns>
             /// <c>true</c> if there was no previous definition of the identifier; otherwise, <c>false</c>.
             /// </returns>
-            public bool Define(string identifier, uint index)
+            public bool Define(string identifier, T value)
             {
-                if (identifiers.ContainsKey(identifier))
+                if (identifierDefinitions.ContainsKey(identifier))
                 {
                     return false;
                 }
                 else
                 {
-                    identifiers[identifier] = index;
+                    identifierDefinitions[identifier] = value;
                     return true;
                 }
+            }
+
+            /// <summary>
+            /// Resolves all pending references.
+            /// </summary>
+            /// <param name="log">A log to send diagnostics to.</param>
+            /// <param name="getIndex">A function that maps defined values to indices.</param>
+            public void ResolveAll(ILog log, Func<T, uint> getIndex)
+            {
+                foreach (var pair in pendingIdentifierReferences)
+                {
+                    uint index;
+                    if (TryResolve(pair.Key, getIndex, out index))
+                    {
+                        pair.Value(index);
+                    }
+                    else
+                    {
+                        var id = (string)pair.Key.Value;
+                        var suggested = NameSuggestion.SuggestName(id, identifierDefinitions.Keys);
+                        log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "syntax error",
+                                Quotation.QuoteEvenInBold("identifier ", id, " does is undefined"),
+                                suggested == null
+                                    ? (MarkupNode)"."
+                                    : Quotation.QuoteEvenInBold("; did you mean ", suggested, "?"),
+                                Highlight(pair.Key)));
+                    }
+                }
+                pendingIdentifierReferences.Clear();
             }
 
             /// <summary>
             /// Tries to map an identifier to its associated index.
             /// </summary>
             /// <param name="identifier">An identifier to inspect.</param>
+            /// <param name="getIndex">A function that maps defined values to indices.</param>
             /// <param name="index">The associated index.</param>
             /// <returns>
             /// <c>true</c> if an index was found for <paramref name="identifier"/>; otherwise, <c>false</c>.
             /// </returns>
-            public bool TryUse(string identifier, out uint index)
+            private bool TryResolve(string identifier, Func<T, uint> getIndex, out uint index)
             {
-                return identifiers.TryGetValue(identifier, out index);
+                T val;
+                if (identifierDefinitions.TryGetValue(identifier, out val))
+                {
+                    index = getIndex(val);
+                    return true;
+                }
+                else
+                {
+                    index = 0;
+                    return false;
+                }
             }
 
             /// <summary>
             /// Tries to map an identifier or index to its associated index.
             /// </summary>
             /// <param name="identifierOrIndex">An identifier or index to inspect.</param>
+            /// <param name="getIndex">A function that maps defined values to indices.</param>
             /// <param name="index">The associated index.</param>
             /// <returns>
             /// <c>true</c> if an index was found for <paramref name="identifierOrIndex"/>; otherwise, <c>false</c>.
             /// </returns>
-            public bool TryUse(Lexer.Token identifierOrIndex, out uint index)
+            private bool TryResolve(Lexer.Token identifierOrIndex, Func<T, uint> getIndex, out uint index)
             {
                 if (identifierOrIndex.Kind == Lexer.TokenKind.UnsignedInteger)
                 {
@@ -268,7 +356,7 @@ namespace Wasm.Text
                 }
                 else if (identifierOrIndex.Kind == Lexer.TokenKind.Identifier)
                 {
-                    return TryUse((string)identifierOrIndex.Value, out index);
+                    return TryResolve((string)identifierOrIndex.Value, getIndex, out index);
                 }
                 else
                 {
@@ -284,6 +372,141 @@ namespace Wasm.Text
         public static readonly IReadOnlyDictionary<string, ModuleFieldAssembler> DefaultModuleFieldAssemblers =
             new Dictionary<string, ModuleFieldAssembler>()
         {
+            ["memory"] = AssembleMemory
         };
+
+        private static void AssembleMemory(
+            SExpression moduleField,
+            WasmFile module,
+            ModuleContext context)
+        {
+            var memory = new MemoryType(new ResizableLimits(0));
+            module.AddMemory(memory);
+
+            // Process the optional memory identifier.
+            var tail = moduleField.Tail;
+            if (tail.Count > 0 && tail[0].IsIdentifier)
+            {
+                var id = (string)tail[0].Head.Value;
+                context.MemoryContext.Define(id, memory);
+                tail = tail.Skip(1).ToArray();
+            }
+
+            if (tail.Count == 0)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold("memory definition is empty."),
+                        Highlight(moduleField)));
+                return;
+            }
+
+            if (tail[0].IsCallTo("limits"))
+            {
+                memory.Limits = AssembleLimits(tail[0], context);
+                if (tail.Count > 1)
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold("memory definition has an unexpected trailing expression."),
+                            Highlight(tail[1])));
+                }
+            }
+            else
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "unexpected expression in memory definition; expected ",
+                            "limits", "."),
+                        Highlight(tail[0])));
+            }
+        }
+
+        private static ResizableLimits AssembleLimits(SExpression expression, ModuleContext context)
+        {
+            if (expression.Tail.Count == 0)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold("", "limits", " expression is empty."),
+                        Highlight(expression)));
+                return new ResizableLimits(0);
+            }
+
+            var init = AssembleUInt32(expression.Tail[0], context);
+
+            if (expression.Tail.Count == 1)
+            {
+                return new ResizableLimits(init);
+            }
+            if (expression.Tail.Count == 2)
+            {
+                var max = AssembleUInt32(expression.Tail[1], context);
+                return new ResizableLimits(init, max);
+            }
+            else
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold("", "limits", " expression contains more than two elements."),
+                        Highlight(expression)));
+                return new ResizableLimits(0);
+            }
+        }
+
+        private static uint AssembleUInt32(
+            SExpression expression,
+            ModuleContext context)
+        {
+            if (expression.IsCall)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold("expected a 32-bit unsigned integer; got a call."),
+                        Highlight(expression)));
+                return 0;
+            }
+            else if (expression.Head.Kind != Lexer.TokenKind.UnsignedInteger)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold("expected a 32-bit unsigned integer; got other token."),
+                        Highlight(expression)));
+                return 0;
+            }
+            else
+            {
+                var data = (BigInteger)expression.Head.Value;
+                if (data <= uint.MaxValue)
+                {
+                    return (uint)data;
+                }
+                else
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold("expected a 32-bit unsigned integer; got an unsigned integer that is out of range."),
+                            Highlight(expression)));
+                    return 0;
+                }
+            }
+        }
     }
 }

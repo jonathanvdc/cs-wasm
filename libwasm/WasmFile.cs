@@ -346,5 +346,20 @@ namespace Wasm
             }
             imports.Imports.Add(import);
         }
+
+        /// <summary>
+        /// Adds an export to this module's export section, defining
+        /// a new export section if one doesn't exist already.
+        /// </summary>
+        /// <param name="export">The export to add.</param>
+        public void AddExport(ExportedValue export)
+        {
+            var exports = GetFirstSectionOrNull<ExportSection>();
+            if (exports == null)
+            {
+                InsertSection(exports = new ExportSection());
+            }
+            exports.Exports.Add(export);
+        }
     }
 }

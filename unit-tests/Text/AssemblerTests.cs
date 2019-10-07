@@ -74,6 +74,27 @@ namespace Wasm.Text
             Assert.AreEqual(10u, memory.Limits.Initial);
             Assert.IsTrue(memory.Limits.HasMaximum);
             Assert.AreEqual(40u, memory.Limits.Maximum);
+
+            module = AssembleModule("(module (memory (export \"mem\") (import \"mod\" \"mem\") (limits 10 40)))");
+            Assert.AreEqual(2, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            import = importSection.Imports[0];
+            Assert.AreEqual(ExternalKind.Memory, import.Kind);
+            Assert.AreEqual("mod", import.ModuleName);
+            Assert.AreEqual("mem", import.FieldName);
+            memory = ((ImportedMemory)import).Memory;
+            Assert.AreEqual(10u, memory.Limits.Initial);
+            Assert.IsTrue(memory.Limits.HasMaximum);
+            Assert.AreEqual(40u, memory.Limits.Maximum);
+            var exportSection = module.GetFirstSectionOrNull<ExportSection>();
+            Assert.IsNotNull(exportSection);
+            Assert.AreEqual(1, exportSection.Exports.Count);
+            var export = exportSection.Exports[0];
+            Assert.AreEqual("mem", export.Name);
+            Assert.AreEqual(0u, export.Index);
+            Assert.AreEqual(ExternalKind.Memory, export.Kind);
         }
 
         [Test]

@@ -290,13 +290,26 @@ namespace Wasm.Text
             /// </summary>
             /// <param name="token">A token that refers to an identifier or an index.</param>
             /// <param name="patch">
-            /// An action that patches the user based on the index assigned to the token.
+            /// An action that patches a user based on the index assigned to the token.
             /// Will be executed once the module is fully assembled.
             /// </param>
             public void Use(Lexer.Token token, Action<uint> patch)
             {
                 pendingIdentifierReferences.Add(
                     new KeyValuePair<Lexer.Token, Action<uint>>(token, patch));
+            }
+
+            /// <summary>
+            /// Introduces a new identifier use.
+            /// </summary>
+            /// <param name="value">A value that will eventually be assigned an index.</param>
+            /// <param name="patch">
+            /// An action that patches a user based on the index assigned to the value.
+            /// Will be executed once the module is fully assembled.
+            /// </param>
+            public void Use(T value, Action<uint> patch)
+            {
+                Use(Lexer.Token.Synthesize(value), patch);
             }
 
             /// <summary>
@@ -406,11 +419,11 @@ namespace Wasm.Text
             const string kind = "memory definition";
 
             // Process the optional memory identifier.
-            string id = null;
+            var memory = new MemoryType(new ResizableLimits(0));
             var tail = moduleField.Tail;
             if (tail.Count > 0 && tail[0].IsIdentifier)
             {
-                id = (string)tail[0].Head.Value;
+                context.MemoryContext.Define((string)tail[0].Head.Value, memory);
                 tail = tail.Skip(1).ToArray();
             }
 
@@ -419,23 +432,40 @@ namespace Wasm.Text
                 return;
             }
 
+            // Parse inline exports.
+            while (tail[0].IsCallTo("export"))
+            {
+                var exportExpr = tail[0];
+                tail = tail.Skip(1).ToArray();
+                if (!AssertElementCount(exportExpr, exportExpr.Tail, 1, context))
+                {
+                    continue;
+                }
+
+                var exportName = AssembleString(exportExpr.Tail[0], context);
+                var export = new ExportedValue(exportName, ExternalKind.Memory, 0);
+                module.AddExport(export);
+                var exportSection = module.GetFirstSectionOrNull<ExportSection>();
+                int index = exportSection.Exports.Count - 1;
+                context.MemoryContext.Use(
+                    memory,
+                    i => { exportSection.Exports[index] = new ExportedValue(exportName, ExternalKind.Memory, i); });
+            }
+
             if (tail[0].IsCallTo("limits"))
             {
-                var memory = new MemoryType(AssembleLimits(tail[0], context));
+                memory.Limits = AssembleLimits(tail[0], context);
                 module.AddMemory(memory);
-                context.MemoryContext.Define(id, memory);
                 AssertEmpty(context, kind, tail.Skip(1));
             }
             else if (tail[0].IsCallTo("data"))
             {
                 var data = AssembleDataString(tail[0].Tail, context);
                 var pageCount = (uint)Math.Ceiling((double)data.Length / MemoryType.PageSize);
-                var memory = new MemoryType(new ResizableLimits(pageCount, pageCount));
+                memory.Limits = new ResizableLimits(pageCount, pageCount);
                 module.AddMemory(memory);
-                context.MemoryContext.Define(id, memory);
-                var freshId = Lexer.Token.Synthesize(memory);
                 var dataSegment = new DataSegment(0, new InitializerExpression(Operators.Int32Const.Create(0)), data);
-                context.MemoryContext.Use(freshId, index => { dataSegment.MemoryIndex = index; });
+                context.MemoryContext.Use(memory, index => { dataSegment.MemoryIndex = index; });
                 module.AddDataSegment(dataSegment);
                 AssertEmpty(context, kind, tail.Skip(1));
             }
@@ -443,14 +473,12 @@ namespace Wasm.Text
             {
                 var (moduleName, memoryName) = AssembleInlineImport(tail[0], context);
                 tail = tail.Skip(1).ToArray();
-                if (!AssertNonEmpty(moduleField, tail, kind, context))
+                if (AssertNonEmpty(moduleField, tail, kind, context))
                 {
-                    return;
+                    memory.Limits = AssembleLimits(tail[0], context);
                 }
-                var memory = new MemoryType(AssembleLimits(tail[0], context));
                 var import = new ImportedMemory(moduleName, memoryName, memory);
                 module.AddImport(import);
-                context.MemoryContext.Define(id, memory);
                 AssertEmpty(context, kind, tail.Skip(1).ToArray());
             }
             else
@@ -461,7 +489,7 @@ namespace Wasm.Text
                         "syntax error",
                         Quotation.QuoteEvenInBold(
                             "unexpected expression in memory definition; expected ",
-                            "data", ",", "import", " or ", "limits", "."),
+                            "data", ",", "export", ",", "import", " or ", "limits", "."),
                         Highlight(tail[0])));
             }
         }
@@ -503,6 +531,31 @@ namespace Wasm.Text
             else
             {
                 return (string)expression.Head.Value;
+            }
+        }
+
+        private static bool AssertElementCount(
+            SExpression expression,
+            IReadOnlyList<SExpression> tail,
+            int count,
+            ModuleContext context)
+        {
+            if (tail.Count == count)
+            {
+                return true;
+            }
+            else
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "encountered ",
+                            tail.Count.ToString(),
+                            " elements; expected exactly ", count.ToString(), "."),
+                        Highlight(expression)));
+                return false;
             }
         }
 

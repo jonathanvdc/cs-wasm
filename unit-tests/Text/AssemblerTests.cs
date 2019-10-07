@@ -131,6 +131,12 @@ namespace Wasm.Text
             AssertInvalidModule("(module (memory (import \"mod\" \"mem\")))");
         }
 
+        [Test]
+        public void AssembleBadExportModules()
+        {
+            AssertInvalidModule("(module (export \"mem\" (memory $mem)))");
+        }
+
         private static void AssertInvalidModule(string text)
         {
             Assert.Throws(

@@ -408,6 +408,7 @@ namespace Wasm.Text
         public static readonly IReadOnlyDictionary<string, ModuleFieldAssembler> DefaultModuleFieldAssemblers =
             new Dictionary<string, ModuleFieldAssembler>()
         {
+            ["export"] = AssembleExport,
             ["memory"] = AssembleMemory
         };
 
@@ -437,19 +438,17 @@ namespace Wasm.Text
             {
                 var exportExpr = tail[0];
                 tail = tail.Skip(1).ToArray();
+                if (!AssertNonEmpty(moduleField, tail, kind, context))
+                {
+                    return;
+                }
                 if (!AssertElementCount(exportExpr, exportExpr.Tail, 1, context))
                 {
                     continue;
                 }
 
                 var exportName = AssembleString(exportExpr.Tail[0], context);
-                var export = new ExportedValue(exportName, ExternalKind.Memory, 0);
-                module.AddExport(export);
-                var exportSection = module.GetFirstSectionOrNull<ExportSection>();
-                int index = exportSection.Exports.Count - 1;
-                context.MemoryContext.Use(
-                    memory,
-                    i => { exportSection.Exports[index] = new ExportedValue(exportName, ExternalKind.Memory, i); });
+                AddExport(module, context.MemoryContext, memory, ExternalKind.Memory, exportName);
             }
 
             if (tail[0].IsCallTo("limits"))
@@ -492,6 +491,86 @@ namespace Wasm.Text
                             "data", ",", "export", ",", "import", " or ", "limits", "."),
                         Highlight(tail[0])));
             }
+        }
+
+        private static void AssembleExport(
+            SExpression moduleField,
+            WasmFile module,
+            ModuleContext context)
+        {
+            var tail = moduleField.Tail;
+
+            if (!AssertElementCount(moduleField, tail, 2, context)
+                || !AssertElementCount(tail[1], tail[1].Tail, 1, context))
+            {
+                return;
+            }
+
+            var exportName = AssembleString(tail[0], context);
+            var index = AssembleIdentifierOrIndex(tail[1].Tail[0], context);
+
+            if (tail[1].IsCallTo("memory"))
+            {
+                AddExport(module, context.MemoryContext, index, ExternalKind.Memory, exportName);
+            }
+            else
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "unexpected expression in export definition; expected ",
+                            "func", ",", "table", ",", "memory", " or ", "global", "."),
+                        Highlight(tail[1])));
+            }
+        }
+
+        private static void AddExport<T>(
+            WasmFile module,
+            IdentifierContext<T> context,
+            T value,
+            ExternalKind kind,
+            string exportName)
+        {
+            var export = new ExportedValue(exportName, kind, 0);
+            module.AddExport(export);
+            var exportSection = module.GetFirstSectionOrNull<ExportSection>();
+            int index = exportSection.Exports.Count - 1;
+            context.Use(
+                value,
+                i => { exportSection.Exports[index] = new ExportedValue(exportName, kind, i); });
+        }
+
+        private static void AddExport<T>(
+            WasmFile module,
+            IdentifierContext<T> context,
+            Lexer.Token identifier,
+            ExternalKind kind,
+            string exportName)
+        {
+            var export = new ExportedValue(exportName, kind, 0);
+            module.AddExport(export);
+            var exportSection = module.GetFirstSectionOrNull<ExportSection>();
+            int index = exportSection.Exports.Count - 1;
+            context.Use(
+                identifier,
+                i => { exportSection.Exports[index] = new ExportedValue(exportName, kind, i); });
+        }
+
+        private static Lexer.Token AssembleIdentifierOrIndex(SExpression expression, ModuleContext context)
+        {
+            if (expression.Head.Kind != Lexer.TokenKind.UnsignedInteger
+                && expression.Head.Kind != Lexer.TokenKind.Identifier)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        "expected an identifier or unsigned integer.",
+                        Highlight(expression)));
+            }
+            return expression.Head;
         }
 
         private static (string, string) AssembleInlineImport(SExpression import, ModuleContext context)

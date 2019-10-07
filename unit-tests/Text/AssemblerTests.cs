@@ -98,6 +98,27 @@ namespace Wasm.Text
         }
 
         [Test]
+        public void AssembleModulesWithExports()
+        {
+            var module = AssembleModule("(module (memory $mem1 (limits 10 40)) (memory $mem2 (limits 10 40)) (export \"mem\" (memory $mem2)))");
+            Assert.AreEqual(2, module.Sections.Count);
+            var memSection = module.GetFirstSectionOrNull<MemorySection>();
+            Assert.IsNotNull(memSection);
+            Assert.AreEqual(2, memSection.Memories.Count);
+            var memory = memSection.Memories[1];
+            Assert.AreEqual(10u, memory.Limits.Initial);
+            Assert.IsTrue(memory.Limits.HasMaximum);
+            Assert.AreEqual(40u, memory.Limits.Maximum);
+            var exportSection = module.GetFirstSectionOrNull<ExportSection>();
+            Assert.IsNotNull(exportSection);
+            Assert.AreEqual(1, exportSection.Exports.Count);
+            var export = exportSection.Exports[0];
+            Assert.AreEqual("mem", export.Name);
+            Assert.AreEqual(1u, export.Index);
+            Assert.AreEqual(ExternalKind.Memory, export.Kind);
+        }
+
+        [Test]
         public void AssembleBadMemoryModules()
         {
             AssertInvalidModule("(module (memory))");

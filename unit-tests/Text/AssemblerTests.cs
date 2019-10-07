@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Loyc.MiniTest;
 using Pixie;
 
@@ -50,24 +48,23 @@ namespace Wasm.Text
         [Test]
         public void AssembleBadMemoryModules()
         {
-            Assert.Throws(
-                typeof(Exception),
-                () => AssembleModule("(module (memory))"));
-            Assert.Throws(
-                typeof(Exception),
-                () => AssembleModule("(module (memory (limits)))"));
-            Assert.Throws(
-                typeof(Exception),
-                () => AssembleModule("(module (memory $mem (limits 78359126329586239865823 725357639275693276582334525)))"));
-            Assert.Throws(
-                typeof(Exception),
-                () => AssembleModule("(module (memory $mem (limits 10e7 10e8)))"));
-            Assert.Throws(
-                typeof(Exception),
-                () => AssembleModule("(module (memory (limits +10 +40)))"));
+            AssertInvalidModule("(module (memory))");
+            AssertInvalidModule("(module (memory (limits)))");
+            AssertInvalidModule("(module (memory $mem (limits 78359126329586239865823 725357639275693276582334525)))");
+            AssertInvalidModule("(module (memory $mem (limits 10e7 10e8)))");
+            AssertInvalidModule("(module (memory (limits +10 +40)))");
+            AssertInvalidModule("(module (memory $mem1 $mem2 (limits 10 40)))");
+            AssertInvalidModule("(module (memory (limits 10 40) (limits 10 40)))");
         }
 
-        private WasmFile AssembleModule(string text)
+        private static void AssertInvalidModule(string text)
+        {
+            Assert.Throws(
+                typeof(PixieException),
+                () => AssembleModule(text));
+        }
+
+        private static WasmFile AssembleModule(string text)
         {
             var log = new TestLog(new[] { Severity.Error }, NullLog.Instance);
             var assembler = new Assembler(log);

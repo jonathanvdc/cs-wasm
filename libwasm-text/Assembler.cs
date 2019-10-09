@@ -233,16 +233,16 @@ namespace Wasm.Text
 
                 var memoryIndices = new Dictionary<MemoryType, uint>();
                 var functionIndices = new Dictionary<FunctionRef, uint>();
-                foreach (var import in importSection.Imports)
+                for (int i = 0; i < importSection.Imports.Count; i++)
                 {
+                    var import = importSection.Imports[i];
                     if (import is ImportedMemory importedMemory)
                     {
                         memoryIndices[importedMemory.Memory] = (uint)memoryIndices.Count;
                     }
                     else if (import is ImportedFunction importedFunction)
                     {
-                        var index = (uint)functionIndices.Count;
-                        functionIndices[new FunctionRef(true, index)] = index;
+                        functionIndices[new FunctionRef(true, (uint)i)] = (uint)functionIndices.Count;
                     }
                 }
                 foreach (var memory in memorySection.Memories)
@@ -583,28 +583,31 @@ namespace Wasm.Text
             var importName = AssembleString(moduleField.Tail[1], context);
             var importDesc = moduleField.Tail[2];
 
-            if (!AssertNonEmpty(importDesc, importDesc.Tail, "import", context))
-            {
-                return;
-            }
-
             string importId = null;
             var importTail = importDesc.Tail;
-            if (importDesc.Tail[0].IsIdentifier)
+            if (importDesc.Tail.Count > 0 && importDesc.Tail[0].IsIdentifier)
             {
                 importId = (string)importDesc.Tail[0].Head.Value;
                 importTail = importTail.Skip(1).ToArray();
-                if (!AssertNonEmpty(importDesc, importDesc.Tail, "import", context))
-                {
-                    return;
-                }
             }
 
             if (importDesc.IsCallTo("memory"))
             {
-                var memory = new MemoryType(AssembleLimits(importDesc, importDesc.Tail, context));
+                if (!AssertNonEmpty(importDesc, importTail, "import", context))
+                {
+                    return;
+                }
+                var memory = new MemoryType(AssembleLimits(importDesc, importTail, context));
                 module.AddImport(new ImportedMemory(moduleName, importName, memory));
                 context.MemoryContext.Define(importId, memory);
+            }
+            else if (importDesc.IsCallTo("func"))
+            {
+                var type = AssembleTypeUse(importDesc, ref importTail, context);
+                var typeIndex = module.AddFunctionType(type);
+                var importIndex = module.AddImport(new ImportedFunction(moduleName, importName, typeIndex));
+                context.FunctionContext.Define(importId, new FunctionRef(true, importIndex));
+                AssertEmpty(context, "import", importTail);
             }
             else
             {
@@ -616,6 +619,86 @@ namespace Wasm.Text
                             "unexpected expression in import; expected ",
                             "func", ",", "table", ",", "memory", " or ", "global", "."),
                         Highlight(importDesc)));
+            }
+        }
+
+        private static FunctionType AssembleTypeUse(
+            SExpression parent,
+            ref IReadOnlyList<SExpression> tail,
+            ModuleContext context)
+        {
+            var result = new FunctionType();
+
+            // TODO: parse optional leading 'type' expression.
+
+            // Parse parameters.
+            while (tail.Count > 0 && tail[0].IsCallTo("param"))
+            {
+                var paramSpec = tail[0];
+                var paramTail = paramSpec.Tail;
+                if (paramTail.Count > 0 && paramTail[0].IsIdentifier)
+                {
+                    // TODO: actually parse these identifiers.
+                    paramTail = paramTail.Skip(1).ToArray();
+                    if (!AssertNonEmpty(paramSpec, paramTail, "param", context))
+                    {
+                        continue;
+                    }
+
+                    var valType = AssembleValueType(paramTail[0], context);
+                    result.ParameterTypes.Add(valType);
+
+                    paramTail = paramTail.Skip(1).ToArray();
+                    AssertEmpty(context, "param", paramTail);
+                }
+                else
+                {
+                    result.ParameterTypes.AddRange(paramTail.Select(x => AssembleValueType(x, context)));
+                }
+                tail = tail.Skip(1).ToArray();
+            }
+
+            // Parse results.
+            while (tail.Count > 0 && tail[0].IsCallTo("result"))
+            {
+                var resultSpec = tail[0];
+                var resultTail = resultSpec.Tail;
+                result.ReturnTypes.AddRange(resultTail.Select(x => AssembleValueType(x, context)));
+                tail = tail.Skip(1).ToArray();
+            }
+
+            return result;
+        }
+
+        private static WasmValueType AssembleValueType(SExpression expression, ModuleContext context)
+        {
+            if (expression.IsSpecificKeyword("i32"))
+            {
+                return WasmValueType.Int32;
+            }
+            else if (expression.IsSpecificKeyword("i64"))
+            {
+                return WasmValueType.Int64;
+            }
+            else if (expression.IsSpecificKeyword("f32"))
+            {
+                return WasmValueType.Float32;
+            }
+            else if (expression.IsSpecificKeyword("f64"))
+            {
+                return WasmValueType.Float64;
+            }
+            else
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "unexpected token",
+                        Quotation.QuoteEvenInBold(
+                            "unexpected a value type, that is, ",
+                            "i32", ",", "i64", ",", "f32", " or ", "f64", "."),
+                        Highlight(expression)));
+                return WasmValueType.Int32;
             }
         }
 
@@ -777,7 +860,7 @@ namespace Wasm.Text
                     new LogEntry(
                         Severity.Error,
                         "syntax error",
-                        Quotation.QuoteEvenInBold(kind + " has an unexpected trailing expression."),
+                        Quotation.QuoteEvenInBold("", kind, " has an unexpected trailing expression."),
                         Highlight(tailArray[0])));
             }
         }

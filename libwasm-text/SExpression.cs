@@ -52,6 +52,16 @@ namespace Wasm.Text
         public bool IsIdentifier => !IsCall && Head.Kind == Lexer.TokenKind.Identifier;
 
         /// <summary>
+        /// Tells if this S-expression represents a specific keyword
+        /// </summary>
+        /// <param name="keyword">The keyword to look for.</param>
+        /// <returns><c>true</c> if this S-expression is keyword token that matches <paramref name="keyword"/>, <c>false</c> otherwise.</returns>
+        public bool IsSpecificKeyword(string keyword)
+        {
+            return !IsCall && Head.Kind == Lexer.TokenKind.Keyword && (string)Head.Value == keyword;
+        }
+
+        /// <summary>
         /// Tests if this S-expression is a call to a keyword with a particular name.
         /// </summary>
         /// <param name="keyword">The keyword to check for.</param>

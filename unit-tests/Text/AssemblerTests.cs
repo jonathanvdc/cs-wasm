@@ -133,6 +133,59 @@ namespace Wasm.Text
             Assert.AreEqual(1u, memory.Limits.Initial);
             Assert.IsTrue(memory.Limits.HasMaximum);
             Assert.AreEqual(2u, memory.Limits.Maximum);
+
+            module = AssembleModule("(module (import \"spectest\" \"memory\" (func)))");
+            Assert.AreEqual(2, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            var funcImport = (ImportedFunction)importSection.Imports[0];
+            Assert.AreEqual("spectest", import.ModuleName);
+            Assert.AreEqual("memory", import.FieldName);
+            var funcTypeIndex = funcImport.TypeIndex;
+            Assert.AreEqual(0u, funcTypeIndex);
+            var typeSection = module.GetFirstSectionOrNull<TypeSection>();
+            Assert.AreEqual(1, typeSection.FunctionTypes.Count);
+            var funcType = typeSection.FunctionTypes[0];
+            Assert.AreEqual(0, funcType.ParameterTypes.Count);
+            Assert.AreEqual(0, funcType.ReturnTypes.Count);
+
+            module = AssembleModule("(module (import \"spectest\" \"memory\" (func (param) (result))))");
+            Assert.AreEqual(2, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            funcImport = (ImportedFunction)importSection.Imports[0];
+            Assert.AreEqual("spectest", import.ModuleName);
+            Assert.AreEqual("memory", import.FieldName);
+            funcTypeIndex = funcImport.TypeIndex;
+            Assert.AreEqual(0u, funcTypeIndex);
+            typeSection = module.GetFirstSectionOrNull<TypeSection>();
+            Assert.AreEqual(1, typeSection.FunctionTypes.Count);
+            funcType = typeSection.FunctionTypes[0];
+            Assert.AreEqual(0, funcType.ParameterTypes.Count);
+            Assert.AreEqual(0, funcType.ReturnTypes.Count);
+
+            module = AssembleModule("(module (import \"spectest\" \"memory\" (func (param i32 i64 f32 f64) (result f64))))");
+            Assert.AreEqual(2, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            funcImport = (ImportedFunction)importSection.Imports[0];
+            Assert.AreEqual("spectest", import.ModuleName);
+            Assert.AreEqual("memory", import.FieldName);
+            funcTypeIndex = funcImport.TypeIndex;
+            Assert.AreEqual(0u, funcTypeIndex);
+            typeSection = module.GetFirstSectionOrNull<TypeSection>();
+            Assert.AreEqual(1, typeSection.FunctionTypes.Count);
+            funcType = typeSection.FunctionTypes[0];
+            Assert.AreEqual(4, funcType.ParameterTypes.Count);
+            Assert.AreEqual(WasmValueType.Int32, funcType.ParameterTypes[0]);
+            Assert.AreEqual(WasmValueType.Int64, funcType.ParameterTypes[1]);
+            Assert.AreEqual(WasmValueType.Float32, funcType.ParameterTypes[2]);
+            Assert.AreEqual(WasmValueType.Float64, funcType.ParameterTypes[3]);
+            Assert.AreEqual(1, funcType.ReturnTypes.Count);
+            Assert.AreEqual(WasmValueType.Float64, funcType.ReturnTypes[0]);
         }
 
         [Test]

@@ -292,7 +292,8 @@ namespace Wasm
         /// if one doesn't exist already.
         /// </summary>
         /// <param name="entry">A name entry to add.</param>
-        public void AddNameEntry(NameEntry entry)
+        /// <returns>The index in the name section of the newly added name entry.</returns>
+        public uint AddNameEntry(NameEntry entry)
         {
             var names = GetFirstSectionOrNull<NameSection>();
             if (names == null)
@@ -300,6 +301,7 @@ namespace Wasm
                 InsertSection(names = new NameSection());
             }
             names.Names.Add(entry);
+            return (uint)names.Names.Count - 1;
         }
 
         /// <summary>
@@ -307,7 +309,8 @@ namespace Wasm
         /// a new memory section if one doesn't exist already.
         /// </summary>
         /// <param name="memory">The memory to add.</param>
-        public void AddMemory(MemoryType memory)
+        /// <returns>The index in the memory section of the newly added memory.</returns>
+        public uint AddMemory(MemoryType memory)
         {
             var memories = GetFirstSectionOrNull<MemorySection>();
             if (memories == null)
@@ -315,6 +318,7 @@ namespace Wasm
                 InsertSection(memories = new MemorySection());
             }
             memories.Memories.Add(memory);
+            return (uint)memories.Memories.Count - 1;
         }
 
         /// <summary>
@@ -322,7 +326,8 @@ namespace Wasm
         /// a new data section if one doesn't exist already.
         /// </summary>
         /// <param name="segment">The data segment to add.</param>
-        public void AddDataSegment(DataSegment segment)
+        /// <returns>The index in the data section of the newly added data segment.</returns>
+        public uint AddDataSegment(DataSegment segment)
         {
             var data = GetFirstSectionOrNull<DataSection>();
             if (data == null)
@@ -330,6 +335,7 @@ namespace Wasm
                 InsertSection(data = new DataSection());
             }
             data.Segments.Add(segment);
+            return (uint)data.Segments.Count - 1;
         }
 
         /// <summary>
@@ -337,7 +343,8 @@ namespace Wasm
         /// a new import section if one doesn't exist already.
         /// </summary>
         /// <param name="import">The import to add.</param>
-        public void AddImport(ImportedValue import)
+        /// <returns>The index in the import section of the newly added import.</returns>
+        public uint AddImport(ImportedValue import)
         {
             var imports = GetFirstSectionOrNull<ImportSection>();
             if (imports == null)
@@ -345,6 +352,7 @@ namespace Wasm
                 InsertSection(imports = new ImportSection());
             }
             imports.Imports.Add(import);
+            return (uint)imports.Imports.Count - 1;
         }
 
         /// <summary>
@@ -352,7 +360,8 @@ namespace Wasm
         /// a new export section if one doesn't exist already.
         /// </summary>
         /// <param name="export">The export to add.</param>
-        public void AddExport(ExportedValue export)
+        /// <returns>The index in the export section of the newly added export.</returns>
+        public uint AddExport(ExportedValue export)
         {
             var exports = GetFirstSectionOrNull<ExportSection>();
             if (exports == null)
@@ -360,6 +369,24 @@ namespace Wasm
                 InsertSection(exports = new ExportSection());
             }
             exports.Exports.Add(export);
+            return (uint)exports.Exports.Count - 1;
+        }
+
+        /// <summary>
+        /// Adds a function type to this module's type section, defining
+        /// a new type section if one doesn't exist already.
+        /// </summary>
+        /// <param name="type">The type to add.</param>
+        /// <returns>The index in the type section of the newly added function type.</returns>
+        public uint AddFunctionType(FunctionType type)
+        {
+            var types = GetFirstSectionOrNull<TypeSection>();
+            if (types == null)
+            {
+                InsertSection(types = new TypeSection());
+            }
+            types.FunctionTypes.Add(type);
+            return (uint)types.FunctionTypes.Count - 1;
         }
     }
 }

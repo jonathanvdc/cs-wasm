@@ -119,6 +119,23 @@ namespace Wasm.Text
         }
 
         [Test]
+        public void AssembleModulesWithImports()
+        {
+            var module = AssembleModule("(module (import \"spectest\" \"memory\" (memory 1 2)))");
+            Assert.AreEqual(1, module.Sections.Count);
+            var importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            var import = (ImportedMemory)importSection.Imports[0];
+            Assert.AreEqual("spectest", import.ModuleName);
+            Assert.AreEqual("memory", import.FieldName);
+            var memory = import.Memory;
+            Assert.AreEqual(1u, memory.Limits.Initial);
+            Assert.IsTrue(memory.Limits.HasMaximum);
+            Assert.AreEqual(2u, memory.Limits.Maximum);
+        }
+
+        [Test]
         public void AssembleBadMemoryModules()
         {
             AssertInvalidModule("(module (memory))");

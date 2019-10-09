@@ -466,6 +466,7 @@ namespace Wasm.Text
             new Dictionary<string, ModuleFieldAssembler>()
         {
             ["export"] = AssembleExport,
+            ["import"] = AssembleImport,
             ["memory"] = AssembleMemory
         };
 
@@ -585,6 +586,55 @@ namespace Wasm.Text
                             "func", ",", "table", ",", "memory", " or ", "global", "."),
                         Highlight(tail[1])));
             }
+        }
+
+        private static void AssembleImport(SExpression moduleField, WasmFile module, ModuleContext context)
+        {
+            if (!AssertElementCount(moduleField, moduleField.Tail, 3, context))
+            {
+                return;
+            }
+
+            var moduleName = AssembleString(moduleField.Tail[0], context);
+            var importName = AssembleString(moduleField.Tail[1], context);
+            var importDesc = moduleField.Tail[2];
+
+            if (!AssertNonEmpty(importDesc, importDesc.Tail, "import", context))
+            {
+                return;
+            }
+
+            string importId = null;
+            var importTail = importDesc.Tail;
+            if (importDesc.Tail[0].IsIdentifier)
+            {
+                importId = (string)importDesc.Tail[0].Head.Value;
+                importTail = importTail.Skip(1).ToArray();
+                if (!AssertNonEmpty(importDesc, importDesc.Tail, "import", context))
+                {
+                    return;
+                }
+            }
+
+            if (importDesc.IsCallTo("memory"))
+            {
+                var memory = new MemoryType(AssembleLimits(importDesc.Tail[0], context));
+                module.AddImport(new ImportedMemory(moduleName, importName, memory));
+                context.MemoryContext.Define(importId, memory);
+            }
+            else
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "unexpected expression in import; expected ",
+                            "func", ",", "table", ",", "memory", " or ", "global", "."),
+                        Highlight(importDesc)));
+                return;
+            }
+            AssertEmpty(context, "import", importTail.Skip(1).ToArray());
         }
 
         private static void AddExport<T>(

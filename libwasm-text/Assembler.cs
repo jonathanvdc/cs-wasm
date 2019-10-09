@@ -509,13 +509,7 @@ namespace Wasm.Text
                 AddExport(module, context.MemoryContext, memory, ExternalKind.Memory, exportName);
             }
 
-            if (tail[0].IsCallTo("limits"))
-            {
-                memory.Limits = AssembleLimits(tail[0], context);
-                module.AddMemory(memory);
-                AssertEmpty(context, kind, tail.Skip(1));
-            }
-            else if (tail[0].IsCallTo("data"))
+            if (tail[0].IsCallTo("data"))
             {
                 var data = AssembleDataString(tail[0].Tail, context);
                 var pageCount = (uint)Math.Ceiling((double)data.Length / MemoryType.PageSize);
@@ -530,24 +524,14 @@ namespace Wasm.Text
             {
                 var (moduleName, memoryName) = AssembleInlineImport(tail[0], context);
                 tail = tail.Skip(1).ToArray();
-                if (AssertNonEmpty(moduleField, tail, kind, context))
-                {
-                    memory.Limits = AssembleLimits(tail[0], context);
-                }
+                memory.Limits = AssembleLimits(moduleField, tail, context);
                 var import = new ImportedMemory(moduleName, memoryName, memory);
                 module.AddImport(import);
-                AssertEmpty(context, kind, tail.Skip(1).ToArray());
             }
             else
             {
-                context.Log.Log(
-                    new LogEntry(
-                        Severity.Error,
-                        "syntax error",
-                        Quotation.QuoteEvenInBold(
-                            "unexpected expression in memory definition; expected ",
-                            "data", ",", "export", ",", "import", " or ", "limits", "."),
-                        Highlight(tail[0])));
+                memory.Limits = AssembleLimits(moduleField, tail, context);
+                module.AddMemory(memory);
             }
         }
 
@@ -618,7 +602,7 @@ namespace Wasm.Text
 
             if (importDesc.IsCallTo("memory"))
             {
-                var memory = new MemoryType(AssembleLimits(importDesc.Tail[0], context));
+                var memory = new MemoryType(AssembleLimits(importDesc, importDesc.Tail, context));
                 module.AddImport(new ImportedMemory(moduleName, importName, memory));
                 context.MemoryContext.Define(importId, memory);
             }
@@ -632,9 +616,7 @@ namespace Wasm.Text
                             "unexpected expression in import; expected ",
                             "func", ",", "table", ",", "memory", " or ", "global", "."),
                         Highlight(importDesc)));
-                return;
             }
-            AssertEmpty(context, "import", importTail.Skip(1).ToArray());
         }
 
         private static void AddExport<T>(
@@ -800,28 +782,28 @@ namespace Wasm.Text
             }
         }
 
-        private static ResizableLimits AssembleLimits(SExpression expression, ModuleContext context)
+        private static ResizableLimits AssembleLimits(SExpression parent, IReadOnlyList<SExpression> tail, ModuleContext context)
         {
-            if (expression.Tail.Count == 0)
+            if (tail.Count == 0)
             {
                 context.Log.Log(
                     new LogEntry(
                         Severity.Error,
                         "syntax error",
                         Quotation.QuoteEvenInBold("", "limits", " expression is empty."),
-                        Highlight(expression)));
+                        Highlight(parent)));
                 return new ResizableLimits(0);
             }
 
-            var init = AssembleUInt32(expression.Tail[0], context);
+            var init = AssembleUInt32(tail[0], context);
 
-            if (expression.Tail.Count == 1)
+            if (tail.Count == 1)
             {
                 return new ResizableLimits(init);
             }
-            if (expression.Tail.Count == 2)
+            if (tail.Count == 2)
             {
-                var max = AssembleUInt32(expression.Tail[1], context);
+                var max = AssembleUInt32(tail[1], context);
                 return new ResizableLimits(init, max);
             }
             else
@@ -831,7 +813,7 @@ namespace Wasm.Text
                         Severity.Error,
                         "syntax error",
                         Quotation.QuoteEvenInBold("", "limits", " expression contains more than two elements."),
-                        Highlight(expression)));
+                        Highlight(tail[2])));
                 return new ResizableLimits(0);
             }
         }

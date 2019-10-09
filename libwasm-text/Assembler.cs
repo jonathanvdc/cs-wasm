@@ -195,13 +195,20 @@ namespace Wasm.Text
             {
                 this.Assembler = assembler;
                 this.MemoryContext = IdentifierContext<MemoryType>.Create();
+                this.FunctionContext = IdentifierContext<FunctionRef>.Create();
             }
 
             /// <summary>
-            /// Gets the memory context for the module.
+            /// Gets the identifier context for the module's memories.
             /// </summary>
-            /// <value>A memory context.</value>
+            /// <value>An identifier context.</value>
             public IdentifierContext<MemoryType> MemoryContext { get; private set; }
+
+            /// <summary>
+            /// Gets the identifier context for the module's functions.
+            /// </summary>
+            /// <value>An identifier context.</value>
+            public IdentifierContext<FunctionRef> FunctionContext { get; private set; }
 
             /// <summary>
             /// Gets the assembler that gives rise to this context.
@@ -222,24 +229,74 @@ namespace Wasm.Text
             {
                 var importSection = module.GetFirstSectionOrNull<ImportSection>() ?? new ImportSection();
                 var memorySection = module.GetFirstSectionOrNull<MemorySection>() ?? new MemorySection();
+                var functionSection = module.GetFirstSectionOrNull<FunctionSection>() ?? new FunctionSection();
+
                 var memoryIndices = new Dictionary<MemoryType, uint>();
+                var functionIndices = new Dictionary<FunctionRef, uint>();
                 foreach (var import in importSection.Imports)
                 {
                     if (import is ImportedMemory importedMemory)
                     {
                         memoryIndices[importedMemory.Memory] = (uint)memoryIndices.Count;
                     }
+                    else if (import is ImportedFunction importedFunction)
+                    {
+                        var index = (uint)functionIndices.Count;
+                        functionIndices[new FunctionRef(true, index)] = index;
+                    }
                 }
                 foreach (var memory in memorySection.Memories)
                 {
                     memoryIndices[memory] = (uint)memoryIndices.Count;
                 }
+                for (int i = 0; i < functionSection.FunctionTypes.Count; i++)
+                {
+                    functionIndices[new FunctionRef(false, (uint)i)] = (uint)functionIndices.Count;
+                }
 
-                // Resolve memories identifiers.
+                // Resolve memory identifiers.
                 MemoryContext.ResolveAll(
                     Assembler.Log,
                     mem => memoryIndices[mem]);
+
+                // Resolve function identifiers.
+                FunctionContext.ResolveAll(
+                    Assembler.Log,
+                    func => functionIndices[func]);
             }
+        }
+
+        /// <summary>
+        /// A reference to a function.
+        /// </summary>
+        public struct FunctionRef
+        {
+            /// <summary>
+            /// Creates a reference to a function.
+            /// </summary>
+            /// <param name="isImport">
+            /// Tells if the function referred to by this reference is an import.
+            /// </param>
+            /// <param name="indexInSection">
+            /// The intra-section index of the function being referred to.
+            /// </param>
+            public FunctionRef(bool isImport, uint indexInSection)
+            {
+                this.IsImport = isImport;
+                this.IndexInSection = indexInSection;
+            }
+
+            /// <summary>
+            /// Tells if the function referred to by this reference is an import.
+            /// </summary>
+            /// <value><c>true</c> if the function is an import; otherwise, <c>false</c>.</value>
+            public bool IsImport { get; private set; }
+
+            /// <summary>
+            /// Gets the intra-section index of the function being referred to.
+            /// </summary>
+            /// <value>An intra-section index.</value>
+            public uint IndexInSection { get; private set; }
         }
 
         /// <summary>
@@ -512,6 +569,10 @@ namespace Wasm.Text
             if (tail[1].IsCallTo("memory"))
             {
                 AddExport(module, context.MemoryContext, index, ExternalKind.Memory, exportName);
+            }
+            else if (tail[1].IsCallTo("func"))
+            {
+                AddExport(module, context.FunctionContext, index, ExternalKind.Function, exportName);
             }
             else
             {

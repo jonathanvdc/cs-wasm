@@ -197,6 +197,7 @@ namespace Wasm.Text
                 this.MemoryContext = IdentifierContext<MemoryType>.Create();
                 this.FunctionContext = IdentifierContext<LocalOrImportRef>.Create();
                 this.GlobalContext = IdentifierContext<LocalOrImportRef>.Create();
+                this.TableContext = IdentifierContext<LocalOrImportRef>.Create();
             }
 
             /// <summary>
@@ -216,6 +217,12 @@ namespace Wasm.Text
             /// </summary>
             /// <value>An identifier context.</value>
             public IdentifierContext<LocalOrImportRef> GlobalContext { get; private set; }
+
+            /// <summary>
+            /// Gets the identifier context for the module's tables.
+            /// </summary>
+            /// <value>An identifier context.</value>
+            public IdentifierContext<LocalOrImportRef> TableContext { get; private set; }
 
             /// <summary>
             /// Gets the assembler that gives rise to this context.
@@ -238,10 +245,12 @@ namespace Wasm.Text
                 var memorySection = module.GetFirstSectionOrNull<MemorySection>() ?? new MemorySection();
                 var functionSection = module.GetFirstSectionOrNull<FunctionSection>() ?? new FunctionSection();
                 var globalSection = module.GetFirstSectionOrNull<GlobalSection>() ?? new GlobalSection();
+                var tableSection = module.GetFirstSectionOrNull<TableSection>() ?? new TableSection();
 
                 var memoryIndices = new Dictionary<MemoryType, uint>();
                 var functionIndices = new Dictionary<LocalOrImportRef, uint>();
                 var globalIndices = new Dictionary<LocalOrImportRef, uint>();
+                var tableIndices = new Dictionary<LocalOrImportRef, uint>();
                 for (int i = 0; i < importSection.Imports.Count; i++)
                 {
                     var import = importSection.Imports[i];
@@ -257,6 +266,10 @@ namespace Wasm.Text
                     {
                         globalIndices[new LocalOrImportRef(true, (uint)i)] = (uint)globalIndices.Count;
                     }
+                    else if (import is ImportedTable importedTable)
+                    {
+                        tableIndices[new LocalOrImportRef(true, (uint)i)] = (uint)tableIndices.Count;
+                    }
                 }
                 foreach (var memory in memorySection.Memories)
                 {
@@ -269,6 +282,10 @@ namespace Wasm.Text
                 for (int i = 0; i < globalSection.GlobalVariables.Count; i++)
                 {
                     globalIndices[new LocalOrImportRef(false, (uint)i)] = (uint)globalIndices.Count;
+                }
+                for (int i = 0; i < tableSection.Tables.Count; i++)
+                {
+                    tableIndices[new LocalOrImportRef(false, (uint)i)] = (uint)tableIndices.Count;
                 }
 
                 // Resolve memory identifiers.
@@ -284,7 +301,12 @@ namespace Wasm.Text
                 // Resolve global identifiers.
                 GlobalContext.ResolveAll(
                     Assembler.Log,
-                    func => globalIndices[func]);
+                    global => globalIndices[global]);
+
+                // Resolve table identifiers.
+                TableContext.ResolveAll(
+                    Assembler.Log,
+                    table => tableIndices[table]);
             }
         }
 
@@ -640,6 +662,12 @@ namespace Wasm.Text
                 context.GlobalContext.Define(importId, new LocalOrImportRef(true, importIndex));
                 AssertEmpty(context, "global", importTail.Skip(1).ToArray());
             }
+            else if (importDesc.IsCallTo("table"))
+            {
+                var type = AssembleTableType(importDesc, importTail, context);
+                var importIndex = module.AddImport(new ImportedTable(moduleName, importName, type));
+                context.TableContext.Define(importId, new LocalOrImportRef(true, importIndex));
+            }
             else
             {
                 context.Log.Log(
@@ -651,6 +679,34 @@ namespace Wasm.Text
                             "func", ",", "table", ",", "memory", " or ", "global", "."),
                         Highlight(importDesc)));
             }
+        }
+
+        private static TableType AssembleTableType(SExpression parent, IReadOnlyList<SExpression> tail, ModuleContext context)
+        {
+            if (!AssertElementCount(parent, tail, 3, context))
+            {
+                return new TableType(WasmType.AnyFunc, new ResizableLimits(0));
+            }
+
+            var limits = AssembleLimits(parent, tail.Take(2).ToArray(), context);
+            var elemType = AssembleElemType(tail[2], context);
+            return new TableType(WasmType.AnyFunc, limits);
+        }
+
+        private static WasmType AssembleElemType(SExpression expression, ModuleContext context)
+        {
+            if (!expression.IsSpecificKeyword("funcref"))
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "unexpected table type expression; expected ",
+                            "funcref", "."),
+                        Highlight(expression)));
+            }
+            return WasmType.AnyFunc;
         }
 
         private static GlobalType AssembleGlobalType(SExpression expression, ModuleContext context)

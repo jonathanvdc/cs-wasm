@@ -208,6 +208,19 @@ namespace Wasm.Text
             Assert.AreEqual("global_i32", globalImport.FieldName);
             Assert.AreEqual(WasmValueType.Int32, globalImport.Global.ContentType);
             Assert.IsTrue(globalImport.Global.IsMutable);
+
+            module = AssembleModule("(module (import \"spectest\" \"table\" (table 10 20 funcref)))");
+            Assert.AreEqual(1, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            var tableImport = (ImportedTable)importSection.Imports[0];
+            Assert.AreEqual("spectest", tableImport.ModuleName);
+            Assert.AreEqual("table", tableImport.FieldName);
+            Assert.AreEqual(WasmType.AnyFunc, tableImport.Table.ElementType);
+            Assert.AreEqual(10u, tableImport.Table.Limits.Initial);
+            Assert.IsTrue(tableImport.Table.Limits.HasMaximum);
+            Assert.AreEqual(20u, tableImport.Table.Limits.Maximum);
         }
 
         [Test]

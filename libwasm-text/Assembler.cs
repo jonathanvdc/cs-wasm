@@ -195,7 +195,8 @@ namespace Wasm.Text
             {
                 this.Assembler = assembler;
                 this.MemoryContext = IdentifierContext<MemoryType>.Create();
-                this.FunctionContext = IdentifierContext<FunctionRef>.Create();
+                this.FunctionContext = IdentifierContext<LocalOrImportRef>.Create();
+                this.GlobalContext = IdentifierContext<LocalOrImportRef>.Create();
             }
 
             /// <summary>
@@ -208,7 +209,13 @@ namespace Wasm.Text
             /// Gets the identifier context for the module's functions.
             /// </summary>
             /// <value>An identifier context.</value>
-            public IdentifierContext<FunctionRef> FunctionContext { get; private set; }
+            public IdentifierContext<LocalOrImportRef> FunctionContext { get; private set; }
+
+            /// <summary>
+            /// Gets the identifier context for the module's globals.
+            /// </summary>
+            /// <value>An identifier context.</value>
+            public IdentifierContext<LocalOrImportRef> GlobalContext { get; private set; }
 
             /// <summary>
             /// Gets the assembler that gives rise to this context.
@@ -230,9 +237,11 @@ namespace Wasm.Text
                 var importSection = module.GetFirstSectionOrNull<ImportSection>() ?? new ImportSection();
                 var memorySection = module.GetFirstSectionOrNull<MemorySection>() ?? new MemorySection();
                 var functionSection = module.GetFirstSectionOrNull<FunctionSection>() ?? new FunctionSection();
+                var globalSection = module.GetFirstSectionOrNull<GlobalSection>() ?? new GlobalSection();
 
                 var memoryIndices = new Dictionary<MemoryType, uint>();
-                var functionIndices = new Dictionary<FunctionRef, uint>();
+                var functionIndices = new Dictionary<LocalOrImportRef, uint>();
+                var globalIndices = new Dictionary<LocalOrImportRef, uint>();
                 for (int i = 0; i < importSection.Imports.Count; i++)
                 {
                     var import = importSection.Imports[i];
@@ -242,7 +251,11 @@ namespace Wasm.Text
                     }
                     else if (import is ImportedFunction importedFunction)
                     {
-                        functionIndices[new FunctionRef(true, (uint)i)] = (uint)functionIndices.Count;
+                        functionIndices[new LocalOrImportRef(true, (uint)i)] = (uint)functionIndices.Count;
+                    }
+                    else if (import is ImportedGlobal importedGlobal)
+                    {
+                        globalIndices[new LocalOrImportRef(true, (uint)i)] = (uint)globalIndices.Count;
                     }
                 }
                 foreach (var memory in memorySection.Memories)
@@ -251,7 +264,11 @@ namespace Wasm.Text
                 }
                 for (int i = 0; i < functionSection.FunctionTypes.Count; i++)
                 {
-                    functionIndices[new FunctionRef(false, (uint)i)] = (uint)functionIndices.Count;
+                    functionIndices[new LocalOrImportRef(false, (uint)i)] = (uint)functionIndices.Count;
+                }
+                for (int i = 0; i < globalSection.GlobalVariables.Count; i++)
+                {
+                    globalIndices[new LocalOrImportRef(false, (uint)i)] = (uint)globalIndices.Count;
                 }
 
                 // Resolve memory identifiers.
@@ -263,37 +280,44 @@ namespace Wasm.Text
                 FunctionContext.ResolveAll(
                     Assembler.Log,
                     func => functionIndices[func]);
+
+                // Resolve global identifiers.
+                GlobalContext.ResolveAll(
+                    Assembler.Log,
+                    func => globalIndices[func]);
             }
         }
 
         /// <summary>
-        /// A reference to a function.
+        /// A reference to a function, global, table or memory that is either defined
+        /// locally or imported.
         /// </summary>
-        public struct FunctionRef
+        public struct LocalOrImportRef
         {
             /// <summary>
-            /// Creates a reference to a function.
+            /// Creates a reference to a function, global, table or memory that is either defined
+            /// locally or imported.
             /// </summary>
             /// <param name="isImport">
-            /// Tells if the function referred to by this reference is an import.
+            /// Tells if the value referred to by this reference is an import.
             /// </param>
             /// <param name="indexInSection">
-            /// The intra-section index of the function being referred to.
+            /// The intra-section index of the value being referred to.
             /// </param>
-            public FunctionRef(bool isImport, uint indexInSection)
+            public LocalOrImportRef(bool isImport, uint indexInSection)
             {
                 this.IsImport = isImport;
                 this.IndexInSection = indexInSection;
             }
 
             /// <summary>
-            /// Tells if the function referred to by this reference is an import.
+            /// Tells if the value referred to by this reference is an import.
             /// </summary>
-            /// <value><c>true</c> if the function is an import; otherwise, <c>false</c>.</value>
+            /// <value><c>true</c> if the value is an import; otherwise, <c>false</c>.</value>
             public bool IsImport { get; private set; }
 
             /// <summary>
-            /// Gets the intra-section index of the function being referred to.
+            /// Gets the intra-section index of the value being referred to.
             /// </summary>
             /// <value>An intra-section index.</value>
             public uint IndexInSection { get; private set; }
@@ -606,8 +630,15 @@ namespace Wasm.Text
                 var type = AssembleTypeUse(importDesc, ref importTail, context);
                 var typeIndex = module.AddFunctionType(type);
                 var importIndex = module.AddImport(new ImportedFunction(moduleName, importName, typeIndex));
-                context.FunctionContext.Define(importId, new FunctionRef(true, importIndex));
+                context.FunctionContext.Define(importId, new LocalOrImportRef(true, importIndex));
                 AssertEmpty(context, "import", importTail);
+            }
+            else if (importDesc.IsCallTo("global"))
+            {
+                var type = AssembleGlobalType(importTail[0], context);
+                var importIndex = module.AddImport(new ImportedGlobal(moduleName, importName, type));
+                context.GlobalContext.Define(importId, new LocalOrImportRef(true, importIndex));
+                AssertEmpty(context, "global", importTail.Skip(1).ToArray());
             }
             else
             {
@@ -619,6 +650,23 @@ namespace Wasm.Text
                             "unexpected expression in import; expected ",
                             "func", ",", "table", ",", "memory", " or ", "global", "."),
                         Highlight(importDesc)));
+            }
+        }
+
+        private static GlobalType AssembleGlobalType(SExpression expression, ModuleContext context)
+        {
+            if (expression.IsCallTo("mut"))
+            {
+                if (!AssertElementCount(expression, expression.Tail, 1, context))
+                {
+                    return new GlobalType(WasmValueType.Int32, true);
+                }
+
+                return new GlobalType(AssembleValueType(expression.Tail[0], context), true);
+            }
+            else
+            {
+                return new GlobalType(AssembleValueType(expression, context), false);
             }
         }
 

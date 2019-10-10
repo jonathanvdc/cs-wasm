@@ -126,10 +126,10 @@ namespace Wasm.Text
             var importSection = module.GetFirstSectionOrNull<ImportSection>();
             Assert.IsNotNull(importSection);
             Assert.AreEqual(1, importSection.Imports.Count);
-            var import = (ImportedMemory)importSection.Imports[0];
-            Assert.AreEqual("spectest", import.ModuleName);
-            Assert.AreEqual("memory", import.FieldName);
-            var memory = import.Memory;
+            var memoryImport = (ImportedMemory)importSection.Imports[0];
+            Assert.AreEqual("spectest", memoryImport.ModuleName);
+            Assert.AreEqual("memory", memoryImport.FieldName);
+            var memory = memoryImport.Memory;
             Assert.AreEqual(1u, memory.Limits.Initial);
             Assert.IsTrue(memory.Limits.HasMaximum);
             Assert.AreEqual(2u, memory.Limits.Maximum);
@@ -140,8 +140,8 @@ namespace Wasm.Text
             Assert.IsNotNull(importSection);
             Assert.AreEqual(1, importSection.Imports.Count);
             var funcImport = (ImportedFunction)importSection.Imports[0];
-            Assert.AreEqual("spectest", import.ModuleName);
-            Assert.AreEqual("memory", import.FieldName);
+            Assert.AreEqual("spectest", funcImport.ModuleName);
+            Assert.AreEqual("memory", funcImport.FieldName);
             var funcTypeIndex = funcImport.TypeIndex;
             Assert.AreEqual(0u, funcTypeIndex);
             var typeSection = module.GetFirstSectionOrNull<TypeSection>();
@@ -156,8 +156,8 @@ namespace Wasm.Text
             Assert.IsNotNull(importSection);
             Assert.AreEqual(1, importSection.Imports.Count);
             funcImport = (ImportedFunction)importSection.Imports[0];
-            Assert.AreEqual("spectest", import.ModuleName);
-            Assert.AreEqual("memory", import.FieldName);
+            Assert.AreEqual("spectest", funcImport.ModuleName);
+            Assert.AreEqual("memory", funcImport.FieldName);
             funcTypeIndex = funcImport.TypeIndex;
             Assert.AreEqual(0u, funcTypeIndex);
             typeSection = module.GetFirstSectionOrNull<TypeSection>();
@@ -172,8 +172,8 @@ namespace Wasm.Text
             Assert.IsNotNull(importSection);
             Assert.AreEqual(1, importSection.Imports.Count);
             funcImport = (ImportedFunction)importSection.Imports[0];
-            Assert.AreEqual("spectest", import.ModuleName);
-            Assert.AreEqual("memory", import.FieldName);
+            Assert.AreEqual("spectest", funcImport.ModuleName);
+            Assert.AreEqual("memory", funcImport.FieldName);
             funcTypeIndex = funcImport.TypeIndex;
             Assert.AreEqual(0u, funcTypeIndex);
             typeSection = module.GetFirstSectionOrNull<TypeSection>();
@@ -186,6 +186,28 @@ namespace Wasm.Text
             Assert.AreEqual(WasmValueType.Float64, funcType.ParameterTypes[3]);
             Assert.AreEqual(1, funcType.ReturnTypes.Count);
             Assert.AreEqual(WasmValueType.Float64, funcType.ReturnTypes[0]);
+
+            module = AssembleModule("(module (import \"spectest\" \"global_i32\" (global $x i32)))");
+            Assert.AreEqual(1, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            var globalImport = (ImportedGlobal)importSection.Imports[0];
+            Assert.AreEqual("spectest", globalImport.ModuleName);
+            Assert.AreEqual("global_i32", globalImport.FieldName);
+            Assert.AreEqual(WasmValueType.Int32, globalImport.Global.ContentType);
+            Assert.IsFalse(globalImport.Global.IsMutable);
+
+            module = AssembleModule("(module (import \"spectest\" \"global_i32\" (global (mut i32))))");
+            Assert.AreEqual(1, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            globalImport = (ImportedGlobal)importSection.Imports[0];
+            Assert.AreEqual("spectest", globalImport.ModuleName);
+            Assert.AreEqual("global_i32", globalImport.FieldName);
+            Assert.AreEqual(WasmValueType.Int32, globalImport.Global.ContentType);
+            Assert.IsTrue(globalImport.Global.IsMutable);
         }
 
         [Test]

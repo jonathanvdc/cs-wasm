@@ -224,6 +224,65 @@ namespace Wasm.Text
         }
 
         [Test]
+        public void AssembleModulesWithTables()
+        {
+            var module = AssembleModule("(module (table 0 funcref))");
+            Assert.AreEqual(1, module.Sections.Count);
+            var tableSection = module.GetFirstSectionOrNull<TableSection>();
+            Assert.IsNotNull(tableSection);
+            Assert.AreEqual(1, tableSection.Tables.Count);
+            var table = (TableType)tableSection.Tables[0];
+            Assert.AreEqual(WasmType.AnyFunc, table.ElementType);
+            Assert.AreEqual(0u, table.Limits.Initial);
+            Assert.IsFalse(table.Limits.HasMaximum);
+
+            module = AssembleModule("(module (table 0 1 funcref))");
+            Assert.AreEqual(1, module.Sections.Count);
+            tableSection = module.GetFirstSectionOrNull<TableSection>();
+            Assert.IsNotNull(tableSection);
+            Assert.AreEqual(1, tableSection.Tables.Count);
+            table = (TableType)tableSection.Tables[0];
+            Assert.AreEqual(WasmType.AnyFunc, table.ElementType);
+            Assert.AreEqual(0u, table.Limits.Initial);
+            Assert.IsTrue(table.Limits.HasMaximum);
+            Assert.AreEqual(1u, table.Limits.Maximum);
+
+            module = AssembleModule("(module (table (import \"spectest\" \"table\") 10 20 funcref))");
+            Assert.AreEqual(1, module.Sections.Count);
+            var importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            var tableImport = (ImportedTable)importSection.Imports[0];
+            Assert.AreEqual("spectest", tableImport.ModuleName);
+            Assert.AreEqual("table", tableImport.FieldName);
+            Assert.AreEqual(WasmType.AnyFunc, tableImport.Table.ElementType);
+            Assert.AreEqual(10u, tableImport.Table.Limits.Initial);
+            Assert.IsTrue(tableImport.Table.Limits.HasMaximum);
+            Assert.AreEqual(20u, tableImport.Table.Limits.Maximum);
+
+            module = AssembleModule("(module (table (export \"table1\") (export \"table2\") (import \"spectest\" \"table\") 10 20 funcref))");
+            Assert.AreEqual(2, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            tableImport = (ImportedTable)importSection.Imports[0];
+            Assert.AreEqual("spectest", tableImport.ModuleName);
+            Assert.AreEqual("table", tableImport.FieldName);
+            Assert.AreEqual(WasmType.AnyFunc, tableImport.Table.ElementType);
+            Assert.AreEqual(10u, tableImport.Table.Limits.Initial);
+            Assert.IsTrue(tableImport.Table.Limits.HasMaximum);
+            Assert.AreEqual(20u, tableImport.Table.Limits.Maximum);
+            var exportSection = module.GetFirstSectionOrNull<ExportSection>();
+            Assert.IsNotNull(exportSection);
+            Assert.AreEqual("table1", exportSection.Exports[0].Name);
+            Assert.AreEqual(ExternalKind.Table, exportSection.Exports[0].Kind);
+            Assert.AreEqual(0u, exportSection.Exports[0].Index);
+            Assert.AreEqual("table2", exportSection.Exports[1].Name);
+            Assert.AreEqual(ExternalKind.Table, exportSection.Exports[1].Kind);
+            Assert.AreEqual(0u, exportSection.Exports[1].Index);
+        }
+
+        [Test]
         public void AssembleBadMemoryModules()
         {
             AssertInvalidModule("(module (memory))");

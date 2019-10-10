@@ -513,7 +513,8 @@ namespace Wasm.Text
         {
             ["export"] = AssembleExport,
             ["import"] = AssembleImport,
-            ["memory"] = AssembleMemory
+            ["memory"] = AssembleMemory,
+            ["table"] = AssembleTable
         };
 
         private static void AssembleMemory(
@@ -605,6 +606,14 @@ namespace Wasm.Text
             {
                 AddExport(module, context.FunctionContext, index, ExternalKind.Function, exportName);
             }
+            else if (tail[1].IsCallTo("table"))
+            {
+                AddExport(module, context.TableContext, index, ExternalKind.Table, exportName);
+            }
+            else if (tail[1].IsCallTo("global"))
+            {
+                AddExport(module, context.GlobalContext, index, ExternalKind.Global, exportName);
+            }
             else
             {
                 context.Log.Log(
@@ -681,15 +690,120 @@ namespace Wasm.Text
             }
         }
 
+        private static void AssembleTable(
+            SExpression moduleField,
+            WasmFile module,
+            ModuleContext context)
+        {
+            string tableId = null;
+            var tail = moduleField.Tail;
+            if (moduleField.Tail.Count > 0 && moduleField.Tail[0].IsIdentifier)
+            {
+                tableId = (string)moduleField.Tail[0].Head.Value;
+                tail = tail.Skip(1).ToArray();
+            }
+
+            var exportNames = new List<string>();
+            while (tail.Count > 0 && tail[0].IsCallTo("export"))
+            {
+                var exportExpr = tail[0];
+                if (!AssertElementCount(exportExpr, exportExpr.Tail, 1, context))
+                {
+                    continue;
+                }
+
+                exportNames.Add(AssembleString(exportExpr.Tail[0], context));
+                tail = tail.Skip(1).ToArray();
+            }
+
+            if (!AssertNonEmpty(moduleField, tail, "table definition", context))
+            {
+                return;
+            }
+
+            LocalOrImportRef tableRef;
+            if (tail[0].IsCallTo("import"))
+            {
+                var (moduleName, importName) = AssembleInlineImport(tail[0], context);
+                var table = AssembleTableType(moduleField, tail.Skip(1).ToArray(), context);
+                var tableIndex = module.AddImport(new ImportedTable(moduleName, importName, table));
+                tableRef = new LocalOrImportRef(true, tableIndex);
+                context.TableContext.Define(tableId, tableRef);
+            }
+            else if (tail[0].Head.Kind == Lexer.TokenKind.Keyword)
+            {
+                var elemType = AssembleElemType(tail[0], context);
+                var table = new TableType(elemType, new ResizableLimits(0));
+                var tableIndex = module.AddTable(table);
+                tableRef = new LocalOrImportRef(false, tableIndex);
+                context.TableContext.Define(tableId, tableRef);
+
+                if (!AssertElementCount(moduleField, tail, 2, context))
+                {
+                    return;
+                }
+
+                var elems = tail[1];
+                if (!elems.IsCallTo("elem"))
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold(
+                                "unexpected expression in initialized table; expected an ",
+                                "elem", " expression."),
+                            Highlight(elems)));
+                }
+
+                var elemSegment = new ElementSegment(
+                    0,
+                    new InitializerExpression(Operators.Int32Const.Create(0)),
+                    Enumerable.Empty<uint>());
+                module.AddElementSegment(elemSegment);
+
+                context.TableContext.Use(tableRef, index => { elemSegment.TableIndex = index; });
+
+                for (int i = 0; i < elems.Tail.Count; i++)
+                {
+                    elemSegment.Elements.Add(0);
+                    var functionId = AssembleIdentifierOrIndex(elems.Tail[i], context);
+                    var j = i;
+                    context.FunctionContext.Use(functionId, index => { elemSegment.Elements[j] = index; });
+                }
+            }
+            else
+            {
+                var table = AssembleTableType(moduleField, tail, context);
+                var tableIndex = module.AddTable(table);
+                tableRef = new LocalOrImportRef(false, tableIndex);
+                context.TableContext.Define(tableId, tableRef);
+            }
+
+            foreach (var exportName in exportNames)
+            {
+                AddExport(module, context.TableContext, tableRef, ExternalKind.Table, exportName);
+            }
+        }
+
         private static TableType AssembleTableType(SExpression parent, IReadOnlyList<SExpression> tail, ModuleContext context)
         {
-            if (!AssertElementCount(parent, tail, 3, context))
+            if (tail.Count < 2 || tail.Count > 3)
             {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "expected a table type, that is, resizable limits followed by ",
+                            "funcref",
+                            ", the table element type."),
+                        Highlight(parent)));
                 return new TableType(WasmType.AnyFunc, new ResizableLimits(0));
             }
 
-            var limits = AssembleLimits(parent, tail.Take(2).ToArray(), context);
-            var elemType = AssembleElemType(tail[2], context);
+            var limits = AssembleLimits(parent, tail.Take(tail.Count - 1).ToArray(), context);
+            var elemType = AssembleElemType(tail[tail.Count - 1], context);
             return new TableType(WasmType.AnyFunc, limits);
         }
 
@@ -977,7 +1091,7 @@ namespace Wasm.Text
                     new LogEntry(
                         Severity.Error,
                         "syntax error",
-                        Quotation.QuoteEvenInBold("", "limits", " expression is empty."),
+                        "limits expression is empty.",
                         Highlight(parent)));
                 return new ResizableLimits(0);
             }
@@ -999,7 +1113,7 @@ namespace Wasm.Text
                     new LogEntry(
                         Severity.Error,
                         "syntax error",
-                        Quotation.QuoteEvenInBold("", "limits", " expression contains more than two elements."),
+                        "limits expression contains more than two elements.",
                         Highlight(tail[2])));
                 return new ResizableLimits(0);
             }

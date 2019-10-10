@@ -388,5 +388,39 @@ namespace Wasm
             types.FunctionTypes.Add(type);
             return (uint)types.FunctionTypes.Count - 1;
         }
+
+        /// <summary>
+        /// Adds a table to this module's type section, defining
+        /// a new table section if one doesn't exist already.
+        /// </summary>
+        /// <param name="table">The table to add.</param>
+        /// <returns>The index in the table section of the newly added table.</returns>
+        public uint AddTable(TableType table)
+        {
+            var tables = GetFirstSectionOrNull<TableSection>();
+            if (tables == null)
+            {
+                InsertSection(tables = new TableSection());
+            }
+            tables.Tables.Add(table);
+            return (uint)tables.Tables.Count - 1;
+        }
+
+        /// <summary>
+        /// Adds a element segment to this module's element section, defining
+        /// a new element section if one doesn't exist already.
+        /// </summary>
+        /// <param name="segment">The element segment to add.</param>
+        /// <returns>The index in the element section of the newly added element segment.</returns>
+        public uint AddElementSegment(ElementSegment segment)
+        {
+            var elements = GetFirstSectionOrNull<ElementSection>();
+            if (elements == null)
+            {
+                InsertSection(elements = new ElementSection());
+            }
+            elements.Segments.Add(segment);
+            return (uint)elements.Segments.Count - 1;
+        }
     }
 }

@@ -7,6 +7,7 @@ using Pixie;
 using Pixie.Code;
 using Pixie.Markup;
 using Wasm.Instructions;
+using Wasm.Optimize;
 
 namespace Wasm.Text
 {
@@ -198,6 +199,7 @@ namespace Wasm.Text
                 this.FunctionContext = IdentifierContext<LocalOrImportRef>.Create();
                 this.GlobalContext = IdentifierContext<LocalOrImportRef>.Create();
                 this.TableContext = IdentifierContext<LocalOrImportRef>.Create();
+                this.TypeContext = IdentifierContext<uint>.Create();
             }
 
             /// <summary>
@@ -223,6 +225,12 @@ namespace Wasm.Text
             /// </summary>
             /// <value>An identifier context.</value>
             public IdentifierContext<LocalOrImportRef> TableContext { get; private set; }
+
+            /// <summary>
+            /// Gets the identifier context for the module's types.
+            /// </summary>
+            /// <value>An identifier context.</value>
+            public IdentifierContext<uint> TypeContext { get; private set;}
 
             /// <summary>
             /// Gets the assembler that gives rise to this context.
@@ -307,6 +315,11 @@ namespace Wasm.Text
                 TableContext.ResolveAll(
                     Assembler.Log,
                     table => tableIndices[table]);
+
+                // Resolve type identifiers.
+                TypeContext.ResolveAll(
+                    Assembler.Log,
+                    index => index);
             }
         }
 
@@ -416,6 +429,19 @@ namespace Wasm.Text
             }
 
             /// <summary>
+            /// Tries to map an identifier back to its definition.
+            /// </summary>
+            /// <param name="identifier">An identifier to inspect.</param>
+            /// <param name="definition">A definition for <paramref name="identifier"/>, if one exists already.</param>
+            /// <returns>
+            /// <c>true</c> <paramref name="identifier"/> is defined; otherwise, <c>false</c>.
+            /// </returns>
+            public bool TryGetDefinition(string identifier, out T definition)
+            {
+                return identifierDefinitions.TryGetValue(identifier, out definition);
+            }
+
+            /// <summary>
             /// Resolves all pending references.
             /// </summary>
             /// <param name="log">A log to send diagnostics to.</param>
@@ -514,7 +540,8 @@ namespace Wasm.Text
             ["export"] = AssembleExport,
             ["import"] = AssembleImport,
             ["memory"] = AssembleMemory,
-            ["table"] = AssembleTable
+            ["table"] = AssembleTable,
+            ["type"] = AssembleType
         };
 
         private static void AssembleMemory(
@@ -658,8 +685,8 @@ namespace Wasm.Text
             }
             else if (importDesc.IsCallTo("func"))
             {
-                var type = AssembleTypeUse(importDesc, ref importTail, context);
-                var typeIndex = module.AddFunctionType(type);
+                var type = AssembleTypeUse(importDesc, ref importTail, context, module, true);
+                var typeIndex = AddOrReuseFunctionType(type, module);
                 var importIndex = module.AddImport(new ImportedFunction(moduleName, importName, typeIndex));
                 context.FunctionContext.Define(importId, new LocalOrImportRef(true, importIndex));
                 AssertEmpty(context, "import", importTail);
@@ -786,6 +813,26 @@ namespace Wasm.Text
             }
         }
 
+        private static void AssembleType(
+            SExpression moduleField,
+            WasmFile module,
+            ModuleContext context)
+        {
+            string typeId = null;
+            var tail = moduleField.Tail;
+            if (moduleField.Tail.Count > 0 && moduleField.Tail[0].IsIdentifier)
+            {
+                typeId = (string)moduleField.Tail[0].Head.Value;
+                tail = tail.Skip(1).ToArray();
+            }
+
+            var type = AssembleTypeUse(moduleField, ref tail, context, module, false);
+            AssertEmpty(context, "type definition", tail);
+
+            var index = module.AddFunctionType(type);
+            context.TypeContext.Define(typeId, index);
+        }
+
         private static TableType AssembleTableType(SExpression parent, IReadOnlyList<SExpression> tail, ModuleContext context)
         {
             if (tail.Count < 2 || tail.Count > 3)
@@ -843,11 +890,61 @@ namespace Wasm.Text
         private static FunctionType AssembleTypeUse(
             SExpression parent,
             ref IReadOnlyList<SExpression> tail,
-            ModuleContext context)
+            ModuleContext context,
+            WasmFile module,
+            bool allowTypeRef = false)
         {
             var result = new FunctionType();
 
-            // TODO: parse optional leading 'type' expression.
+            FunctionType referenceType = null;
+            if (allowTypeRef && tail.Count > 0 && tail[0].IsCallTo("type"))
+            {
+                var typeRef = tail[0];
+                tail = tail.Skip(1).ToArray();
+                if (AssertElementCount(typeRef, typeRef.Tail, 1, context))
+                {
+                    uint referenceTypeIndex;
+                    if ((typeRef.Tail[0].IsIdentifier
+                        && context.TypeContext.TryGetDefinition((string)typeRef.Tail[0].Head.Value, out referenceTypeIndex)))
+                    {
+                    }
+                    else if (!typeRef.Tail[0].IsCall
+                        && typeRef.Tail[0].Head.Kind == Lexer.TokenKind.UnsignedInteger)
+                    {
+                        referenceTypeIndex = AssembleUInt32(typeRef.Tail[0], context);
+                    }
+                    else
+                    {
+                        context.Log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "syntax error",
+                                "expected an identifier or an unsigned integer.",
+                                Highlight(typeRef.Tail[0])));
+                        return result;
+                    }
+
+                    var funTypes = module.GetFirstSectionOrNull<TypeSection>();
+                    if (referenceTypeIndex >= funTypes.FunctionTypes.Count)
+                    {
+                        context.Log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "syntax error",
+                                Quotation.QuoteEvenInBold(
+                                    "index ", referenceTypeIndex.ToString(), " does not correspond to a type."),
+                                Highlight(typeRef.Tail[0])));
+                        return result;
+                    }
+
+                    referenceType = funTypes.FunctionTypes[(int)referenceTypeIndex];
+
+                    if (tail.Count == 0)
+                    {
+                        return referenceType;
+                    }
+                }
+            }
 
             // Parse parameters.
             while (tail.Count > 0 && tail[0].IsCallTo("param"))
@@ -885,7 +982,52 @@ namespace Wasm.Text
                 tail = tail.Skip(1).ToArray();
             }
 
+            if (referenceType != null)
+            {
+                if (ConstFunctionTypeComparer.Instance.Equals(referenceType, result))
+                {
+                    return referenceType;
+                }
+                else
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold(
+                                "expected locally-defined type ",
+                                result.ToString(),
+                                " to equal previously-defined type ",
+                                referenceType.ToString(),
+                                "."),
+                            Highlight(parent)));
+                }
+            }
+
             return result;
+        }
+
+        private static uint AddOrReuseFunctionType(
+            FunctionType type,
+            WasmFile module)
+        {
+            var sec = module.GetFirstSectionOrNull<TypeSection>();
+            if (sec == null)
+            {
+                return module.AddFunctionType(type);
+            }
+            else
+            {
+                var index = sec.FunctionTypes.FindIndex(x => ConstFunctionTypeComparer.Instance.Equals(type, x));
+                if (index < 0)
+                {
+                    return module.AddFunctionType(type);
+                }
+                else
+                {
+                    return (uint)index;
+                }
+            }
         }
 
         private static WasmValueType AssembleValueType(SExpression expression, ModuleContext context)

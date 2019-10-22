@@ -221,6 +221,37 @@ namespace Wasm.Text
             Assert.AreEqual(10u, tableImport.Table.Limits.Initial);
             Assert.IsTrue(tableImport.Table.Limits.HasMaximum);
             Assert.AreEqual(20u, tableImport.Table.Limits.Maximum);
+
+            module = AssembleModule("(module " +
+                "(type $g (param i32) (result f64)) " +
+                "(type $f (param i32 i64 f32 f64) (result f64)) " +
+                "(import \"spectest\" \"f\" (func (type $f) (param i32 i64 f32 f64) (result f64))) " +
+                "(import \"spectest\" \"f\" (func (type 1) (param i32 i64 f32 f64) (result f64))) " +
+                "(import \"spectest\" \"f\" (func (param i32 i64 f32 f64) (result f64))) " +
+                "(import \"spectest\" \"f\" (func (type 1))) " +
+                "(import \"spectest\" \"f\" (func (type $f))))");
+            Assert.AreEqual(2, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(5, importSection.Imports.Count);
+            for (int i = 0; i < importSection.Imports.Count; i++)
+            {
+                funcImport = (ImportedFunction)importSection.Imports[i];
+                Assert.AreEqual("spectest", funcImport.ModuleName);
+                Assert.AreEqual("f", funcImport.FieldName);
+                funcTypeIndex = funcImport.TypeIndex;
+                Assert.AreEqual(1u, funcTypeIndex);
+            }
+            typeSection = module.GetFirstSectionOrNull<TypeSection>();
+            Assert.AreEqual(2, typeSection.FunctionTypes.Count);
+            funcType = typeSection.FunctionTypes[1];
+            Assert.AreEqual(4, funcType.ParameterTypes.Count);
+            Assert.AreEqual(WasmValueType.Int32, funcType.ParameterTypes[0]);
+            Assert.AreEqual(WasmValueType.Int64, funcType.ParameterTypes[1]);
+            Assert.AreEqual(WasmValueType.Float32, funcType.ParameterTypes[2]);
+            Assert.AreEqual(WasmValueType.Float64, funcType.ParameterTypes[3]);
+            Assert.AreEqual(1, funcType.ReturnTypes.Count);
+            Assert.AreEqual(WasmValueType.Float64, funcType.ReturnTypes[0]);
         }
 
         [Test]

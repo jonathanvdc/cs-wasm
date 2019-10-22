@@ -324,6 +324,82 @@ namespace Wasm.Text
         }
 
         /// <summary>
+        /// Context that is used when assembling an instruction.
+        /// </summary>
+        public sealed class InstructionContext
+        {
+            private InstructionContext(
+                IReadOnlyDictionary<string, uint> namedLocalIndices,
+                string labelOrNull,
+                ModuleContext moduleContext,
+                InstructionContext parent)
+            {
+                this.NamedLocalIndices = namedLocalIndices;
+                this.LabelOrNull = labelOrNull;
+                this.ModuleContext = moduleContext;
+                this.ParentOrNull = parent;
+            }
+
+            /// <summary>
+            /// Creates a top-level instruction context.
+            /// </summary>
+            /// <param name="namedLocalIndices">The instruction context's named local indices.</param>
+            /// <param name="moduleContext">A context for the module that analyzes the instruction.</param>
+            public InstructionContext(
+                IReadOnlyDictionary<string, uint> namedLocalIndices,
+                ModuleContext moduleContext)
+                : this(namedLocalIndices, null, moduleContext, null)
+            { }
+
+            /// <summary>
+            /// Creates a child instruction context with a particular label.
+            /// </summary>
+            /// <param name="label">A label that a break table can branch to.</param>
+            /// <param name="parent">A parent instruction context.</param>
+            public InstructionContext(
+                string label,
+                InstructionContext parent)
+                : this(parent.NamedLocalIndices, label, parent.ModuleContext, parent)
+            { }
+
+            /// <summary>
+            /// Gets a mapping of local variable names to their indices.
+            /// </summary>
+            /// <value>A mapping of names to indices.</value>
+            public IReadOnlyDictionary<string, uint> NamedLocalIndices { get; private set; }
+
+            /// <summary>
+            /// Gets the enclosing module context.
+            /// </summary>
+            /// <value>A module context.</value>
+            public ModuleContext ModuleContext { get; private set; }
+
+            /// <summary>
+            /// Gets this instruction context's label if it has one
+            /// and <c>null</c> otherwise.
+            /// </summary>
+            /// <value>A label or <c>null</c>.</value>
+            public string LabelOrNull { get; private set; }
+
+            /// <summary>
+            /// Tells if this instruction context has a label.
+            /// </summary>
+            public bool HasLabel => LabelOrNull != null;
+
+            /// <summary>
+            /// Gets this instruction context's parent context if it has one
+            /// and <c>null</c> otherwise.
+            /// </summary>
+            /// <value>An instruction context or <c>null</c>.</value>
+            public InstructionContext ParentOrNull { get; private set; }
+
+            /// <summary>
+            /// Tells if this instruction context has a parent context.
+            /// </summary>
+            public bool HasParent => ParentOrNull != null;
+        }
+
+        /// <summary>
         /// A reference to a function, global, table or memory that is either defined
         /// locally or imported.
         /// </summary>
@@ -538,6 +614,7 @@ namespace Wasm.Text
             new Dictionary<string, ModuleFieldAssembler>()
         {
             ["export"] = AssembleExport,
+            ["function"] = AssembleFunction,
             ["import"] = AssembleImport,
             ["memory"] = AssembleMemory,
             ["table"] = AssembleTable,
@@ -833,6 +910,85 @@ namespace Wasm.Text
             context.TypeContext.Define(typeId, index);
         }
 
+        private static void AssembleFunction(
+            SExpression moduleField,
+            WasmFile module,
+            ModuleContext context)
+        {
+            string functionId = null;
+            var tail = moduleField.Tail;
+            if (moduleField.Tail.Count > 0 && moduleField.Tail[0].IsIdentifier)
+            {
+                functionId = (string)moduleField.Tail[0].Head.Value;
+                tail = tail.Skip(1).ToArray();
+            }
+
+            var localIdentifiers = new Dictionary<string, uint>();
+            var funType = AssembleTypeUse(moduleField, ref tail, context, module, true, localIdentifiers);
+            var locals = AssembleLocals(ref tail, localIdentifiers, context, "local", funType.ParameterTypes.Count);
+            var insnContext = new InstructionContext(localIdentifiers, context);
+            var insns = new List<Instruction>();
+
+            foreach (var elem in tail)
+            {
+                insns.Add(AssembleInstruction(elem, insnContext));
+            }
+
+            var index = module.AddFunction(
+                AddOrReuseFunctionType(funType, module),
+                new FunctionBody(locals.Select(x => new LocalEntry(x, 1)), insns));
+            context.FunctionContext.Define(functionId, new LocalOrImportRef(false, index));
+        }
+
+        private static Instruction AssembleInstruction(SExpression instruction, InstructionContext context)
+        {
+            throw new NotImplementedException();
+        }
+
+        private static List<WasmValueType> AssembleLocals(
+            ref IReadOnlyList<SExpression> tail,
+            Dictionary<string, uint> localIdentifiers,
+            ModuleContext context,
+            string localKeyword,
+            int parameterCount)
+        {
+            var locals = new List<WasmValueType>();
+
+            // Parse locals.
+            while (tail.Count > 0 && tail[0].IsCallTo(localKeyword))
+            {
+                var paramSpec = tail[0];
+                var paramTail = paramSpec.Tail;
+                if (paramTail.Count > 0 && paramTail[0].IsIdentifier)
+                {
+                    var id = (string)paramTail[0].Head.Value;
+                    paramTail = paramTail.Skip(1).ToArray();
+                    if (!AssertNonEmpty(paramSpec, paramTail, localKeyword, context))
+                    {
+                        continue;
+                    }
+
+                    var valType = AssembleValueType(paramTail[0], context);
+                    locals.Add(valType);
+
+                    paramTail = paramTail.Skip(1).ToArray();
+                    AssertEmpty(context, localKeyword, paramTail);
+
+                    if (localIdentifiers != null)
+                    {
+                        localIdentifiers[id] = (uint)(parameterCount + locals.Count);
+                    }
+                }
+                else
+                {
+                    locals.AddRange(paramTail.Select(x => AssembleValueType(x, context)));
+                }
+                tail = tail.Skip(1).ToArray();
+            }
+
+            return locals;
+        }
+
         private static TableType AssembleTableType(SExpression parent, IReadOnlyList<SExpression> tail, ModuleContext context)
         {
             if (tail.Count < 2 || tail.Count > 3)
@@ -948,36 +1104,7 @@ namespace Wasm.Text
             }
 
             // Parse parameters.
-            while (tail.Count > 0 && tail[0].IsCallTo("param"))
-            {
-                var paramSpec = tail[0];
-                var paramTail = paramSpec.Tail;
-                if (paramTail.Count > 0 && paramTail[0].IsIdentifier)
-                {
-                    var id = (string)paramTail[0].Head.Value;
-                    paramTail = paramTail.Skip(1).ToArray();
-                    if (!AssertNonEmpty(paramSpec, paramTail, "param", context))
-                    {
-                        continue;
-                    }
-
-                    var valType = AssembleValueType(paramTail[0], context);
-                    result.ParameterTypes.Add(valType);
-
-                    paramTail = paramTail.Skip(1).ToArray();
-                    AssertEmpty(context, "param", paramTail);
-
-                    if (parameterIdentifiers != null)
-                    {
-                        parameterIdentifiers[id] = (uint)parameterIdentifiers.Count;
-                    }
-                }
-                else
-                {
-                    result.ParameterTypes.AddRange(paramTail.Select(x => AssembleValueType(x, context)));
-                }
-                tail = tail.Skip(1).ToArray();
-            }
+            result.ParameterTypes.AddRange(AssembleLocals(ref tail, parameterIdentifiers, context, "param", 0));
 
             // Parse results.
             while (tail.Count > 0 && tail[0].IsCallTo("result"))

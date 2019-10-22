@@ -422,5 +422,28 @@ namespace Wasm
             elements.Segments.Add(segment);
             return (uint)elements.Segments.Count - 1;
         }
+
+        /// <summary>
+        /// Adds a function defintion to this module.
+        /// </summary>
+        /// <param name="functionTypeIndex">The index in the type section of the function's type.</param>
+        /// <param name="functionBody">The body of the function to define.</param>
+        /// <returns>The index in the function section of the newly added function definition.</returns>
+        public uint AddFunction(uint functionTypeIndex, FunctionBody functionBody)
+        {
+            var funs = GetFirstSectionOrNull<FunctionSection>();
+            if (funs == null)
+            {
+                InsertSection(funs = new FunctionSection());
+            }
+            var code = GetFirstSectionOrNull<CodeSection>();
+            if (code == null)
+            {
+                InsertSection(code = new CodeSection());
+            }
+            funs.FunctionTypes.Add(functionTypeIndex);
+            code.Bodies.Add(functionBody);
+            return (uint)funs.FunctionTypes.Count - 1;
+        }
     }
 }

@@ -892,7 +892,8 @@ namespace Wasm.Text
             ref IReadOnlyList<SExpression> tail,
             ModuleContext context,
             WasmFile module,
-            bool allowTypeRef = false)
+            bool allowTypeRef = false,
+            Dictionary<string, uint> parameterIdentifiers = null)
         {
             var result = new FunctionType();
 
@@ -953,7 +954,7 @@ namespace Wasm.Text
                 var paramTail = paramSpec.Tail;
                 if (paramTail.Count > 0 && paramTail[0].IsIdentifier)
                 {
-                    // TODO: actually parse these identifiers.
+                    var id = (string)paramTail[0].Head.Value;
                     paramTail = paramTail.Skip(1).ToArray();
                     if (!AssertNonEmpty(paramSpec, paramTail, "param", context))
                     {
@@ -965,6 +966,11 @@ namespace Wasm.Text
 
                     paramTail = paramTail.Skip(1).ToArray();
                     AssertEmpty(context, "param", paramTail);
+
+                    if (parameterIdentifiers != null)
+                    {
+                        parameterIdentifiers[id] = (uint)parameterIdentifiers.Count;
+                    }
                 }
                 else
                 {

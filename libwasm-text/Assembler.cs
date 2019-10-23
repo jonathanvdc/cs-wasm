@@ -674,7 +674,7 @@ namespace Wasm.Text
                     // so:
                     //
                     //   i32.add -> i32.add
-                    //   𝚏𝟹𝟸.𝚌𝚘𝚗𝚟𝚎𝚛𝚝_𝚞/𝚒𝟼𝟺 -> 𝚏𝟹𝟸.𝚌𝚘𝚗𝚟𝚎𝚛𝚝_𝚒𝟼𝟺_𝚞
+                    //   𝚏3𝟸.𝚌𝚘𝚗𝚟𝚎𝚛𝚝_𝚞/𝚒𝟼𝟺 -> 𝚏𝟹𝟸.𝚌𝚘𝚗𝚟𝚎𝚛𝚝_𝚒𝟼𝟺_𝚞
                     //   𝚏𝟹𝟸.𝚍𝚎𝚖𝚘𝚝𝚎/𝚏𝟼𝟺 -> 𝚏𝟹𝟸.𝚍𝚎𝚖𝚘𝚝𝚎_𝚏𝟼𝟺
                     //
                     var mnemonic = nullary.Mnemonic;
@@ -1650,7 +1650,7 @@ namespace Wasm.Text
                         Highlight(expression)));
                 return default(T);
             }
-            else if (acceptableKinds.Contains(expression.Head.Kind))
+            else if (!acceptableKinds.Contains(expression.Head.Kind))
             {
                 context.Log.Log(
                     new LogEntry(

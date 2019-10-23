@@ -22,7 +22,7 @@ namespace Wasm.Text
         /// </summary>
         /// <param name="log">A log to send diagnostics to.</param>
         public Assembler(ILog log)
-            : this(log, DefaultModuleFieldAssemblers)
+            : this(log, DefaultModuleFieldAssemblers, DefaultPlainInstructionAssemblers)
         { }
 
         /// <summary>
@@ -32,12 +32,17 @@ namespace Wasm.Text
         /// <param name="moduleFieldAssemblers">
         /// A mapping of module field keywords to module field assemblers.
         /// </param>
+        /// <param name="plainInstructionAssemblers">
+        /// A mapping of instruction keywords to instruction assemblers.
+        /// </param>
         public Assembler(
             ILog log,
-            IReadOnlyDictionary<string, ModuleFieldAssembler> moduleFieldAssemblers)
+            IReadOnlyDictionary<string, ModuleFieldAssembler> moduleFieldAssemblers,
+            IReadOnlyDictionary<string, PlainInstructionAssembler> plainInstructionAssemblers)
         {
             this.Log = log;
             this.ModuleFieldAssemblers = moduleFieldAssemblers;
+            this.PlainInstructionAssemblers = plainInstructionAssemblers;
         }
 
         /// <summary>
@@ -52,6 +57,13 @@ namespace Wasm.Text
         /// </summary>
         /// <value>A mapping of module field keywords to module field assemblers.</value>
         public IReadOnlyDictionary<string, ModuleFieldAssembler> ModuleFieldAssemblers { get; private set; }
+
+        /// <summary>
+        /// Gets the module field assemblers this assembler uses to process
+        /// module fields.
+        /// </summary>
+        /// <value>A mapping of module field keywords to module field assemblers.</value>
+        public IReadOnlyDictionary<string, PlainInstructionAssembler> PlainInstructionAssemblers { get; private set; }
 
         /// <summary>
         /// Assembles an S-expression representing a module into a WebAssembly module.
@@ -182,6 +194,19 @@ namespace Wasm.Text
             SExpression moduleField,
             WasmFile module,
             ModuleContext context);
+
+        /// <summary>
+        /// A type for plain instruction assemblers.
+        /// </summary>
+        /// <param name="keyword">The keyword expression that names the instruction.</param>
+        /// <param name="operands">
+        /// A nonempty list of S-expressions that represent instruction operands to assemble.
+        /// </param>
+        /// <param name="context">The module's assembly context.</param>
+        public delegate Instruction PlainInstructionAssembler(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context);
 
         /// <summary>
         /// Context that is used when assembling a module.
@@ -397,6 +422,11 @@ namespace Wasm.Text
             /// Tells if this instruction context has a parent context.
             /// </summary>
             public bool HasParent => ParentOrNull != null;
+
+            /// <summary>
+            /// Gets the log used by the assembler and, by extension, this context.
+            /// </summary>
+            public ILog Log => ModuleContext.Log;
         }
 
         /// <summary>
@@ -620,6 +650,111 @@ namespace Wasm.Text
             ["table"] = AssembleTable,
             ["type"] = AssembleType
         };
+
+        /// <summary>
+        /// The default set of instruction assemblers.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<string, PlainInstructionAssembler> DefaultPlainInstructionAssemblers;
+
+        static Assembler()
+        {
+            var insnAssemblers = new Dictionary<string, PlainInstructionAssembler>()
+            {
+                ["i32.const"] = AssembleConstInt32Instruction,
+                ["i64.const"] = AssembleConstInt64Instruction
+            };
+            foreach (var op in Operators.AllOperators)
+            {
+                if (op is NullaryOperator nullary)
+                {
+                    // Nullary operators have a fairly regular structure that is almost identical
+                    // to their mnemonics as specified for the binary encoding.
+                    // The only way in which they are different is that they do not include slashes.
+                    // To accommodate this, we map binary encoding mnemonics to text format mnemonics like
+                    // so:
+                    //
+                    //   i32.add -> i32.add
+                    //   𝚏𝟹𝟸.𝚌𝚘𝚗𝚟𝚎𝚛𝚝_𝚞/𝚒𝟼𝟺 -> 𝚏𝟹𝟸.𝚌𝚘𝚗𝚟𝚎𝚛𝚝_𝚒𝟼𝟺_𝚞
+                    //   𝚏𝟹𝟸.𝚍𝚎𝚖𝚘𝚝𝚎/𝚏𝟼𝟺 -> 𝚏𝟹𝟸.𝚍𝚎𝚖𝚘𝚝𝚎_𝚏𝟼𝟺
+                    //
+                    var mnemonic = nullary.Mnemonic;
+                    var mnemonicAndType = mnemonic.Split(new[] { '/' }, 2);
+                    if (mnemonicAndType.Length == 2)
+                    {
+                        var mnemonicAndSuffix = mnemonicAndType[0].Split(new[] { '_' }, 2);
+                        if (mnemonicAndSuffix.Length == 2)
+                        {
+                            mnemonic = $"{mnemonicAndSuffix[0]}_{mnemonicAndType[1]}_{mnemonicAndSuffix[1]}";
+                        }
+                        else
+                        {
+                            mnemonic = $"{mnemonicAndType[0]}_{mnemonicAndType[1]}";
+                        }
+                    }
+                    if (nullary.DeclaringType != WasmType.Empty)
+                    {
+                        mnemonic = $"{DumpHelpers.WasmTypeToString(nullary.DeclaringType)}.{mnemonic}";
+                    }
+                    insnAssemblers[mnemonic] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                        nullary.Create();
+                }
+            }
+        }
+
+        private static Instruction AssembleConstInt32Instruction(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            if (TryPopImmediate(keyword, ref operands, context, out SExpression immediate))
+            {
+                return Operators.Int32Const.Create(AssembleSignlessInt32(immediate, context.ModuleContext));
+            }
+            else
+            {
+                return Operators.Int32Const.Create(0);
+            }
+        }
+
+        private static Instruction AssembleConstInt64Instruction(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            if (TryPopImmediate(keyword, ref operands, context, out SExpression immediate))
+            {
+                return Operators.Int64Const.Create(AssembleSignlessInt64(immediate, context.ModuleContext));
+            }
+            else
+            {
+                return Operators.Int64Const.Create(0);
+            }
+        }
+
+        private static bool TryPopImmediate(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context,
+            out SExpression immediate)
+        {
+            if (operands.Count == 0)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        "expected another immediate.",
+                        Highlight(keyword)));
+                immediate = default(SExpression);
+                return false;
+            }
+            else
+            {
+                immediate = operands[0];
+                operands = operands.Skip(1).ToArray();
+                return true;
+            }
+        }
 
         private static void AssembleMemory(
             SExpression moduleField,
@@ -929,9 +1064,9 @@ namespace Wasm.Text
             var insnContext = new InstructionContext(localIdentifiers, context);
             var insns = new List<Instruction>();
 
-            foreach (var elem in tail)
+            while (tail.Count > 0)
             {
-                insns.Add(AssembleInstruction(elem, insnContext));
+                insns.AddRange(AssembleInstruction(ref tail, insnContext));
             }
 
             var index = module.AddFunction(
@@ -940,9 +1075,50 @@ namespace Wasm.Text
             context.FunctionContext.Define(functionId, new LocalOrImportRef(false, index));
         }
 
-        private static Instruction AssembleInstruction(SExpression instruction, InstructionContext context)
+        private static IReadOnlyList<Instruction> AssembleInstruction(
+            ref IReadOnlyList<SExpression> instruction,
+            InstructionContext context)
         {
-            throw new NotImplementedException();
+            var first = instruction[0];
+            if (first.IsKeyword)
+            {
+                PlainInstructionAssembler assembler;
+                if (context.ModuleContext.Assembler.PlainInstructionAssemblers.TryGetValue(
+                    (string)first.Head.Value,
+                    out assembler))
+                {
+                    instruction = instruction.Skip(1).ToArray();
+                    return new[] { assembler(first, ref instruction, context) };
+                }
+                else
+                {
+                    context.ModuleContext.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold(
+                                "unknown instruction keyword ",
+                                first.Head.Span.Text,
+                                "."),
+                            Highlight(first)));
+                    instruction = Array.Empty<SExpression>();
+                    return Array.Empty<Instruction>();
+                }
+            }
+            else
+            {
+                context.ModuleContext.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "expected an instruction; got ",
+                            first.Head.Span.Text,
+                            " instead."),
+                        Highlight(first)));
+                instruction = Array.Empty<SExpression>();
+                return Array.Empty<Instruction>();
+            }
         }
 
         private static List<WasmValueType> AssembleLocals(
@@ -1398,32 +1574,99 @@ namespace Wasm.Text
             SExpression expression,
             ModuleContext context)
         {
+            return AssembleInt<uint>(
+                expression,
+                context,
+                "32-bit unsigned integer",
+                new[] { Lexer.TokenKind.UnsignedInteger },
+                (kind, data) => data <= uint.MaxValue ? (uint)data : (uint?)null);
+        }
+
+        private static int AssembleSignlessInt32(
+            SExpression expression,
+            ModuleContext context)
+        {
+            return AssembleInt<int>(
+                expression,
+                context,
+                "32-bit integer",
+                new[] { Lexer.TokenKind.UnsignedInteger, Lexer.TokenKind.SignedInteger },
+                (kind, data) => {
+                    if (expression.Head.Kind == Lexer.TokenKind.UnsignedInteger && data <= uint.MaxValue)
+                    {
+                        return (int)(uint)data;
+                    }
+                    else if (data >= int.MinValue && data <= int.MaxValue)
+                    {
+                        return (int)data;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                });
+        }
+
+        private static long AssembleSignlessInt64(
+            SExpression expression,
+            ModuleContext context)
+        {
+            return AssembleInt<long>(
+                expression,
+                context,
+                "64-bit integer",
+                new[] { Lexer.TokenKind.UnsignedInteger, Lexer.TokenKind.SignedInteger },
+                (kind, data) => {
+                    if (expression.Head.Kind == Lexer.TokenKind.UnsignedInteger && data <= ulong.MaxValue)
+                    {
+                        return (long)(ulong)data;
+                    }
+                    else if (data >= long.MinValue && data <= long.MaxValue)
+                    {
+                        return (long)data;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                });
+        }
+
+        private static T AssembleInt<T>(
+            SExpression expression,
+            ModuleContext context,
+            string description,
+            Lexer.TokenKind[] acceptableKinds,
+            Func<Lexer.TokenKind, BigInteger, T?> tryCoerceInt)
+            where T : struct
+        {
             if (expression.IsCall)
             {
                 context.Log.Log(
                     new LogEntry(
                         Severity.Error,
                         "syntax error",
-                        Quotation.QuoteEvenInBold("expected a 32-bit unsigned integer; got a call."),
+                        $"expected a {description}; got a call.",
                         Highlight(expression)));
-                return 0;
+                return default(T);
             }
-            else if (expression.Head.Kind != Lexer.TokenKind.UnsignedInteger)
+            else if (acceptableKinds.Contains(expression.Head.Kind))
             {
                 context.Log.Log(
                     new LogEntry(
                         Severity.Error,
                         "syntax error",
-                        Quotation.QuoteEvenInBold("expected a 32-bit unsigned integer; got other token."),
+                        Quotation.QuoteEvenInBold($"expected a {description}; token ", expression.Head.Span.Text, "."),
                         Highlight(expression)));
-                return 0;
+                return default(T);
             }
             else
             {
                 var data = (BigInteger)expression.Head.Value;
-                if (data <= uint.MaxValue)
+                var coerced = tryCoerceInt(expression.Head.Kind, data);
+                if (coerced.HasValue)
                 {
-                    return (uint)data;
+                    return coerced.Value;
                 }
                 else
                 {
@@ -1431,9 +1674,9 @@ namespace Wasm.Text
                         new LogEntry(
                             Severity.Error,
                             "syntax error",
-                            Quotation.QuoteEvenInBold("expected a 32-bit unsigned integer; got an unsigned integer that is out of range."),
+                            $"expected a {description}; got an integer that is out of range.",
                             Highlight(expression)));
-                    return 0;
+                    return default(T);
                 }
             }
         }

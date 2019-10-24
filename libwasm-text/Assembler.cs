@@ -665,7 +665,8 @@ namespace Wasm.Text
                 ["block"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                     AssembleBlockOrLoop(Operators.Block, keyword, ref operands, context, true),
                 ["loop"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
-                    AssembleBlockOrLoop(Operators.Loop, keyword, ref operands, context, true)
+                    AssembleBlockOrLoop(Operators.Loop, keyword, ref operands, context, true),
+                ["if"] = AssembleIfInstruction
             };
             DefaultPlainInstructionAssemblers = insnAssemblers;
             foreach (var op in Operators.AllOperators)
@@ -1174,52 +1175,7 @@ namespace Wasm.Text
             }
             else if (first.IsCallTo("if"))
             {
-                var label = AssembleLabelOrNull(ref blockTail);
-                var resultType = AssembleBlockResultType(ref blockTail, context);
-                var childContext = new InstructionContext(label, context);
-
-                var foldedInsns = new List<Instruction>();
-                while (blockTail.Count > 0 && !blockTail[0].IsCallTo("then"))
-                {
-                    foldedInsns.AddRange(AssembleInstruction(ref blockTail, context));
-                }
-
-                if (blockTail.Count == 0)
-                {
-                    context.ModuleContext.Log.Log(
-                        new LogEntry(
-                            Severity.Error,
-                            "syntax error",
-                            Quotation.QuoteEvenInBold(
-                                "if-then-else instruction does not have a ", "then", "clause."),
-                            Highlight(first)));
-                    return Array.Empty<Instruction>();
-                }
-
-                var thenTail = blockTail[0].Tail;
-                string endKw;
-                var thenBody = AssembleBlockContents(first, ref thenTail, childContext, out endKw);
-
-                if (blockTail.Count > 1)
-                {
-                    if (blockTail[1].IsCallTo("else"))
-                    {
-                        var elseTail = blockTail[1].Tail;
-                        var elseBody = AssembleBlockContents(first, ref elseTail, childContext, out endKw);
-                        return foldedInsns.Concat(new[] { Operators.If.Create(resultType, thenBody, elseBody) }).ToArray();
-                    }
-                    else
-                    {
-                        context.ModuleContext.Log.Log(
-                            new LogEntry(
-                                Severity.Error,
-                                "syntax error",
-                                Quotation.QuoteEvenInBold(
-                                    "unexpected expression; expected either nothing or an ", "else", " clause."),
-                                Highlight(blockTail[1])));
-                    }
-                }
-                return foldedInsns.Concat(new[] { Operators.If.Create(resultType, thenBody, Array.Empty<Instruction>()) }).ToArray();
+                return AssembleIfExpression(first, ref blockTail, context);
             }
             else
             {
@@ -1231,6 +1187,81 @@ namespace Wasm.Text
                     .SelectMany(x => AssembleExpressionInstruction(x, context))
                     .Concat(lastInstruction)
                     .ToArray();
+            }
+        }
+
+        private static IReadOnlyList<Instruction> AssembleIfExpression(
+            SExpression first,
+            ref IReadOnlyList<SExpression> blockTail,
+            InstructionContext context)
+        {
+            var label = AssembleLabelOrNull(ref blockTail);
+            var resultType = AssembleBlockResultType(ref blockTail, context);
+            var childContext = new InstructionContext(label, context);
+
+            var foldedInsns = new List<Instruction>();
+            while (blockTail.Count > 0 && !blockTail[0].IsCallTo("then"))
+            {
+                foldedInsns.AddRange(AssembleInstruction(ref blockTail, context));
+            }
+
+            if (blockTail.Count == 0)
+            {
+                context.ModuleContext.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "if-then-else instruction does not have a ", "then", "clause."),
+                        Highlight(first)));
+                return Array.Empty<Instruction>();
+            }
+
+            var thenTail = blockTail[0].Tail;
+            string endKw;
+            var thenBody = AssembleBlockContents(first, ref thenTail, childContext, out endKw);
+
+            if (blockTail.Count > 1)
+            {
+                if (blockTail[1].IsCallTo("else"))
+                {
+                    var elseTail = blockTail[1].Tail;
+                    var elseBody = AssembleBlockContents(first, ref elseTail, childContext, out endKw);
+                    return foldedInsns.Concat(new[] { Operators.If.Create(resultType, thenBody, elseBody) }).ToArray();
+                }
+                else
+                {
+                    context.ModuleContext.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold(
+                                "unexpected expression; expected either nothing or an ", "else", " clause."),
+                            Highlight(blockTail[1])));
+                }
+            }
+            return foldedInsns.Concat(new[] { Operators.If.Create(resultType, thenBody, Array.Empty<Instruction>()) }).ToArray();
+        }
+
+        private static Instruction AssembleIfInstruction(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            var label = AssembleLabelOrNull(ref operands);
+            var resultType = AssembleBlockResultType(ref operands, context);
+            var childContext = new InstructionContext(label, context);
+
+            string endKw;
+            var thenBody = AssembleBlockContents(keyword, ref operands, childContext, out endKw, "else", "end");
+            if (endKw == "else")
+            {
+                var elseBody = AssembleBlockContents(keyword, ref operands, childContext, out endKw, "end");
+                return Operators.If.Create(resultType, thenBody, elseBody);
+            }
+            else
+            {
+                return Operators.If.Create(resultType, thenBody, Array.Empty<Instruction>());
             }
         }
 

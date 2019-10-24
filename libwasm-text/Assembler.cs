@@ -113,7 +113,7 @@ namespace Wasm.Text
                             "unexpected token; expected a module field.",
                             Highlight(expression)));
                 }
-                else if (DefaultModuleFieldAssemblers.TryGetValue((string)field.Head.Value, out fieldAssembler))
+                else if (ModuleFieldAssemblers.TryGetValue((string)field.Head.Value, out fieldAssembler))
                 {
                     fieldAssembler(field, file, context);
                 }
@@ -379,12 +379,12 @@ namespace Wasm.Text
             /// <summary>
             /// Creates a child instruction context with a particular label.
             /// </summary>
-            /// <param name="label">A label that a break table can branch to.</param>
+            /// <param name="labelOrNull">A label that a break table can branch to.</param>
             /// <param name="parent">A parent instruction context.</param>
             public InstructionContext(
-                string label,
+                string labelOrNull,
                 InstructionContext parent)
-                : this(parent.NamedLocalIndices, label, parent.ModuleContext, parent)
+                : this(parent.NamedLocalIndices, labelOrNull, parent.ModuleContext, parent)
             { }
 
             /// <summary>
@@ -644,7 +644,7 @@ namespace Wasm.Text
             new Dictionary<string, ModuleFieldAssembler>()
         {
             ["export"] = AssembleExport,
-            ["function"] = AssembleFunction,
+            ["func"] = AssembleFunction,
             ["import"] = AssembleImport,
             ["memory"] = AssembleMemory,
             ["table"] = AssembleTable,
@@ -661,8 +661,13 @@ namespace Wasm.Text
             var insnAssemblers = new Dictionary<string, PlainInstructionAssembler>()
             {
                 ["i32.const"] = AssembleConstInt32Instruction,
-                ["i64.const"] = AssembleConstInt64Instruction
+                ["i64.const"] = AssembleConstInt64Instruction,
+                ["block"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    AssembleBlockOrLoop(Operators.Block, keyword, ref operands, context, true),
+                ["loop"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    AssembleBlockOrLoop(Operators.Loop, keyword, ref operands, context, true)
             };
+            DefaultPlainInstructionAssemblers = insnAssemblers;
             foreach (var op in Operators.AllOperators)
             {
                 if (op is NullaryOperator nullary)
@@ -1050,13 +1055,8 @@ namespace Wasm.Text
             WasmFile module,
             ModuleContext context)
         {
-            string functionId = null;
             var tail = moduleField.Tail;
-            if (moduleField.Tail.Count > 0 && moduleField.Tail[0].IsIdentifier)
-            {
-                functionId = (string)moduleField.Tail[0].Head.Value;
-                tail = tail.Skip(1).ToArray();
-            }
+            string functionId = AssembleLabelOrNull(ref tail);
 
             var localIdentifiers = new Dictionary<string, uint>();
             var funType = AssembleTypeUse(moduleField, ref tail, context, module, true, localIdentifiers);
@@ -1073,6 +1073,18 @@ namespace Wasm.Text
                 AddOrReuseFunctionType(funType, module),
                 new FunctionBody(locals.Select(x => new LocalEntry(x, 1)), insns));
             context.FunctionContext.Define(functionId, new LocalOrImportRef(false, index));
+        }
+
+        private static string AssembleLabelOrNull(ref IReadOnlyList<SExpression> tail)
+        {
+            string result = null;
+            if (tail.Count > 0 && tail[0].IsIdentifier)
+            {
+                result = (string)tail[0].Head.Value;
+                tail = tail.Skip(1).ToArray();
+            }
+
+            return result;
         }
 
         private static IReadOnlyList<Instruction> AssembleInstruction(
@@ -1105,6 +1117,11 @@ namespace Wasm.Text
                     return Array.Empty<Instruction>();
                 }
             }
+            else if (first.IsCall)
+            {
+                instruction = instruction.Skip(1).ToArray();
+                return AssembleExpressionInstruction(first, context);
+            }
             else
             {
                 context.ModuleContext.Log.Log(
@@ -1119,6 +1136,104 @@ namespace Wasm.Text
                 instruction = Array.Empty<SExpression>();
                 return Array.Empty<Instruction>();
             }
+        }
+
+        private static IReadOnlyList<Instruction> AssembleExpressionInstruction(
+            SExpression first,
+            InstructionContext context)
+        {
+            if (!first.IsCall)
+            {
+                context.ModuleContext.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "expected an expression, that is, a parenthesized instruction; got token ",
+                            first.Head.Span.Text,
+                            " instead."),
+                        Highlight(first)));
+                return Array.Empty<Instruction>();
+            }
+
+            // Calls can be 'block' or 'loop' instructions, which are
+            // superficial syntactic sugar. They can also be 'if' instructions
+            // or folded instructions, which require a tiny bit of additional processing.
+            if (first.IsCallTo("block") || first.IsCallTo("loop"))
+            {
+                var blockTail = first.Tail;
+                return new[]
+                {
+                    AssembleBlockOrLoop(
+                        first.IsCallTo("block") ? Operators.Block : Operators.Loop,
+                        first,
+                        ref blockTail,
+                        context,
+                        false)
+                };
+            }
+            else if (first.IsCallTo("if"))
+            {
+                throw new NotImplementedException();
+            }
+            else
+            {
+                IReadOnlyList<SExpression> childTail = new[] { SExpression.Create(first.Head) }
+                    .Concat(first.Tail)
+                    .ToArray();
+                var lastInstruction = AssembleInstruction(ref childTail, context);
+                return childTail
+                    .SelectMany(x => AssembleExpressionInstruction(x, context))
+                    .Concat(lastInstruction)
+                    .ToArray();
+            }
+        }
+
+        private static Instruction AssembleBlockOrLoop(
+            BlockOperator blockOperator,
+            SExpression parent,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context,
+            bool requireEnd)
+        {
+            var label = AssembleLabelOrNull(ref operands);
+            var resultType = WasmType.Empty;
+            if (operands.Count > 0
+                && operands[0].IsCallTo("result")
+                && AssertElementCount(operands[0], operands[0].Tail, 1, context.ModuleContext))
+            {
+                resultType = (WasmType)AssembleValueType(operands[0].Tail[0], context.ModuleContext);
+                operands = operands.Skip(1).ToArray();
+            }
+            var childContext = new InstructionContext(label, context);
+            var insns = new List<Instruction>();
+            bool foundEnd = false;
+            while (operands.Count > 0)
+            {
+                if (requireEnd && operands[0].IsSpecificKeyword("end"))
+                {
+                    operands = operands.Skip(1).ToArray();
+                    foundEnd = true;
+                    break;
+                }
+                else
+                {
+                    insns.AddRange(AssembleInstruction(ref operands, context));
+                }
+            }
+            if (requireEnd && !foundEnd)
+            {
+                context.ModuleContext.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "expected instruction to be terminated by the ",
+                            "end",
+                            " keyword."),
+                        Highlight(parent)));
+            }
+            return blockOperator.Create(resultType, insns);
         }
 
         private static List<WasmValueType> AssembleLocals(

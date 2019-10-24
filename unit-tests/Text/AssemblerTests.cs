@@ -1,6 +1,8 @@
+using System;
 using System.Text;
 using Loyc.MiniTest;
 using Pixie;
+using Wasm.Interpret;
 
 namespace Wasm.Text
 {
@@ -332,6 +334,17 @@ namespace Wasm.Text
             AssertInvalidModule("(module (export \"mem\" (memory $mem)))");
         }
 
+        [Test]
+        public void AssembleInstructions()
+        {
+            Assert.AreEqual(10, EvaluateConstExpr(WasmType.Int32, "i32.const 10"));
+            Assert.AreEqual(15, EvaluateConstExpr(WasmType.Int32, "i32.const 10 i32.const 5 i32.add"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "i32.const 10 i32.const -5 i32.add"));
+            Assert.AreEqual(15, EvaluateConstExpr(WasmType.Int32, "(i32.add (i32.const 10) (i32.const 5))"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "(block $block (result i32) i32.const 10 i32.const -5 i32.add)"));
+            Assert.AreEqual(15, EvaluateConstExpr(WasmType.Int32, "block $block (result i32) i32.const 10 i32.const -5 i32.add end i32.const 10 i32.add"));
+        }
+
         private static void AssertInvalidModule(string text)
         {
             Assert.Throws(
@@ -344,6 +357,13 @@ namespace Wasm.Text
             var log = new TestLog(new[] { Severity.Error }, NullLog.Instance);
             var assembler = new Assembler(log);
             return assembler.AssembleModule(text);
+        }
+
+        private static object EvaluateConstExpr(WasmType resultType, string expr)
+        {
+            var asm = AssembleModule($"(module (func $f (result {DumpHelpers.WasmTypeToString(resultType)}) {expr}) (export \"f\" (func $f)))");
+            var instance = ModuleInstance.Instantiate(asm, new PredefinedImporter());
+            return instance.ExportedFunctions["f"].Invoke(Array.Empty<object>())[0];
         }
     }
 }

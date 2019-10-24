@@ -349,6 +349,7 @@ namespace Wasm.Text
             Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "i32.const 1 (if $block (result i32) (then i32.const 5) (else i32.const 10))"));
             Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "i32.const 1 (if (then)) i32.const 5"));
             Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "i32.const 1 if $block (result i32) i32.const 5 else i32.const 10 end"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "i32.const 5 i32.const 0 i32.store offset=2 align=2 i32.const 0 i32.load offset=2 align=2"));
         }
 
         private static void AssertInvalidModule(string text)
@@ -367,7 +368,7 @@ namespace Wasm.Text
 
         private static object EvaluateConstExpr(WasmType resultType, string expr)
         {
-            var asm = AssembleModule($"(module (func $f (result {DumpHelpers.WasmTypeToString(resultType)}) {expr}) (export \"f\" (func $f)))");
+            var asm = AssembleModule($"(module (memory 1) (func $f (result {DumpHelpers.WasmTypeToString(resultType)}) {expr}) (export \"f\" (func $f)))");
             var instance = ModuleInstance.Instantiate(asm, new PredefinedImporter());
             return instance.ExportedFunctions["f"].Invoke(Array.Empty<object>())[0];
         }

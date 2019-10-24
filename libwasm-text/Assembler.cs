@@ -656,6 +656,33 @@ namespace Wasm.Text
         /// </summary>
         public static readonly IReadOnlyDictionary<string, PlainInstructionAssembler> DefaultPlainInstructionAssemblers;
 
+        private static readonly Dictionary<MemoryOperator, uint> naturalAlignments = new Dictionary<MemoryOperator, uint>()
+        {
+            [Operators.Int32Load] = 4,
+            [Operators.Int64Load] = 8,
+            [Operators.Float32Load] = 4,
+            [Operators.Float64Load] = 8,
+            [Operators.Int32Load8U] = 1,
+            [Operators.Int32Load8S] = 1,
+            [Operators.Int32Load16U] = 2,
+            [Operators.Int32Load16S] = 2,
+            [Operators.Int64Load8U] = 1,
+            [Operators.Int64Load8S] = 1,
+            [Operators.Int64Load16U] = 2,
+            [Operators.Int64Load16S] = 2,
+            [Operators.Int64Load32U] = 4,
+            [Operators.Int64Load32S] = 4,
+            [Operators.Int32Store] = 4,
+            [Operators.Int64Store] = 8,
+            [Operators.Float32Store] = 4,
+            [Operators.Float64Store] = 8,
+            [Operators.Int32Store8] = 1,
+            [Operators.Int32Store16] = 2,
+            [Operators.Int64Store8] = 1,
+            [Operators.Int64Store16] = 2,
+            [Operators.Int64Store32] = 4
+        };
+
         static Assembler()
         {
             var insnAssemblers = new Dictionary<string, PlainInstructionAssembler>()
@@ -704,7 +731,74 @@ namespace Wasm.Text
                     insnAssemblers[mnemonic] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                         nullary.Create();
                 }
+                else if (op is MemoryOperator memOp)
+                {
+                    var mnemonic = $"{DumpHelpers.WasmTypeToString(memOp.DeclaringType)}.{memOp.Mnemonic}";
+                    insnAssemblers[mnemonic] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                        AssembleMemoryInstruction(memOp, keyword, ref operands, context);
+                }
             }
+        }
+
+        private static Instruction AssembleMemoryInstruction(
+            MemoryOperator memoryOperator,
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            var offset = AssembleOptionalNamedUInt32(ref operands, "offset", 0, context);
+            uint alignVal;
+            if (operands.Count > 0)
+            {
+                var alignExpr = operands[0];
+                var align = AssembleOptionalNamedUInt32(ref operands, "align", naturalAlignments[memoryOperator], context);
+                var alignLog2 = Math.Log(align, 2);
+                if (Math.Floor(alignLog2) != alignLog2)
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            "alignment ", align.ToString(), " is not a power of two.",
+                            Highlight(alignExpr)));
+                }
+                alignVal = (uint)alignLog2;
+            }
+            else
+            {
+                alignVal = naturalAlignments[memoryOperator];
+            }
+            return memoryOperator.Create(alignVal, offset);
+        }
+
+        private static uint AssembleOptionalNamedUInt32(
+            ref IReadOnlyList<SExpression> operands,
+            string keyword,
+            uint defaultValue,
+            InstructionContext context)
+        {
+            uint offset = defaultValue;
+            if (operands.Count > 0 && operands[0].IsKeyword && ((string)operands[0].Head.Value).StartsWith(keyword + "=", StringComparison.Ordinal))
+            {
+                var offsetValText = ((string)operands[0].Head.Value).Substring(keyword.Length + 1);
+                var offsetValTokens = Lexer.Tokenize(offsetValText).ToArray();
+                if (offsetValTokens.Length != 1 || offsetValTokens[0].Kind != Lexer.TokenKind.UnsignedInteger)
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            "text ", offsetValText, " after keyword ", keyword + "=", " is not an unsigned integer.",
+                            Highlight(operands[0])));
+                }
+                else
+                {
+                    offset = AssembleUInt32(SExpression.Create(offsetValTokens[0]), context.ModuleContext);
+                }
+                operands = operands.Skip(1).ToArray();
+            }
+
+            return offset;
         }
 
         private static Instruction AssembleConstInt32Instruction(

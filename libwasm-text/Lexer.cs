@@ -519,7 +519,7 @@ namespace Wasm.Text
             {
                 return new Token(TokenKind.Float, span, double.NaN);
             }
-            else if (result.StartsWith("nan:0x"))
+            else if (result.StartsWith("nan:0x", StringComparison.Ordinal))
             {
                 var payload = result.Substring("nan:0x".Length);
                 long newBits = 0;

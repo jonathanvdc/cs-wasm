@@ -38,6 +38,12 @@ namespace Wasm.Text
             AssertParsesAsKind(Lexer.TokenKind.Keyword, "module");
             AssertParsesAs("module", "module");
             AssertParsesAs("i32.add", "i32.add");
+            AssertParsesAsKind(Lexer.TokenKind.Keyword, "offset=4");
+            AssertParsesAsKind(Lexer.TokenKind.Keyword, "i32.load");
+            Assert.IsTrue(
+                Enumerable.SequenceEqual(
+                    new[] { Lexer.TokenKind.Keyword, Lexer.TokenKind.Keyword, Lexer.TokenKind.Keyword },
+                    Lexer.Tokenize("i32.load offset=16 align=2").Select(x => x.Kind)));
         }
 
         [Test]

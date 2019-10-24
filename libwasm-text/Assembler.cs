@@ -1159,9 +1159,9 @@ namespace Wasm.Text
             // Calls can be 'block' or 'loop' instructions, which are
             // superficial syntactic sugar. They can also be 'if' instructions
             // or folded instructions, which require a tiny bit of additional processing.
+            var blockTail = first.Tail;
             if (first.IsCallTo("block") || first.IsCallTo("loop"))
             {
-                var blockTail = first.Tail;
                 return new[]
                 {
                     AssembleBlockOrLoop(
@@ -1174,12 +1174,57 @@ namespace Wasm.Text
             }
             else if (first.IsCallTo("if"))
             {
-                throw new NotImplementedException();
+                var label = AssembleLabelOrNull(ref blockTail);
+                var resultType = AssembleBlockResultType(ref blockTail, context);
+                var childContext = new InstructionContext(label, context);
+
+                var foldedInsns = new List<Instruction>();
+                while (blockTail.Count > 0 && !blockTail[0].IsCallTo("then"))
+                {
+                    foldedInsns.AddRange(AssembleInstruction(ref blockTail, context));
+                }
+
+                if (blockTail.Count == 0)
+                {
+                    context.ModuleContext.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold(
+                                "if-then-else instruction does not have a ", "then", "clause."),
+                            Highlight(first)));
+                    return Array.Empty<Instruction>();
+                }
+
+                var thenTail = blockTail[0].Tail;
+                string endKw;
+                var thenBody = AssembleBlockContents(first, ref thenTail, childContext, out endKw);
+
+                if (blockTail.Count > 1)
+                {
+                    if (blockTail[1].IsCallTo("else"))
+                    {
+                        var elseTail = blockTail[1].Tail;
+                        var elseBody = AssembleBlockContents(first, ref elseTail, childContext, out endKw);
+                        return foldedInsns.Concat(new[] { Operators.If.Create(resultType, thenBody, elseBody) }).ToArray();
+                    }
+                    else
+                    {
+                        context.ModuleContext.Log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "syntax error",
+                                Quotation.QuoteEvenInBold(
+                                    "unexpected expression; expected either nothing or an ", "else", " clause."),
+                                Highlight(blockTail[1])));
+                    }
+                }
+                return foldedInsns.Concat(new[] { Operators.If.Create(resultType, thenBody, Array.Empty<Instruction>()) }).ToArray();
             }
             else
             {
                 IReadOnlyList<SExpression> childTail = new[] { SExpression.Create(first.Head) }
-                    .Concat(first.Tail)
+                    .Concat(blockTail)
                     .ToArray();
                 var lastInstruction = AssembleInstruction(ref childTail, context);
                 return childTail
@@ -1197,6 +1242,56 @@ namespace Wasm.Text
             bool requireEnd)
         {
             var label = AssembleLabelOrNull(ref operands);
+            var resultType = AssembleBlockResultType(ref operands, context);
+            var childContext = new InstructionContext(label, context);
+            string endKw;
+            var insns = requireEnd
+                ? AssembleBlockContents(parent, ref operands, childContext, out endKw, "end")
+                : AssembleBlockContents(parent, ref operands, childContext, out endKw);
+            return blockOperator.Create(resultType, insns);
+        }
+
+        private static List<Instruction> AssembleBlockContents(
+            SExpression parent,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context,
+            out string endKeywordFound,
+            params string[] endKeywords)
+        {
+            var insns = new List<Instruction>();
+            endKeywordFound = null;
+            while (operands.Count > 0)
+            {
+                var first = operands[0];
+                if (first.IsKeyword && endKeywords.Contains((string)first.Head.Value))
+                {
+                    operands = operands.Skip(1).ToArray();
+                    endKeywordFound = (string)first.Head.Value;
+                    break;
+                }
+                else
+                {
+                    insns.AddRange(AssembleInstruction(ref operands, context));
+                }
+            }
+            if (endKeywords.Length > 0 && endKeywordFound == null)
+            {
+                context.ModuleContext.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "expected instruction to be terminated by an ",
+                            "end",
+                            " keyword."),
+                        Highlight(parent)));
+            }
+
+            return insns;
+        }
+
+        private static WasmType AssembleBlockResultType(ref IReadOnlyList<SExpression> operands, InstructionContext context)
+        {
             var resultType = WasmType.Empty;
             if (operands.Count > 0
                 && operands[0].IsCallTo("result")
@@ -1205,35 +1300,8 @@ namespace Wasm.Text
                 resultType = (WasmType)AssembleValueType(operands[0].Tail[0], context.ModuleContext);
                 operands = operands.Skip(1).ToArray();
             }
-            var childContext = new InstructionContext(label, context);
-            var insns = new List<Instruction>();
-            bool foundEnd = false;
-            while (operands.Count > 0)
-            {
-                if (requireEnd && operands[0].IsSpecificKeyword("end"))
-                {
-                    operands = operands.Skip(1).ToArray();
-                    foundEnd = true;
-                    break;
-                }
-                else
-                {
-                    insns.AddRange(AssembleInstruction(ref operands, context));
-                }
-            }
-            if (requireEnd && !foundEnd)
-            {
-                context.ModuleContext.Log.Log(
-                    new LogEntry(
-                        Severity.Error,
-                        "syntax error",
-                        Quotation.QuoteEvenInBold(
-                            "expected instruction to be terminated by the ",
-                            "end",
-                            " keyword."),
-                        Highlight(parent)));
-            }
-            return blockOperator.Create(resultType, insns);
+
+            return resultType;
         }
 
         private static List<WasmValueType> AssembleLocals(

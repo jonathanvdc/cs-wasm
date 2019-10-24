@@ -343,6 +343,11 @@ namespace Wasm.Text
             Assert.AreEqual(15, EvaluateConstExpr(WasmType.Int32, "(i32.add (i32.const 10) (i32.const 5))"));
             Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "(block $block (result i32) i32.const 10 i32.const -5 i32.add)"));
             Assert.AreEqual(15, EvaluateConstExpr(WasmType.Int32, "block $block (result i32) i32.const 10 i32.const -5 i32.add end i32.const 10 i32.add"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "(if $block (result i32) i32.const 0 (then i32.const 10) (else i32.const 5))"));
+            Assert.AreEqual(10, EvaluateConstExpr(WasmType.Int32, "(if $block (result i32) i32.const 0 (then i32.const 5) (else i32.const 10))"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "(if $block (result i32) i32.const 1 (then i32.const 5) (else i32.const 10))"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "i32.const 1 (if $block (result i32) (then i32.const 5) (else i32.const 10))"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "i32.const 1 (if (then)) i32.const 5"));
         }
 
         private static void AssertInvalidModule(string text)

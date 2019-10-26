@@ -689,6 +689,8 @@ namespace Wasm.Text
             {
                 ["i32.const"] = AssembleConstInt32Instruction,
                 ["i64.const"] = AssembleConstInt64Instruction,
+                ["f32.const"] = AssembleConstFloat32Instruction,
+                ["f64.const"] = AssembleConstFloat64Instruction,
                 ["block"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                     AssembleBlockOrLoop(Operators.Block, keyword, ref operands, context, true),
                 ["loop"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
@@ -828,6 +830,36 @@ namespace Wasm.Text
             else
             {
                 return Operators.Int64Const.Create(0);
+            }
+        }
+
+        private static Instruction AssembleConstFloat32Instruction(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            if (TryPopImmediate(keyword, ref operands, context, out SExpression immediate))
+            {
+                return Operators.Float32Const.Create(AssembleFloat32(immediate, context.ModuleContext));
+            }
+            else
+            {
+                return Operators.Float32Const.Create(float.NaN);
+            }
+        }
+
+        private static Instruction AssembleConstFloat64Instruction(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            if (TryPopImmediate(keyword, ref operands, context, out SExpression immediate))
+            {
+                return Operators.Float64Const.Create(AssembleFloat64(immediate, context.ModuleContext));
+            }
+            else
+            {
+                return Operators.Float64Const.Create(double.NaN);
             }
         }
 
@@ -1938,6 +1970,36 @@ namespace Wasm.Text
                         return null;
                     }
                 });
+        }
+
+        private static float AssembleFloat32(SExpression expression, ModuleContext context)
+        {
+            return (float)AssembleFloat64(expression, context);
+        }
+
+        private static double AssembleFloat64(
+            SExpression expression,
+            ModuleContext context)
+        {
+            if (!expression.IsCall)
+            {
+                if (expression.Head.Kind == Lexer.TokenKind.Float)
+                {
+                    return (double)expression.Head.Value;
+                }
+                else if (expression.Head.Kind == Lexer.TokenKind.UnsignedInteger
+                    || expression.Head.Kind == Lexer.TokenKind.SignedInteger)
+                {
+                    return (double)(BigInteger)expression.Head.Value;
+                }
+            }
+            context.Log.Log(
+                new LogEntry(
+                    Severity.Error,
+                    "syntax error",
+                    "expected a floating point number.",
+                    Highlight(expression)));
+            return double.NaN;
         }
 
         private static T AssembleInt<T>(

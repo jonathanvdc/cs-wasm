@@ -695,7 +695,13 @@ namespace Wasm.Text
                     AssembleBlockOrLoop(Operators.Block, keyword, ref operands, context, true),
                 ["loop"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                     AssembleBlockOrLoop(Operators.Loop, keyword, ref operands, context, true),
-                ["if"] = AssembleIfInstruction
+                ["if"] = AssembleIfInstruction,
+                ["local.get"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    AssembleLocalInstruction(Operators.GetLocal, keyword, ref operands, context),
+                ["local.set"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    AssembleLocalInstruction(Operators.SetLocal, keyword, ref operands, context),
+                ["local.tee"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    AssembleLocalInstruction(Operators.TeeLocal, keyword, ref operands, context)
             };
             DefaultPlainInstructionAssemblers = insnAssemblers;
             foreach (var op in Operators.AllOperators)
@@ -808,7 +814,7 @@ namespace Wasm.Text
             ref IReadOnlyList<SExpression> operands,
             InstructionContext context)
         {
-            if (TryPopImmediate(keyword, ref operands, context, out SExpression immediate))
+            if (AssertPopImmediate(keyword, ref operands, context, out SExpression immediate))
             {
                 return Operators.Int32Const.Create(AssembleSignlessInt32(immediate, context.ModuleContext));
             }
@@ -823,7 +829,7 @@ namespace Wasm.Text
             ref IReadOnlyList<SExpression> operands,
             InstructionContext context)
         {
-            if (TryPopImmediate(keyword, ref operands, context, out SExpression immediate))
+            if (AssertPopImmediate(keyword, ref operands, context, out SExpression immediate))
             {
                 return Operators.Int64Const.Create(AssembleSignlessInt64(immediate, context.ModuleContext));
             }
@@ -838,7 +844,7 @@ namespace Wasm.Text
             ref IReadOnlyList<SExpression> operands,
             InstructionContext context)
         {
-            if (TryPopImmediate(keyword, ref operands, context, out SExpression immediate))
+            if (AssertPopImmediate(keyword, ref operands, context, out SExpression immediate))
             {
                 return Operators.Float32Const.Create(AssembleFloat32(immediate, context.ModuleContext));
             }
@@ -853,7 +859,7 @@ namespace Wasm.Text
             ref IReadOnlyList<SExpression> operands,
             InstructionContext context)
         {
-            if (TryPopImmediate(keyword, ref operands, context, out SExpression immediate))
+            if (AssertPopImmediate(keyword, ref operands, context, out SExpression immediate))
             {
                 return Operators.Float64Const.Create(AssembleFloat64(immediate, context.ModuleContext));
             }
@@ -863,7 +869,7 @@ namespace Wasm.Text
             }
         }
 
-        private static bool TryPopImmediate(
+        private static bool AssertPopImmediate(
             SExpression keyword,
             ref IReadOnlyList<SExpression> operands,
             InstructionContext context,
@@ -1459,6 +1465,68 @@ namespace Wasm.Text
             }
 
             return resultType;
+        }
+
+        private static Instruction AssembleLocalInstruction(
+            VarUInt32Operator localOperator,
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            SExpression idOrIndex;
+            if (AssertPopImmediate(keyword, ref operands, context, out idOrIndex))
+            {
+                if (idOrIndex.IsCall)
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold(
+                                "expected a local identifier or index; got ",
+                                (string)idOrIndex.Head.Value,
+                                " expression instead."),
+                            Highlight(idOrIndex)));
+                }
+                else if (idOrIndex.Head.Kind == Lexer.TokenKind.UnsignedInteger)
+                {
+                    return localOperator.Create((uint)idOrIndex.Head.Value);
+                }
+                else if (idOrIndex.Head.Kind == Lexer.TokenKind.Identifier)
+                {
+                    var id = (string)idOrIndex.Head.Value;
+                    if (context.NamedLocalIndices.TryGetValue(id, out uint index))
+                    {
+                        return localOperator.Create(index);
+                    }
+                    else
+                    {
+                        // TODO: suggest a name? Pixie can do that for us.
+                        context.Log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "syntax error",
+                                Quotation.QuoteEvenInBold(
+                                    "local variable identifier ",
+                                    id,
+                                    " is not defined in this scope."),
+                                Highlight(idOrIndex)));
+                    }
+                }
+                else
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold(
+                                "expected a local identifier or index; got token ",
+                                idOrIndex.Head.Span.Text,
+                                " instead."),
+                            Highlight(idOrIndex)));
+                }
+            }
+            return Operators.Nop.Create();
         }
 
         private static List<WasmValueType> AssembleLocals(

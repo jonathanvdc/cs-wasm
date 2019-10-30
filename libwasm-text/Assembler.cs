@@ -357,11 +357,13 @@ namespace Wasm.Text
                 IReadOnlyDictionary<string, uint> namedLocalIndices,
                 string labelOrNull,
                 ModuleContext moduleContext,
+                WasmFile module,
                 InstructionContext parent)
             {
                 this.NamedLocalIndices = namedLocalIndices;
                 this.LabelOrNull = labelOrNull;
                 this.ModuleContext = moduleContext;
+                this.Module = module;
                 this.ParentOrNull = parent;
             }
 
@@ -370,10 +372,12 @@ namespace Wasm.Text
             /// </summary>
             /// <param name="namedLocalIndices">The instruction context's named local indices.</param>
             /// <param name="moduleContext">A context for the module that analyzes the instruction.</param>
+            /// <param name="module">The module that analyzes the instruction.</param>
             public InstructionContext(
                 IReadOnlyDictionary<string, uint> namedLocalIndices,
-                ModuleContext moduleContext)
-                : this(namedLocalIndices, null, moduleContext, null)
+                ModuleContext moduleContext,
+                WasmFile module)
+                : this(namedLocalIndices, null, moduleContext, module, null)
             { }
 
             /// <summary>
@@ -384,7 +388,7 @@ namespace Wasm.Text
             public InstructionContext(
                 string labelOrNull,
                 InstructionContext parent)
-                : this(parent.NamedLocalIndices, labelOrNull, parent.ModuleContext, parent)
+                : this(parent.NamedLocalIndices, labelOrNull, parent.ModuleContext, parent.Module, parent)
             { }
 
             /// <summary>
@@ -398,6 +402,12 @@ namespace Wasm.Text
             /// </summary>
             /// <value>A module context.</value>
             public ModuleContext ModuleContext { get; private set; }
+
+            /// <summary>
+            /// Gets the module associated with the enclosing module context.
+            /// </summary>
+            /// <value>A module.</value>
+            public WasmFile Module { get; private set; }
 
             /// <summary>
             /// Gets this instruction context's label if it has one
@@ -706,7 +716,8 @@ namespace Wasm.Text
                     AssembleGlobalInstruction(Operators.GetGlobal, keyword, ref operands, context),
                 ["global.set"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                     AssembleGlobalInstruction(Operators.SetGlobal, keyword, ref operands, context),
-                ["call"] = AssembleCallInstruction
+                ["call"] = AssembleCallInstruction,
+                ["call_indirect"] = AssembleCallIndirectInstruction
             };
             DefaultPlainInstructionAssemblers = insnAssemblers;
             foreach (var op in Operators.AllOperators)
@@ -1199,7 +1210,7 @@ namespace Wasm.Text
             var localIdentifiers = new Dictionary<string, uint>();
             var funType = AssembleTypeUse(moduleField, ref tail, context, module, true, localIdentifiers);
             var locals = AssembleLocals(ref tail, localIdentifiers, context, "local", funType.ParameterTypes.Count);
-            var insnContext = new InstructionContext(localIdentifiers, context);
+            var insnContext = new InstructionContext(localIdentifiers, context, module);
             var insns = new List<Instruction>();
 
             while (tail.Count > 0)
@@ -1581,6 +1592,28 @@ namespace Wasm.Text
             InstructionContext context)
         {
             return AssembleTableRefInstruction(Operators.Call, "function", c => c.FunctionContext, keyword, ref operands, context);
+        }
+
+        private static Instruction AssembleCallIndirectInstruction(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            var identifiers = new Dictionary<string, uint>();
+            var typeUse = AssembleTypeUse(keyword, ref operands, context.ModuleContext, context.Module, true, identifiers);
+            if (identifiers.Count > 0)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "indirect calls cannot bind names to their parameter declarations; offending parameter name: ",
+                            identifiers.Keys.First(),
+                            "."),
+                        Highlight(keyword)));
+            }
+            return Operators.CallIndirect.Create(AddOrReuseFunctionType(typeUse, context.Module));
         }
 
         private static List<WasmValueType> AssembleLocals(

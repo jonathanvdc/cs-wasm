@@ -140,7 +140,7 @@ namespace Wasm.Interpret
         {
             var instr = Operators.BrTable.CastInstruction(value);
             int index = context.Pop<int>();
-            if (index < 0 || index > instr.TargetTable.Count)
+            if (index < 0 || index >= instr.TargetTable.Count)
             {
                 context.BreakDepth = (int)instr.DefaultTarget;
             }

@@ -101,6 +101,38 @@ namespace Wasm
         }
 
         /// <summary>
+        /// Gets or sets the index of this module's entry point function, if any.
+        /// </summary>
+        /// <value>An entry point index.</value>
+        public uint? StartFunctionIndexOrNull
+        {
+            get
+            {
+                var startSection = GetFirstSectionOrNull<StartSection>();
+                return startSection?.StartFunctionIndex;
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    var startSection = GetFirstSectionOrNull<StartSection>();
+                    if (startSection == null)
+                    {
+                        InsertSection(new StartSection(value.Value));
+                    }
+                    else
+                    {
+                        startSection.StartFunctionIndex = value.Value;
+                    }
+                }
+                else
+                {
+                    Sections.RemoveAll(s => s is StartSection);
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets a list of all sections of the given type.
         /// </summary>
         /// <returns>A list of sections with the given type.</returns>

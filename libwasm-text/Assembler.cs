@@ -658,7 +658,8 @@ namespace Wasm.Text
             ["import"] = AssembleImport,
             ["memory"] = AssembleMemory,
             ["table"] = AssembleTable,
-            ["type"] = AssembleType
+            ["type"] = AssembleType,
+            ["start"] = AssembleStart
         };
 
         /// <summary>
@@ -1206,6 +1207,20 @@ namespace Wasm.Text
 
             var index = module.AddFunctionType(type);
             context.TypeContext.Define(typeId, index);
+        }
+
+        private static void AssembleStart(
+            SExpression moduleField,
+            WasmFile module,
+            ModuleContext context)
+        {
+            if (!AssertElementCount(moduleField, moduleField.Tail, 1, context))
+            {
+                return;
+            }
+
+            var idOrIndex = AssembleIdentifierOrIndex(moduleField.Tail[0], context);
+            context.FunctionContext.Use(idOrIndex, index => module.StartFunctionIndexOrNull = index);
         }
 
         private static void AssembleFunction(

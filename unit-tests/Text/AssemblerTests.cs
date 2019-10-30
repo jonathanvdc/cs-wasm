@@ -316,6 +316,13 @@ namespace Wasm.Text
         }
 
         [Test]
+        public void AssembleModulesWithStart()
+        {
+            var module = AssembleModule("(module (func $f nop) (func $entry nop) (start $entry))");
+            Assert.AreEqual((uint?)1u, module.StartFunctionIndexOrNull);
+        }
+
+        [Test]
         public void AssembleBadMemoryModules()
         {
             AssertInvalidModule("(module (memory))");

@@ -357,6 +357,8 @@ namespace Wasm.Text
             Assert.AreEqual(10.0, EvaluateConstExpr(WasmType.Float64, "f64.const 10.0"));
             Assert.AreEqual(-10.0f, EvaluateConstExpr(WasmType.Float32, "f32.const -10"));
             Assert.AreEqual(-10.0, EvaluateConstExpr(WasmType.Float64, "f64.const -10"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "(local $x i32) i32.const 5 local.set $x local.get $x"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "(local $x i32) i32.const 5 local.tee $x"));
         }
 
         private static void AssertInvalidModule(string text)

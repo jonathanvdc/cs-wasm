@@ -1560,7 +1560,7 @@ namespace Wasm.Text
 
                     if (localIdentifiers != null)
                     {
-                        localIdentifiers[id] = (uint)(parameterCount + locals.Count);
+                        localIdentifiers[id] = (uint)(parameterCount + locals.Count - 1);
                     }
                 }
                 else

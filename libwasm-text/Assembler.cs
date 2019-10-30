@@ -705,7 +705,8 @@ namespace Wasm.Text
                 ["global.get"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                     AssembleGlobalInstruction(Operators.GetGlobal, keyword, ref operands, context),
                 ["global.set"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
-                    AssembleGlobalInstruction(Operators.SetGlobal, keyword, ref operands, context)
+                    AssembleGlobalInstruction(Operators.SetGlobal, keyword, ref operands, context),
+                ["call"] = AssembleCallInstruction
             };
             DefaultPlainInstructionAssemblers = insnAssemblers;
             foreach (var op in Operators.AllOperators)
@@ -1533,18 +1534,20 @@ namespace Wasm.Text
             return Operators.Nop.Create();
         }
 
-        private static Instruction AssembleGlobalInstruction(
-            VarUInt32Operator globalOperator,
+        private static Instruction AssembleTableRefInstruction<T>(
+            VarUInt32Operator tableRefOperator,
+            string refKind,
+            Func<ModuleContext, IdentifierContext<T>> getIdentifierContext,
             SExpression keyword,
             ref IReadOnlyList<SExpression> operands,
             InstructionContext context)
         {
             SExpression idOrIndex;
-            var result = globalOperator.Create(0);
+            var result = tableRefOperator.Create(0);
             if (AssertPopImmediate(keyword, ref operands, context, out idOrIndex))
             {
                 var token = AssembleIdentifierOrIndex(idOrIndex, context.ModuleContext);
-                context.ModuleContext.GlobalContext.Use(token, index => {
+                getIdentifierContext(context.ModuleContext).Use(token, index => {
                     result.Immediate = index;
                 });
             }
@@ -1555,12 +1558,29 @@ namespace Wasm.Text
                         Severity.Error,
                         "syntax error",
                         Quotation.QuoteEvenInBold(
-                            "expected a global identifier or index; got ",
+                            $"expected a {refKind} identifier or index; got ",
                             idOrIndex.Head.Span.Text,
                             " instead."),
                         Highlight(idOrIndex)));
             }
             return result;
+        }
+
+        private static Instruction AssembleGlobalInstruction(
+            VarUInt32Operator globalOperator,
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            return AssembleTableRefInstruction(globalOperator, "global", c => c.GlobalContext, keyword, ref operands, context);
+        }
+
+        private static Instruction AssembleCallInstruction(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            return AssembleTableRefInstruction(Operators.Call, "function", c => c.FunctionContext, keyword, ref operands, context);
         }
 
         private static List<WasmValueType> AssembleLocals(

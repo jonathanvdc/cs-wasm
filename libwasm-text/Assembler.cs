@@ -721,7 +721,11 @@ namespace Wasm.Text
                 ["memory.size"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                     Operators.CurrentMemory.Create(0),
                 ["memory.grow"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
-                    Operators.GrowMemory.Create(0)
+                    Operators.GrowMemory.Create(0),
+                ["br"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    AssembleBrInstruction(Operators.Br, keyword, ref operands, context),
+                ["br_if"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    AssembleBrInstruction(Operators.BrIf, keyword, ref operands, context),
             };
             DefaultPlainInstructionAssemblers = insnAssemblers;
             foreach (var op in Operators.AllOperators)
@@ -1618,6 +1622,88 @@ namespace Wasm.Text
                         Highlight(keyword)));
             }
             return Operators.CallIndirect.Create(AddOrReuseFunctionType(typeUse, context.Module));
+        }
+
+        private static Instruction AssembleBrInstruction(
+            VarUInt32Operator brOperator,
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            SExpression idOrIndex;
+            if (AssertPopImmediate(keyword, ref operands, context, out idOrIndex))
+            {
+                var depth = AssembleLabelOrDepth(idOrIndex, context);
+                return brOperator.Create(depth);
+            }
+            else
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "expected a label or break depth; got ",
+                            idOrIndex.Head.Span.Text,
+                            " instead."),
+                        Highlight(idOrIndex)));
+                return brOperator.Create(0);
+            }
+        }
+
+        private static uint AssembleLabelOrDepth(
+            SExpression labelOrDepth,
+            InstructionContext context)
+        {
+            var token = AssembleIdentifierOrIndex(labelOrDepth, context.ModuleContext);
+            if (token.Kind == Lexer.TokenKind.UnsignedInteger)
+            {
+                return AssembleUInt32(labelOrDepth, context.ModuleContext);
+            }
+            else
+            {
+                var label = (string)token.Value;
+
+                // We can turn a label into a break depth by iteratively unwinding the chain
+                // of scopes until we find a scope with a label that matches the label we're
+                // looking for. The number of scopes we had to unwind then corresponds to the
+                // break depth.
+                uint depth = 0;
+                bool found = false;
+                var depthContext = context;
+                while (depthContext != null)
+                {
+                    if (depthContext.LabelOrNull == label)
+                    {
+                        found = true;
+                        break;
+                    }
+                    else
+                    {
+                        // Pop a context and see if the next context is the one we're looking for.
+                        depth++;
+                        depthContext = depthContext.ParentOrNull;
+                    }
+                }
+
+                if (found)
+                {
+                    return depth;
+                }
+                else
+                {
+                    context.Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "syntax error",
+                            Quotation.QuoteEvenInBold(
+                                "label ",
+                                label,
+                                " is not defined here."),
+                            Highlight(labelOrDepth)));
+                    return 0;
+                }
+            }
         }
 
         private static List<WasmValueType> AssembleLocals(

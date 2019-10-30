@@ -362,6 +362,7 @@ namespace Wasm.Text
             Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "call $constant_five"));
             Assert.AreEqual(1, EvaluateConstExpr(WasmType.Int32, "memory.size"));
             Assert.AreEqual(3, EvaluateConstExpr(WasmType.Int32, "i32.const 1 memory.grow memory.size i32.add"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "(block $block (i32.const 5) (br $block) (drop) (i32.const 3))"));
         }
 
         private static void AssertInvalidModule(string text)

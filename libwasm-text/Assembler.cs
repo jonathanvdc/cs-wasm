@@ -717,7 +717,11 @@ namespace Wasm.Text
                 ["global.set"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                     AssembleGlobalInstruction(Operators.SetGlobal, keyword, ref operands, context),
                 ["call"] = AssembleCallInstruction,
-                ["call_indirect"] = AssembleCallIndirectInstruction
+                ["call_indirect"] = AssembleCallIndirectInstruction,
+                ["memory.size"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    Operators.CurrentMemory.Create(0),
+                ["memory.grow"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    Operators.GrowMemory.Create(0)
             };
             DefaultPlainInstructionAssemblers = insnAssemblers;
             foreach (var op in Operators.AllOperators)

@@ -1228,7 +1228,10 @@ namespace Wasm.Text
             ModuleContext context)
         {
             var tail = moduleField.Tail;
-            string functionId = AssembleLabelOrNull(ref tail);
+            var functionId = AssembleLabelOrNull(ref tail);
+
+            // Parse export names.
+            var exportNames = AssembleInlineExports(moduleField, ref tail, context);
 
             var localIdentifiers = new Dictionary<string, uint>();
             var funType = AssembleTypeUse(moduleField, ref tail, context, module, true, localIdentifiers);
@@ -1244,7 +1247,14 @@ namespace Wasm.Text
             var index = module.AddFunction(
                 AddOrReuseFunctionType(funType, module),
                 new FunctionBody(locals.Select(x => new LocalEntry(x, 1)), insns));
-            context.FunctionContext.Define(functionId, new LocalOrImportRef(false, index));
+            var funcRef = new LocalOrImportRef(false, index);
+            context.FunctionContext.Define(functionId, funcRef);
+
+            // Add entries to the export section if necessary.
+            foreach (var name in exportNames)
+            {
+                AddExport(module, context.FunctionContext, funcRef, ExternalKind.Function, name);
+            }
         }
 
         private static string AssembleLabelOrNull(ref IReadOnlyList<SExpression> tail)

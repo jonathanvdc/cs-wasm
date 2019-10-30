@@ -390,7 +390,7 @@ namespace Wasm.Text
 
         private static object EvaluateConstExpr(WasmType resultType, string expr)
         {
-            var asm = AssembleModule($"(module (memory 1) (func $f (result {DumpHelpers.WasmTypeToString(resultType)}) {expr}) (func $constant_five (result i32) i32.const 5) (export \"f\" (func $f)))");
+            var asm = AssembleModule($"(module (memory 1) (func $f (export \"f\") (result {DumpHelpers.WasmTypeToString(resultType)}) {expr}) (func $constant_five (result i32) i32.const 5))");
             var instance = ModuleInstance.Instantiate(asm, new PredefinedImporter());
             return instance.ExportedFunctions["f"].Invoke(Array.Empty<object>())[0];
         }

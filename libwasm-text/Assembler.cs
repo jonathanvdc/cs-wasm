@@ -1219,7 +1219,7 @@ namespace Wasm.Text
             }
 
             var idOrIndex = AssembleIdentifierOrIndex(moduleField.Tail[0], context);
-            context.FunctionContext.Use(idOrIndex, index => module.StartFunctionIndexOrNull = index);
+            context.FunctionContext.Use(idOrIndex, index => module.StartFunctionIndex = index);
         }
 
         private static void AssembleFunction(

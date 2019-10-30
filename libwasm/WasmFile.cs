@@ -104,7 +104,7 @@ namespace Wasm
         /// Gets or sets the index of this module's entry point function, if any.
         /// </summary>
         /// <value>An entry point index.</value>
-        public uint? StartFunctionIndexOrNull
+        public uint? StartFunctionIndex
         {
             get
             {

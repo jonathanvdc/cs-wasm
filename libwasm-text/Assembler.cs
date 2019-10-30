@@ -701,7 +701,11 @@ namespace Wasm.Text
                 ["local.set"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                     AssembleLocalInstruction(Operators.SetLocal, keyword, ref operands, context),
                 ["local.tee"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
-                    AssembleLocalInstruction(Operators.TeeLocal, keyword, ref operands, context)
+                    AssembleLocalInstruction(Operators.TeeLocal, keyword, ref operands, context),
+                ["global.get"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    AssembleGlobalInstruction(Operators.GetGlobal, keyword, ref operands, context),
+                ["global.set"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
+                    AssembleGlobalInstruction(Operators.SetGlobal, keyword, ref operands, context)
             };
             DefaultPlainInstructionAssemblers = insnAssemblers;
             foreach (var op in Operators.AllOperators)
@@ -1527,6 +1531,36 @@ namespace Wasm.Text
                 }
             }
             return Operators.Nop.Create();
+        }
+
+        private static Instruction AssembleGlobalInstruction(
+            VarUInt32Operator globalOperator,
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            SExpression idOrIndex;
+            var result = globalOperator.Create(0);
+            if (AssertPopImmediate(keyword, ref operands, context, out idOrIndex))
+            {
+                var token = AssembleIdentifierOrIndex(idOrIndex, context.ModuleContext);
+                context.ModuleContext.GlobalContext.Use(token, index => {
+                    result.Immediate = index;
+                });
+            }
+            else
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "expected a global identifier or index; got ",
+                            idOrIndex.Head.Span.Text,
+                            " instead."),
+                        Highlight(idOrIndex)));
+            }
+            return result;
         }
 
         private static List<WasmValueType> AssembleLocals(

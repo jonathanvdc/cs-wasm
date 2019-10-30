@@ -363,6 +363,8 @@ namespace Wasm.Text
             Assert.AreEqual(1, EvaluateConstExpr(WasmType.Int32, "memory.size"));
             Assert.AreEqual(3, EvaluateConstExpr(WasmType.Int32, "i32.const 1 memory.grow memory.size i32.add"));
             Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "(block $block (i32.const 5) (br $block) (drop) (i32.const 3))"));
+            Assert.AreEqual(22, EvaluateConstExpr(WasmType.Int32, "(block (block (br_table 1 0 (i32.const 0)) (return (i32.const 21)) ) (return (i32.const 20)) ) (i32.const 22)"));
+            Assert.AreEqual(20, EvaluateConstExpr(WasmType.Int32, "(block (block (br_table 1 0 (i32.const 1)) (return (i32.const 21)) ) (return (i32.const 20)) ) (i32.const 22)"));
         }
 
         private static void AssertInvalidModule(string text)

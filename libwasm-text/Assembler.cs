@@ -726,6 +726,7 @@ namespace Wasm.Text
                     AssembleBrInstruction(Operators.Br, keyword, ref operands, context),
                 ["br_if"] = (SExpression keyword, ref IReadOnlyList<SExpression> operands, InstructionContext context) =>
                     AssembleBrInstruction(Operators.BrIf, keyword, ref operands, context),
+                ["br_table"] = AssembleBrTableInstruction
             };
             DefaultPlainInstructionAssemblers = insnAssemblers;
             foreach (var op in Operators.AllOperators)
@@ -1649,6 +1650,30 @@ namespace Wasm.Text
                         Highlight(idOrIndex)));
                 return brOperator.Create(0);
             }
+        }
+
+        private static Instruction AssembleBrTableInstruction(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context)
+        {
+            var depths = new List<uint>();
+            do
+            {
+                if (operands.Count > 0 && (operands[0].IsKeyword || operands[0].IsCall))
+                {
+                    break;
+                }
+
+                SExpression idOrIndex;
+                if (!AssertPopImmediate(keyword, ref operands, context, out idOrIndex))
+                {
+                    return Operators.Nop.Create();
+                }
+                depths.Add(AssembleLabelOrDepth(idOrIndex, context));
+            } while (operands.Count > 0);
+
+            return Operators.BrTable.Create(depths.Take(depths.Count - 1), depths[depths.Count - 1]);
         }
 
         private static uint AssembleLabelOrDepth(

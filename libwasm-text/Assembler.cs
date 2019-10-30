@@ -930,10 +930,10 @@ namespace Wasm.Text
             // Process the optional memory identifier.
             var memory = new MemoryType(new ResizableLimits(0));
             var tail = moduleField.Tail;
-            if (tail.Count > 0 && tail[0].IsIdentifier)
+            var memoryId = AssembleLabelOrNull(ref tail);
+            if (memoryId != null)
             {
-                context.MemoryContext.Define((string)tail[0].Head.Value, memory);
-                tail = tail.Skip(1).ToArray();
+                context.MemoryContext.Define(memoryId, memory);
             }
 
             if (!AssertNonEmpty(moduleField, tail, kind, context))
@@ -1113,13 +1113,8 @@ namespace Wasm.Text
             WasmFile module,
             ModuleContext context)
         {
-            string tableId = null;
             var tail = moduleField.Tail;
-            if (moduleField.Tail.Count > 0 && moduleField.Tail[0].IsIdentifier)
-            {
-                tableId = (string)moduleField.Tail[0].Head.Value;
-                tail = tail.Skip(1).ToArray();
-            }
+            var tableId = AssembleLabelOrNull(ref tail);
 
             var exportNames = AssembleInlineExports(moduleField, ref tail, context);
 

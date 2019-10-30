@@ -942,20 +942,15 @@ namespace Wasm.Text
             }
 
             // Parse inline exports.
-            while (tail[0].IsCallTo("export"))
-            {
-                var exportExpr = tail[0];
-                tail = tail.Skip(1).ToArray();
-                if (!AssertNonEmpty(moduleField, tail, kind, context))
-                {
-                    return;
-                }
-                if (!AssertElementCount(exportExpr, exportExpr.Tail, 1, context))
-                {
-                    continue;
-                }
+            var exportNames = AssembleInlineExports(moduleField, ref tail, context);
 
-                var exportName = AssembleString(exportExpr.Tail[0], context);
+            if (!AssertNonEmpty(moduleField, tail, kind, context))
+            {
+                return;
+            }
+
+            foreach (var exportName in exportNames)
+            {
                 AddExport(module, context.MemoryContext, memory, ExternalKind.Memory, exportName);
             }
 
@@ -983,6 +978,26 @@ namespace Wasm.Text
                 memory.Limits = AssembleLimits(moduleField, tail, context);
                 module.AddMemory(memory);
             }
+        }
+
+        private static IReadOnlyList<string> AssembleInlineExports(
+            SExpression moduleField,
+            ref IReadOnlyList<SExpression> tail,
+            ModuleContext context)
+        {
+            var results = new List<string>();
+            while (tail.Count > 0 && tail[0].IsCallTo("export"))
+            {
+                var exportExpr = tail[0];
+                tail = tail.Skip(1).ToArray();
+                if (!AssertElementCount(exportExpr, exportExpr.Tail, 1, context))
+                {
+                    continue;
+                }
+
+                results.Add(AssembleString(exportExpr.Tail[0], context));
+            }
+            return results;
         }
 
         private static void AssembleExport(
@@ -1106,18 +1121,7 @@ namespace Wasm.Text
                 tail = tail.Skip(1).ToArray();
             }
 
-            var exportNames = new List<string>();
-            while (tail.Count > 0 && tail[0].IsCallTo("export"))
-            {
-                var exportExpr = tail[0];
-                if (!AssertElementCount(exportExpr, exportExpr.Tail, 1, context))
-                {
-                    continue;
-                }
-
-                exportNames.Add(AssembleString(exportExpr.Tail[0], context));
-                tail = tail.Skip(1).ToArray();
-            }
+            var exportNames = AssembleInlineExports(moduleField, ref tail, context);
 
             if (!AssertNonEmpty(moduleField, tail, "table definition", context))
             {

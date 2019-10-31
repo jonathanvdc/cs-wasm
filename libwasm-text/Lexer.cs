@@ -916,11 +916,12 @@ namespace Wasm.Text
             /// Creates a synthetic token.
             /// </summary>
             /// <param name="value">The token's value.</param>
+            /// <param name="kind">The type of the token to synthesize.</param>
             /// <returns>A synthetic token.</returns>
-            public static Token Synthesize(object value)
+            public static Token Synthesize(object value, TokenKind kind = TokenKind.Synthetic)
             {
                 var doc = new StringDocument("<synthetic>", value.ToString());
-                return new Token(TokenKind.Synthetic, new SourceSpan(doc, 0, doc.Length), value);
+                return new Token(kind, new SourceSpan(doc, 0, doc.Length), value);
             }
 
             /// <summary>

@@ -653,6 +653,8 @@ namespace Wasm.Text
         public static readonly IReadOnlyDictionary<string, ModuleFieldAssembler> DefaultModuleFieldAssemblers =
             new Dictionary<string, ModuleFieldAssembler>()
         {
+            ["data"] = AssembleDataSegment,
+            ["elem"] = AssembleElementSegment,
             ["export"] = AssembleExport,
             ["func"] = AssembleFunction,
             ["global"] = AssembleGlobal,
@@ -999,6 +1001,105 @@ namespace Wasm.Text
                 results.Add(AssembleString(exportExpr.Tail[0], context));
             }
             return results;
+        }
+
+        private static void AssembleDataSegment(
+            SExpression moduleField,
+            WasmFile module,
+            ModuleContext context)
+        {
+            const string kind = "data segment";
+            var tail = moduleField.Tail;
+
+            if (!AssertNonEmpty(moduleField, tail, kind, context))
+            {
+                return;
+            }
+
+            Lexer.Token memoryId;
+            if (tail[0].IsIdentifier || tail[0].Head.Kind == Lexer.TokenKind.UnsignedInteger)
+            {
+                memoryId = AssembleIdentifierOrIndex(tail[0], context);
+                tail = tail.Skip(1).ToArray();
+            }
+            else
+            {
+                memoryId = Lexer.Token.Synthesize(new BigInteger(0), Lexer.TokenKind.UnsignedInteger);
+            }
+
+            var offset = AssembleOffset(moduleField, ref tail, context, module);
+            var data = AssembleDataString(tail, context);
+            var segment = new DataSegment(0u, offset, data);
+            context.MemoryContext.Use(memoryId, index => segment.MemoryIndex = index);
+            module.AddDataSegment(segment);
+        }
+
+        private static void AssembleElementSegment(
+            SExpression moduleField,
+            WasmFile module,
+            ModuleContext context)
+        {
+            const string kind = "element segment";
+            var tail = moduleField.Tail;
+
+            if (!AssertNonEmpty(moduleField, tail, kind, context))
+            {
+                return;
+            }
+
+            Lexer.Token tableId;
+            if (tail[0].IsIdentifier || tail[0].Head.Kind == Lexer.TokenKind.UnsignedInteger)
+            {
+                tableId = AssembleIdentifierOrIndex(tail[0], context);
+                tail = tail.Skip(1).ToArray();
+            }
+            else
+            {
+                tableId = Lexer.Token.Synthesize(new BigInteger(0), Lexer.TokenKind.UnsignedInteger);
+            }
+
+            var offset = AssembleOffset(moduleField, ref tail, context, module);
+            var segment = new ElementSegment(0u, offset, Enumerable.Empty<uint>());
+            for (int i = 0; i < tail.Count; i++)
+            {
+                int listIndex = i;
+                segment.Elements.Add(0);
+                context.FunctionContext.Use(
+                    AssembleIdentifierOrIndex(tail[i], context),
+                    funcIndex => segment.Elements[listIndex] = funcIndex);
+            }
+            context.TableContext.Use(tableId, index => segment.TableIndex = index);
+            module.AddElementSegment(segment);
+        }
+
+        private static InitializerExpression AssembleOffset(
+            SExpression moduleField,
+            ref IReadOnlyList<SExpression> tail,
+            ModuleContext context,
+            WasmFile module)
+        {
+            if (tail.Count == 0)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        "expected a memory offset, specified as an instruction.",
+                        Highlight(moduleField)));
+                return new InitializerExpression(Operators.Int32Const.Create(0));
+            }
+
+            if (tail[0].IsCallTo("offset"))
+            {
+                var result = AssembleInitializerExpression(tail[0].Tail, context, module);
+                tail = tail.Skip(1).ToArray();
+                return result;
+            }
+            else
+            {
+                var insnContext = new InstructionContext(new Dictionary<string, uint>(), context, module);
+                return new InitializerExpression(AssembleInstruction(ref tail, insnContext));
+            }
         }
 
         private static void AssembleExport(

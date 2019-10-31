@@ -655,11 +655,12 @@ namespace Wasm.Text
         {
             ["export"] = AssembleExport,
             ["func"] = AssembleFunction,
+            ["global"] = AssembleGlobal,
             ["import"] = AssembleImport,
             ["memory"] = AssembleMemory,
+            ["start"] = AssembleStart,
             ["table"] = AssembleTable,
-            ["type"] = AssembleType,
-            ["start"] = AssembleStart
+            ["type"] = AssembleType
         };
 
         /// <summary>
@@ -1276,6 +1277,60 @@ namespace Wasm.Text
             }
         }
 
+        private static void AssembleGlobal(
+            SExpression moduleField,
+            WasmFile module,
+            ModuleContext context)
+        {
+            var tail = moduleField.Tail;
+            var globalId = AssembleLabelOrNull(ref tail);
+
+            // Parse export names.
+            var exportNames = AssembleInlineExports(moduleField, ref tail, context);
+
+            LocalOrImportRef globalRef;
+            if (tail.Count > 0 && tail[0].IsCallTo("import"))
+            {
+                // We encountered an inline global import.
+                var (moduleName, globalName) = AssembleInlineImport(tail[0], context);
+                tail = tail.Skip(1).ToArray();
+
+                var globalType = AssembleGlobalType(moduleField, ref tail, context);
+                AssertEmpty(context, "function import", tail);
+
+                var index = module.AddImport(
+                    new ImportedGlobal(moduleName, globalName, globalType));
+                globalRef = new LocalOrImportRef(true, index);
+            }
+            else
+            {
+                // We're dealing with a regular global definition.
+                var globalType = AssembleGlobalType(moduleField, ref tail, context);
+                var init = AssembleInitializerExpression(tail, context, module);
+
+                var index = module.AddGlobal(
+                    new GlobalVariable(globalType, init));
+                globalRef = new LocalOrImportRef(false, index);
+            }
+
+            context.GlobalContext.Define(globalId, globalRef);
+
+            // Add entries to the export section if necessary.
+            foreach (var name in exportNames)
+            {
+                AddExport(module, context.GlobalContext, globalRef, ExternalKind.Global, name);
+            }
+        }
+
+        private static InitializerExpression AssembleInitializerExpression(
+            IReadOnlyList<SExpression> expressions,
+            ModuleContext context,
+            WasmFile module)
+        {
+            var insnContext = new InstructionContext(new Dictionary<string, uint>(), context, module);
+            return new InitializerExpression(expressions.SelectMany(x => AssembleExpressionInstruction(x, insnContext)));
+        }
+
         private static string AssembleLabelOrNull(ref IReadOnlyList<SExpression> tail)
         {
             string result = null;
@@ -1869,6 +1924,26 @@ namespace Wasm.Text
             else
             {
                 return new GlobalType(AssembleValueType(expression, context), false);
+            }
+        }
+
+        private static GlobalType AssembleGlobalType(SExpression parent, ref IReadOnlyList<SExpression> tail, ModuleContext context)
+        {
+            if (tail.Count == 0)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        "expected a global type.",
+                        Highlight(parent)));
+                return new GlobalType(WasmValueType.Int32, true);
+            }
+            else
+            {
+                var immediate = tail[0];
+                tail = tail.Skip(1).ToArray();
+                return AssembleGlobalType(immediate, context);
             }
         }
 

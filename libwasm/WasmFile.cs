@@ -456,7 +456,7 @@ namespace Wasm
         }
 
         /// <summary>
-        /// Adds a function defintion to this module.
+        /// Adds a function definition to this module.
         /// </summary>
         /// <param name="functionTypeIndex">The index in the type section of the function's type.</param>
         /// <param name="functionBody">The body of the function to define.</param>
@@ -476,6 +476,22 @@ namespace Wasm
             funs.FunctionTypes.Add(functionTypeIndex);
             code.Bodies.Add(functionBody);
             return (uint)funs.FunctionTypes.Count - 1;
+        }
+
+        /// <summary>
+        /// Adds a global variable definition to this module.
+        /// </summary>
+        /// <param name="globalVariable">A global variable definition to introduce.</param>
+        /// <returns>The index in the global section of the newly added global variable definition.</returns>
+        public uint AddGlobal(GlobalVariable globalVariable)
+        {
+            var globals = GetFirstSectionOrNull<GlobalSection>();
+            if (globals == null)
+            {
+                InsertSection(globals = new GlobalSection());
+            }
+            globals.GlobalVariables.Add(globalVariable);
+            return (uint)globals.GlobalVariables.Count - 1;
         }
     }
 }

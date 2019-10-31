@@ -221,7 +221,29 @@ namespace Wasm.Text
             Assert.AreEqual(WasmValueType.Int32, globalImport.Global.ContentType);
             Assert.IsFalse(globalImport.Global.IsMutable);
 
+            module = AssembleModule("(module (global $x (import \"spectest\" \"global_i32\") i32))");
+            Assert.AreEqual(1, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            globalImport = (ImportedGlobal)importSection.Imports[0];
+            Assert.AreEqual("spectest", globalImport.ModuleName);
+            Assert.AreEqual("global_i32", globalImport.FieldName);
+            Assert.AreEqual(WasmValueType.Int32, globalImport.Global.ContentType);
+            Assert.IsFalse(globalImport.Global.IsMutable);
+
             module = AssembleModule("(module (import \"spectest\" \"global_i32\" (global (mut i32))))");
+            Assert.AreEqual(1, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            globalImport = (ImportedGlobal)importSection.Imports[0];
+            Assert.AreEqual("spectest", globalImport.ModuleName);
+            Assert.AreEqual("global_i32", globalImport.FieldName);
+            Assert.AreEqual(WasmValueType.Int32, globalImport.Global.ContentType);
+            Assert.IsTrue(globalImport.Global.IsMutable);
+
+            module = AssembleModule("(module (global (import \"spectest\" \"global_i32\") (mut i32)))");
             Assert.AreEqual(1, module.Sections.Count);
             importSection = module.GetFirstSectionOrNull<ImportSection>();
             Assert.IsNotNull(importSection);
@@ -393,6 +415,8 @@ namespace Wasm.Text
             Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "(block $block (i32.const 5) (br $block) (drop) (i32.const 3))"));
             Assert.AreEqual(22, EvaluateConstExpr(WasmType.Int32, "(block (block (br_table 1 0 (i32.const 0)) (return (i32.const 21)) ) (return (i32.const 20)) ) (i32.const 22)"));
             Assert.AreEqual(20, EvaluateConstExpr(WasmType.Int32, "(block (block (br_table 1 0 (i32.const 1)) (return (i32.const 21)) ) (return (i32.const 20)) ) (i32.const 22)"));
+            Assert.AreEqual(5, EvaluateConstExpr(WasmType.Int32, "global.get $five"));
+            Assert.AreEqual(20, EvaluateConstExpr(WasmType.Int32, "i32.const 20 global.set $five global.get $five"));
         }
 
         private static void AssertInvalidModule(string text)
@@ -411,7 +435,7 @@ namespace Wasm.Text
 
         private static object EvaluateConstExpr(WasmType resultType, string expr)
         {
-            var asm = AssembleModule($"(module (memory 1) (func $f (export \"f\") (result {DumpHelpers.WasmTypeToString(resultType)}) {expr}) (func $constant_five (result i32) i32.const 5))");
+            var asm = AssembleModule($"(module (memory 1) (global $five (mut i32) (i32.const 5)) (func $f (export \"f\") (result {DumpHelpers.WasmTypeToString(resultType)}) {expr}) (func $constant_five (result i32) i32.const 5))");
             var instance = ModuleInstance.Instantiate(asm, new PredefinedImporter());
             return instance.ExportedFunctions["f"].Invoke(Array.Empty<object>())[0];
         }

@@ -189,6 +189,27 @@ namespace Wasm.Text
             Assert.AreEqual(1, funcType.ReturnTypes.Count);
             Assert.AreEqual(WasmValueType.Float64, funcType.ReturnTypes[0]);
 
+            module = AssembleModule("(module (func (import \"spectest\" \"memory\") (param i32 i64 f32 f64) (result f64)))");
+            Assert.AreEqual(2, module.Sections.Count);
+            importSection = module.GetFirstSectionOrNull<ImportSection>();
+            Assert.IsNotNull(importSection);
+            Assert.AreEqual(1, importSection.Imports.Count);
+            funcImport = (ImportedFunction)importSection.Imports[0];
+            Assert.AreEqual("spectest", funcImport.ModuleName);
+            Assert.AreEqual("memory", funcImport.FieldName);
+            funcTypeIndex = funcImport.TypeIndex;
+            Assert.AreEqual(0u, funcTypeIndex);
+            typeSection = module.GetFirstSectionOrNull<TypeSection>();
+            Assert.AreEqual(1, typeSection.FunctionTypes.Count);
+            funcType = typeSection.FunctionTypes[0];
+            Assert.AreEqual(4, funcType.ParameterTypes.Count);
+            Assert.AreEqual(WasmValueType.Int32, funcType.ParameterTypes[0]);
+            Assert.AreEqual(WasmValueType.Int64, funcType.ParameterTypes[1]);
+            Assert.AreEqual(WasmValueType.Float32, funcType.ParameterTypes[2]);
+            Assert.AreEqual(WasmValueType.Float64, funcType.ParameterTypes[3]);
+            Assert.AreEqual(1, funcType.ReturnTypes.Count);
+            Assert.AreEqual(WasmValueType.Float64, funcType.ReturnTypes[0]);
+
             module = AssembleModule("(module (import \"spectest\" \"global_i32\" (global $x i32)))");
             Assert.AreEqual(1, module.Sections.Count);
             importSection = module.GetFirstSectionOrNull<ImportSection>();

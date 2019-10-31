@@ -1233,21 +1233,40 @@ namespace Wasm.Text
             // Parse export names.
             var exportNames = AssembleInlineExports(moduleField, ref tail, context);
 
-            var localIdentifiers = new Dictionary<string, uint>();
-            var funType = AssembleTypeUse(moduleField, ref tail, context, module, true, localIdentifiers);
-            var locals = AssembleLocals(ref tail, localIdentifiers, context, "local", funType.ParameterTypes.Count);
-            var insnContext = new InstructionContext(localIdentifiers, context, module);
-            var insns = new List<Instruction>();
-
-            while (tail.Count > 0)
+            LocalOrImportRef funcRef;
+            if (tail.Count > 0 && tail[0].IsCallTo("import"))
             {
-                insns.AddRange(AssembleInstruction(ref tail, insnContext));
+                // We encountered an inline function import.
+                var (moduleName, functionName) = AssembleInlineImport(tail[0], context);
+                tail = tail.Skip(1).ToArray();
+
+                var funType = AssembleTypeUse(moduleField, ref tail, context, module, true);
+                AssertEmpty(context, "function import", tail);
+
+                var index = module.AddImport(
+                    new ImportedFunction(moduleName, functionName, AddOrReuseFunctionType(funType, module)));
+                funcRef = new LocalOrImportRef(true, index);
+            }
+            else
+            {
+                // We're dealing with a regular function definition.
+                var localIdentifiers = new Dictionary<string, uint>();
+                var funType = AssembleTypeUse(moduleField, ref tail, context, module, true, localIdentifiers);
+                var locals = AssembleLocals(ref tail, localIdentifiers, context, "local", funType.ParameterTypes.Count);
+                var insnContext = new InstructionContext(localIdentifiers, context, module);
+                var insns = new List<Instruction>();
+
+                while (tail.Count > 0)
+                {
+                    insns.AddRange(AssembleInstruction(ref tail, insnContext));
+                }
+
+                var index = module.AddFunction(
+                    AddOrReuseFunctionType(funType, module),
+                    new FunctionBody(locals.Select(x => new LocalEntry(x, 1)), insns));
+                funcRef = new LocalOrImportRef(false, index);
             }
 
-            var index = module.AddFunction(
-                AddOrReuseFunctionType(funType, module),
-                new FunctionBody(locals.Select(x => new LocalEntry(x, 1)), insns));
-            var funcRef = new LocalOrImportRef(false, index);
             context.FunctionContext.Define(functionId, funcRef);
 
             // Add entries to the export section if necessary.

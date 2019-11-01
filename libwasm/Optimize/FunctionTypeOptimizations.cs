@@ -124,7 +124,7 @@ namespace Wasm.Optimize
     /// <summary>
     /// An equality comparer for function types that assumes that the contents
     /// of the function types it is given remain constant over the course of
-    /// its operation. 
+    /// its operation.
     /// </summary>
     public sealed class ConstFunctionTypeComparer : IEqualityComparer<FunctionType>
     {
@@ -138,7 +138,8 @@ namespace Wasm.Optimize
         /// <inheritdoc/>
         public bool Equals(FunctionType x, FunctionType y)
         {
-            return Enumerable.SequenceEqual<WasmValueType>(x.ParameterTypes, y.ParameterTypes);
+            return Enumerable.SequenceEqual<WasmValueType>(x.ParameterTypes, y.ParameterTypes)
+                && Enumerable.SequenceEqual<WasmValueType>(x.ReturnTypes, y.ReturnTypes);
         }
 
         private static int HashSequence(IEnumerable<WasmValueType> values, int seed)

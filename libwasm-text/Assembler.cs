@@ -174,12 +174,27 @@ namespace Wasm.Text
             return AssembleModule(Lexer.Tokenize(document, fileName));
         }
 
-        private static HighlightedSource Highlight(Lexer.Token expression)
+        /// <summary>
+        /// Assembles a top-level expression-style instruction.
+        /// </summary>
+        /// <param name="expression">The expression-style instruction to assemble.</param>
+        /// <param name="module">The module to which the expression-style instruction is scoped.</param>
+        /// <returns>A list of assembled instructions.</returns>
+        public IReadOnlyList<Instruction> AssembleInstructionExpression(SExpression expression, WasmFile module)
+        {
+            var context = new InstructionContext(
+                new Dictionary<string, uint>(),
+                new ModuleContext(this),
+                module);
+            return AssembleExpressionInstruction(expression, context);
+        }
+
+        internal static HighlightedSource Highlight(Lexer.Token expression)
         {
             return new HighlightedSource(new SourceRegion(expression.Span));
         }
 
-        private static HighlightedSource Highlight(SExpression expression)
+        internal static HighlightedSource Highlight(SExpression expression)
         {
             return Highlight(expression.Head);
         }
@@ -2270,9 +2285,14 @@ namespace Wasm.Text
 
         private static string AssembleString(SExpression expression, ModuleContext context)
         {
+            return AssembleString(expression, context.Log);
+        }
+
+        internal static string AssembleString(SExpression expression, ILog log)
+        {
             if (expression.IsCall || expression.Head.Kind != Lexer.TokenKind.String)
             {
-                context.Log.Log(
+                log.Log(
                     new LogEntry(
                         Severity.Error,
                         "syntax error",

@@ -40,7 +40,7 @@ after_build:
 
 test_script:
   # Run the tests
-  - unit-tests\bin\Debug\net47\unit-tests.exe 123
+  - unit-tests\bin\Debug\net47\unit-tests.exe 1234
   - compare-test run-tests.test
 
 artifacts:

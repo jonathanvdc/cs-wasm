@@ -1,10 +1,9 @@
 using System.IO;
 using Loyc.MiniTest;
 using Pixie;
-using Pixie.Terminal;
 using Wasm.Text;
 
-namespace Wasm.Interpret
+namespace Wasm.Scripts
 {
     [TestFixture]
     public class ScriptTests

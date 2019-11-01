@@ -14,5 +14,5 @@ include flame-make-scripts/use-compare-test.mk
 include flame-make-scripts/use-ecsc.mk
 
 test: debug | compare-test
-	$(RUN_EXE) ./unit-tests/bin/Debug/net47/unit-tests.exe 123
+	$(RUN_EXE) ./unit-tests/bin/Debug/net47/unit-tests.exe 1234
 	$(COMPARE_TEST) run-tests.test

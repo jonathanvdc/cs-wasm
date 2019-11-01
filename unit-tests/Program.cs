@@ -77,7 +77,8 @@ namespace Wasm.UnitTests
         {
             return RunTests.RunMany(
                 new DefaultInterpreterTests(),
-                new LinearMemoryTests());
+                new LinearMemoryTests(),
+                new ScriptTests());
         }
 
         public static int LibwasmOptimize()

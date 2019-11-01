@@ -470,8 +470,8 @@ namespace Wasm.Interpret
         public static void Int32Store8(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int32Store8.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<int>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int8;
             memView[pointer] = (sbyte)result;
         }
@@ -484,8 +484,8 @@ namespace Wasm.Interpret
         public static void Int32Store16(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int32Store16.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<int>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int16;
             memView[pointer] = (short)result;
         }
@@ -498,8 +498,8 @@ namespace Wasm.Interpret
         public static void Int32Store(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int32Store.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<int>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int32;
             memView[pointer] = result;
         }
@@ -512,8 +512,8 @@ namespace Wasm.Interpret
         public static void Int64Store8(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int64Store8.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<long>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int8;
             memView[pointer] = (sbyte)result;
         }
@@ -526,8 +526,8 @@ namespace Wasm.Interpret
         public static void Int64Store16(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int64Store16.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<long>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int16;
             memView[pointer] = (short)result;
         }
@@ -540,8 +540,8 @@ namespace Wasm.Interpret
         public static void Int64Store32(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int64Store32.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<long>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int32;
             memView[pointer] = (int)result;
         }
@@ -554,8 +554,8 @@ namespace Wasm.Interpret
         public static void Int64Store(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int64Store.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<long>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int64;
             memView[pointer] = result;
         }
@@ -568,8 +568,8 @@ namespace Wasm.Interpret
         public static void Float32Store(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Float32Store.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<float>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Float32;
             memView[pointer] = result;
         }
@@ -582,8 +582,8 @@ namespace Wasm.Interpret
         public static void Float64Store(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Float64Store.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<double>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Float64;
             memView[pointer] = result;
         }

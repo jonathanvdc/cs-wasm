@@ -919,9 +919,27 @@ namespace Wasm.Text
             InstructionContext context,
             out SExpression immediate)
         {
+            return AssertPopImmediate(keyword, ref operands, context.Log, out immediate);
+        }
+
+        private static bool AssertPopImmediate(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            ModuleContext context,
+            out SExpression immediate)
+        {
+            return AssertPopImmediate(keyword, ref operands, context.Log, out immediate);
+        }
+
+        private static bool AssertPopImmediate(
+            SExpression keyword,
+            ref IReadOnlyList<SExpression> operands,
+            ILog log,
+            out SExpression immediate)
+        {
             if (operands.Count == 0)
             {
-                context.Log.Log(
+                log.Log(
                     new LogEntry(
                         Severity.Error,
                         "syntax error",
@@ -1310,18 +1328,19 @@ namespace Wasm.Text
             WasmFile module,
             ModuleContext context)
         {
-            string typeId = null;
             var tail = moduleField.Tail;
-            if (moduleField.Tail.Count > 0 && moduleField.Tail[0].IsIdentifier)
+            var typeId = AssembleLabelOrNull(ref tail);
+
+            if (!AssertPopImmediate(moduleField, ref tail, context, out SExpression funcTypeExpr))
             {
-                typeId = (string)moduleField.Tail[0].Head.Value;
-                tail = tail.Skip(1).ToArray();
+                return;
             }
 
-            var type = AssembleTypeUse(moduleField, ref tail, context, module, false);
+            var funcTypeTail = funcTypeExpr.Tail;
+            var funcType = AssembleTypeUse(funcTypeExpr, ref funcTypeTail, context, module);
             AssertEmpty(context, "type definition", tail);
 
-            var index = module.AddFunctionType(type);
+            var index = module.AddFunctionType(funcType);
             context.TypeContext.Define(typeId, index);
         }
 
@@ -1723,13 +1742,13 @@ namespace Wasm.Text
                             "syntax error",
                             Quotation.QuoteEvenInBold(
                                 "expected a local identifier or index; got ",
-                                (string)idOrIndex.Head.Value,
+                                idOrIndex.Head.Span.Text,
                                 " expression instead."),
                             Highlight(idOrIndex)));
                 }
                 else if (idOrIndex.Head.Kind == Lexer.TokenKind.UnsignedInteger)
                 {
-                    return localOperator.Create((uint)idOrIndex.Head.Value);
+                    return localOperator.Create(AssembleUInt32(idOrIndex, context.ModuleContext));
                 }
                 else if (idOrIndex.Head.Kind == Lexer.TokenKind.Identifier)
                 {

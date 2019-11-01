@@ -268,8 +268,8 @@ namespace Wasm.Text
             Assert.AreEqual(20u, tableImport.Table.Limits.Maximum);
 
             module = AssembleModule("(module " +
-                "(type $g (param i32) (result f64)) " +
-                "(type $f (param i32 i64 f32 f64) (result f64)) " +
+                "(type $g (func (param i32) (result f64))) " +
+                "(type $f (func (param i32 i64 f32 f64) (result f64))) " +
                 "(import \"spectest\" \"f\" (func (type $f) (param i32 i64 f32 f64) (result f64))) " +
                 "(import \"spectest\" \"f\" (func (type 1) (param i32 i64 f32 f64) (result f64))) " +
                 "(import \"spectest\" \"f\" (func (param i32 i64 f32 f64) (result f64))) " +

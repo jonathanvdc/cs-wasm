@@ -104,7 +104,7 @@ namespace Wasm.Interpret
                 {
                     throw new WasmException(
                         "Return type mismatch: function has return type '" +
-                        ((object)Signature.ReturnTypes[i]).ToString() +
+                        Signature.ReturnTypes[i].ToString() +
                         " but is given a return value of type '" +
                         retVals[i].GetType().Name + "'.");
                 }

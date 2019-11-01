@@ -41,7 +41,7 @@ namespace Wasm.Interpret
         public IReadOnlyList<LinearMemory> Memories => definedMemories;
 
         /// <summary>
-        /// Gets a read-only list of the memories in this module.
+        /// Gets a read-only list of the functions in this module.
         /// </summary>
         public IReadOnlyList<FunctionDefinition> Functions => definedFuncs;
 
@@ -56,7 +56,7 @@ namespace Wasm.Interpret
         public IReadOnlyList<FunctionTable> Tables => definedTables;
 
         /// <summary>
-        /// Gets a read-only mapping of names to functions exported by this module.
+        /// Gets a read-only mapping of names to memories exported by this module.
         /// </summary>
         public IReadOnlyDictionary<string, LinearMemory> ExportedMemories => expMemories;
 

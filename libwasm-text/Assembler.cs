@@ -818,7 +818,7 @@ namespace Wasm.Text
             }
             else
             {
-                alignVal = naturalAlignments[memoryOperator];
+                alignVal = (uint)Math.Log(naturalAlignments[memoryOperator], 2);
             }
             return memoryOperator.Create(alignVal, offset);
         }

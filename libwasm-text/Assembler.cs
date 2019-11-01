@@ -1270,10 +1270,6 @@ namespace Wasm.Text
             else if (tail[0].Head.Kind == Lexer.TokenKind.Keyword)
             {
                 var elemType = AssembleElemType(tail[0], context);
-                var table = new TableType(elemType, new ResizableLimits(0));
-                var tableIndex = module.AddTable(table);
-                tableRef = new LocalOrImportRef(false, tableIndex);
-                context.TableContext.Define(tableId, tableRef);
 
                 if (!AssertElementCount(moduleField, tail, 2, context))
                 {
@@ -1299,8 +1295,6 @@ namespace Wasm.Text
                     Enumerable.Empty<uint>());
                 module.AddElementSegment(elemSegment);
 
-                context.TableContext.Use(tableRef, index => { elemSegment.TableIndex = index; });
-
                 for (int i = 0; i < elems.Tail.Count; i++)
                 {
                     elemSegment.Elements.Add(0);
@@ -1308,6 +1302,13 @@ namespace Wasm.Text
                     var j = i;
                     context.FunctionContext.Use(functionId, index => { elemSegment.Elements[j] = index; });
                 }
+
+                var table = new TableType(elemType, new ResizableLimits((uint)elemSegment.Elements.Count));
+                var tableIndex = module.AddTable(table);
+                tableRef = new LocalOrImportRef(false, tableIndex);
+                context.TableContext.Define(tableId, tableRef);
+
+                context.TableContext.Use(tableRef, index => { elemSegment.TableIndex = index; });
             }
             else
             {

@@ -218,7 +218,7 @@ namespace Wasm.Interpret
         public static void CallIndirect(Instruction value, InterpreterContext context)
         {
             var funcDefIndex = context.Pop<int>();
-            var funcDef = context.Module.Functions[funcDefIndex];
+            var funcDef = context.Module.Tables[0][(uint)funcDefIndex];
 
             var args = context.Pop<object>(funcDef.ParameterTypes.Count);
             var results = funcDef.Invoke(args);

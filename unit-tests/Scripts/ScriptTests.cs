@@ -1,4 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Loyc.MiniTest;
 using Pixie;
 using Wasm.Text;
@@ -8,19 +11,54 @@ namespace Wasm.Scripts
     [TestFixture]
     public class ScriptTests
     {
+        private static readonly string[] whitelist = new[] {
+            "endianness.wast",
+            "align.wast",
+            "break-drop.wast",
+            "comments.wast",
+            "f32.wast",
+            "f32_cmp.wast",
+            "f64.wast",
+            "f64_cmp.wast",
+            "fac.wast",
+            "forward.wast",
+            "inline-module.wast",
+            "int_exprs.wast",
+            "int_literals.wast",
+            "local_get.wast",
+            "local_set.wast",
+            "nop.wast",
+            "skip-stack-guard-page.wast",
+            "store.wast",
+            "token.wast",
+            "traps.wast",
+            "type.wast",
+            "unreached-invalid.wast",
+            "utf8-custom-section-id.wast",
+            "utf8-import-field.wast",
+            "utf8-import-module.wast",
+            "utf8-invalid-encoding.wast"
+        };
+
         [Test]
         public void RunSpecScripts()
         {
-            RunSpecScript("nop.wast");
+            foreach (var name in Directory.EnumerateFiles(Path.Combine("spec", "test", "core")))
+            {
+                if (whitelist.Any(x => name.EndsWith(x)))
+                {
+                    Console.WriteLine($" - {name}");
+                    RunSpecScript(name);
+                }
+            }
         }
 
-        private void RunSpecScript(string scriptName)
+        private void RunSpecScript(string scriptPath)
         {
             var log = new TestLog(new[] { Severity.Error }, NullLog.Instance);
             var runner = new ScriptRunner(log);
-            var path = Path.Combine("spec", "test", "core", scriptName);
-            var scriptText = File.ReadAllText(path);
-            runner.Run(scriptText, path);
+            var scriptText = File.ReadAllText(scriptPath);
+            runner.Run(scriptText, scriptPath);
         }
     }
 }

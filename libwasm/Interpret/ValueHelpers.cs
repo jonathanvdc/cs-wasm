@@ -13,9 +13,9 @@ namespace Wasm.Interpret
         /// </summary>
         /// <param name="value">The value to reinterpret.</param>
         /// <returns>A 32-bit floating-point number.</returns>
-        public static float ReinterpretAsFloat32(int value)
+        public static unsafe float ReinterpretAsFloat32(int value)
         {
-            return BitConverter.ToSingle(BitConverter.GetBytes(value), 0);
+            return *(float*)&value;
         }
 
         /// <summary>
@@ -24,9 +24,9 @@ namespace Wasm.Interpret
         /// </summary>
         /// <param name="value">The value to reinterpret.</param>
         /// <returns>A 32-bit integer.</returns>
-        public static int ReinterpretAsInt32(float value)
+        public static unsafe int ReinterpretAsInt32(float value)
         {
-            return BitConverter.ToInt32(BitConverter.GetBytes(value), 0);
+            return *(int*)&value;
         }
 
         /// <summary>

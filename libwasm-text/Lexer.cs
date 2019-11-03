@@ -621,7 +621,7 @@ namespace Wasm.Text
                 return ReadReservedToken(spanStart);
             }
 
-            var builder = new StringBuilder();
+            var builder = new List<byte>();
             char c;
             while (TryReadChar(out c))
             {
@@ -630,7 +630,7 @@ namespace Wasm.Text
                     return new Token(
                         TokenKind.String,
                         new SourceSpan(document, spanStart, offset - spanStart),
-                        builder.ToString());
+                        builder.ToArray());
                 }
                 else if (c == '\\')
                 {
@@ -641,28 +641,28 @@ namespace Wasm.Text
                     switch (c)
                     {
                         case '\\':
-                            builder.Append('\\');
+                            builder.Add((byte)'\\');
                             break;
                         case 'n':
-                            builder.Append('\n');
+                            builder.Add((byte)'\n');
                             break;
                         case 'r':
-                            builder.Append('\r');
+                            builder.Add((byte)'\r');
                             break;
                         case 't':
-                            builder.Append('\t');
+                            builder.Add((byte)'\t');
                             break;
                         case '"':
-                            builder.Append('"');
+                            builder.Add((byte)'"');
                             break;
                         case '\'':
-                            builder.Append('\'');
+                            builder.Add((byte)'\'');
                             break;
                         case 'u':
                             BigInteger num;
                             if (Expect('{') && TryReadHexNum(out num) && Expect('}'))
                             {
-                                builder.Append(char.ConvertFromUtf32((int)num));
+                                builder.AddRange(Encoding.UTF8.GetBytes(char.ConvertFromUtf32((int)num)));
                                 continue;
                             }
                             return ReadReservedToken(spanStart);
@@ -670,7 +670,7 @@ namespace Wasm.Text
                             int firstDigit, secondDigit;
                             if (TryParseHexDigit(c, out firstDigit) && TryReadHexDigit(out secondDigit))
                             {
-                                builder.Append((char)(16 * firstDigit + secondDigit));
+                                builder.Add((byte)(16 * firstDigit + secondDigit));
                                 break;
                             }
                             else
@@ -683,9 +683,19 @@ namespace Wasm.Text
                 {
                     return ReadReservedToken(spanStart);
                 }
+                else if (char.IsHighSurrogate(c))
+                {
+                    var high = c;
+                    if (!TryReadChar(out c) || !char.IsLowSurrogate(c))
+                    {
+                        return ReadReservedToken(spanStart);
+                    }
+                    var low = c;
+                    builder.AddRange(Encoding.UTF8.GetBytes(new string(new[] { high, low })));
+                }
                 else
                 {
-                    builder.Append(c);
+                    builder.AddRange(Encoding.UTF8.GetBytes(c.ToString()));
                 }
             }
             return ReadReservedToken(spanStart);

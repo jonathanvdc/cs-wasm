@@ -86,17 +86,14 @@ namespace Wasm.Text
                         Highlight(expression)));
             }
 
-            IReadOnlyList<SExpression> fields;
-            if (expression.Tail.Count > 0 && expression.Tail[0].IsIdentifier)
+            var fields = expression.Tail;
+            var moduleId = AssembleLabelOrNull(ref fields);
+            
+            if (moduleId != null)
             {
                 // We encountered a module name. Turn it into a name entry and then skip it
                 // for the purpose of module field analysis.
-                file.ModuleName = (string)expression.Tail[0].Head.Value;
-                fields = expression.Tail.Skip(1).ToArray();
-            }
-            else
-            {
-                fields = expression.Tail;
+                file.ModuleName = moduleId;
             }
 
             // Now assemble the module's fields.
@@ -2310,6 +2307,11 @@ namespace Wasm.Text
 
         internal static string AssembleString(SExpression expression, ILog log)
         {
+            return Encoding.UTF8.GetString(AssembleByteString(expression, log));
+        }
+
+        internal static byte[] AssembleByteString(SExpression expression, ILog log)
+        {
             if (expression.IsCall || expression.Head.Kind != Lexer.TokenKind.String)
             {
                 log.Log(
@@ -2319,11 +2321,11 @@ namespace Wasm.Text
                         Quotation.QuoteEvenInBold(
                             "expected a string literal."),
                         Highlight(expression)));
-                return "";
+                return Array.Empty<byte>();
             }
             else
             {
-                return (string)expression.Head.Value;
+                return (byte[])expression.Head.Value;
             }
         }
 
@@ -2381,7 +2383,7 @@ namespace Wasm.Text
             var results = new List<byte>();
             foreach (var item in tail)
             {
-                results.AddRange(Encoding.UTF8.GetBytes(AssembleString(item, context)));
+                results.AddRange(AssembleByteString(item, context.Log));
             }
             return results.ToArray();
         }

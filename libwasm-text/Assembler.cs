@@ -2133,7 +2133,7 @@ namespace Wasm.Text
 
                     referenceType = funTypes.FunctionTypes[(int)referenceTypeIndex];
 
-                    if (tail.Count == 0)
+                    if (tail.Count == 0 || (!tail[0].IsCallTo("param") && !tail[0].IsCallTo("result")))
                     {
                         return referenceType;
                     }

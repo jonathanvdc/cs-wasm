@@ -591,7 +591,10 @@ namespace Wasm.Interpret
         private static uint PopAlignedPointer(MemoryInstruction Instruction, InterpreterContext context)
         {
             var pointer = (uint)context.Pop<int>() + Instruction.Offset;
-            CheckAlignment(pointer, Instruction);
+            if (context.EnforceAlignment)
+            {
+                CheckAlignment(pointer, Instruction);
+            }
             return pointer;
         }
 

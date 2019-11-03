@@ -21,10 +21,18 @@ namespace Wasm.Interpret
         /// </summary>
         /// <param name="module">The owning module.</param>
         /// <param name="locals">The list of local variables in this context.</param>
-        public InterpreterContext(ModuleInstance module, IReadOnlyList<Variable> locals)
+        /// <param name="enforceAlignment">
+        /// Tells if memory access alignments should be taken to be normative instead
+        /// of as hints.
+        /// </param>
+        public InterpreterContext(
+            ModuleInstance module,
+            IReadOnlyList<Variable> locals,
+            bool enforceAlignment = false)
         {
             this.Module = module;
             this.Locals = locals;
+            this.EnforceAlignment = enforceAlignment;
             this.valStack = new Stack<object>();
             this.ReturnValues = null;
             this.BreakDepth = -1;
@@ -54,6 +62,19 @@ namespace Wasm.Interpret
         /// <returns>The list of values that have been returned, or <c>null</c> if nothing
         /// has been returned yet.</returns>
         public IReadOnlyList<object> ReturnValues { get; private set; }
+
+        /// <summary>
+        /// Tells if the alignment specified by memory instructions is to be taken as
+        /// a mandatory alignment to which memory accesses must adhere instead of a mere
+        /// hint.
+        /// </summary>
+        /// <value><c>true</c> if unaligned accesses must throw exceptions; otherwise, <c>false</c>.</value>
+        /// <remarks>
+        /// The WebAssembly specification states that memory instruction alignments do not
+        /// affect execution semantics. In order to comply with the standard, this property
+        /// should be set to <c>false</c> (the default).
+        /// </remarks>
+        public bool EnforceAlignment { get; private set; }
 
         /// <summary>
         /// Gets the number of items that are currently on the evaluation stack.

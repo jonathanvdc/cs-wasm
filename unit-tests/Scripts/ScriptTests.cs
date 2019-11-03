@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Loyc.MiniTest;
@@ -12,10 +11,12 @@ namespace Wasm.Scripts
     public class ScriptTests
     {
         private static readonly string[] whitelist = new[] {
-            "endianness.wast",
+            "address.wast",
             "align.wast",
+            "block.wast",
             "break-drop.wast",
             "comments.wast",
+            "endianness.wast",
             "f32.wast",
             "f32_cmp.wast",
             "f64.wast",

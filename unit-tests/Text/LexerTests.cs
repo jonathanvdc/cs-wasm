@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 using Loyc.MiniTest;
 
 namespace Wasm.Text
@@ -11,16 +12,19 @@ namespace Wasm.Text
         [Test]
         public void ParseStrings()
         {
-            AssertParsesAsKind(Lexer.TokenKind.String, "\"hi\"");
-            AssertParsesAs("hi", "\"hi\"");
-            AssertParsesAs("hello there", "\"hello there\"");
-            AssertParsesAs("hello there", "\"hello\\u{20}there\"");
-            AssertParsesAs("hello there", "\"hello\\20there\"");
-            AssertParsesAs("hello\tthere", "\"hello\\tthere\"");
-            AssertParsesAs("hello\rthere", "\"hello\\rthere\"");
-            AssertParsesAs("hello\nthere", "\"hello\\nthere\"");
-            AssertParsesAs("hello\'there", "\"hello\\'there\"");
-            AssertParsesAs("hello\"there", "\"hello\\\"there\"");
+            AssertStringParsesAs("hi", "\"hi\"");
+            AssertStringParsesAs("hello there", "\"hello there\"");
+            AssertStringParsesAs("hello there", "\"hello\\u{20}there\"");
+            AssertStringParsesAs("hello there", "\"hello\\20there\"");
+            AssertStringParsesAs("hello\tthere", "\"hello\\tthere\"");
+            AssertStringParsesAs("hello\rthere", "\"hello\\rthere\"");
+            AssertStringParsesAs("hello\nthere", "\"hello\\nthere\"");
+            AssertStringParsesAs("hello\'there", "\"hello\\'there\"");
+            AssertStringParsesAs("hello\"there", "\"hello\\\"there\"");
+            AssertStringParsesAs("hello\"there", "\"hello\\\"there\"");
+
+            var unicode = new string(new[] { (char)55304, (char)56692 });
+            AssertStringParsesAs(unicode, $"\"{unicode}\"");
         }
 
         [Test]
@@ -133,15 +137,22 @@ namespace Wasm.Text
         [Test]
         public void ParseWhitespace()
         {
-            AssertParsesAs("hi", " \"hi\"");
-            AssertParsesAs("hi", "\t\"hi\"");
-            AssertParsesAs("hi", "\n\"hi\"");
-            AssertParsesAs("hi", "\r\"hi\"");
-            AssertParsesAs("hi", " \r\n\"hi\"");
-            AssertParsesAs("hi", "(; block comment! ;)\"hi\"");
-            AssertParsesAs("hi", "(; (; nested block comment! ;) ;)\"hi\"");
-            AssertParsesAs("hi", " \"hi\" ");
-            AssertParsesAs("hi", "\"hi\" ;; line comment!");
+            AssertStringParsesAs("hi", " \"hi\"");
+            AssertStringParsesAs("hi", "\t\"hi\"");
+            AssertStringParsesAs("hi", "\n\"hi\"");
+            AssertStringParsesAs("hi", "\r\"hi\"");
+            AssertStringParsesAs("hi", " \r\n\"hi\"");
+            AssertStringParsesAs("hi", "(; block comment! ;)\"hi\"");
+            AssertStringParsesAs("hi", "(; (; nested block comment! ;) ;)\"hi\"");
+            AssertStringParsesAs("hi", " \"hi\" ");
+            AssertStringParsesAs("hi", "\"hi\" ;; line comment!");
+        }
+
+        private void AssertStringParsesAs(string expected, string text)
+        {
+            var token = ParseSingleToken(text);
+            Assert.AreEqual(Lexer.TokenKind.String, token.Kind);
+            Assert.AreEqual(expected, Encoding.UTF8.GetString((byte[])token.Value));
         }
 
         private void AssertParsesAs(object expected, string text)

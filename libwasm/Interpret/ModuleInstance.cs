@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Wasm.Interpret
@@ -76,18 +77,19 @@ namespace Wasm.Interpret
         public IReadOnlyDictionary<string, FunctionTable> ExportedTables => expTables;
 
         /// <summary>
-        /// Evaluates the given initializer expression.
+        /// Evaluates an initializer expression.
         /// </summary>
         /// <param name="expression">The expression to evaluate.</param>
+        /// <param name="resultType">The result type expected from the expression.</param>
         /// <returns>The value obtained by evaluating the initializer expression.</returns>
-        public T Evaluate<T>(InitializerExpression expression)
+        public object Evaluate(InitializerExpression expression, WasmValueType resultType)
         {
-            var context = new InterpreterContext(this);
+            var context = new InterpreterContext(this, new[] { resultType });
             foreach (var instruction in expression.BodyInstructions)
             {
                 Interpreter.Interpret(instruction, context);
             }
-            var result = context.Pop<T>();
+            var result = context.Pop<object>();
             if (context.StackDepth > 0)
             {
                 throw new WasmException(
@@ -96,6 +98,27 @@ namespace Wasm.Interpret
                     context.StackDepth + ".");
             }
             return result;
+        }
+
+        /// <summary>
+        /// Evaluates an initializer expression.
+        /// </summary>
+        /// <param name="expression">The expression to evaluate.</param>
+        /// <param name="resultType">The result type expected from the expression.</param>
+        /// <returns>The value obtained by evaluating the initializer expression.</returns>
+        public object Evaluate(InitializerExpression expression, Type resultType)
+        {
+            return Evaluate(expression, ValueHelpers.ToWasmValueType(resultType));
+        }
+
+        /// <summary>
+        /// Evaluates an initializer expression.
+        /// </summary>
+        /// <param name="expression">The expression to evaluate.</param>
+        /// <returns>The value obtained by evaluating the initializer expression.</returns>
+        public T Evaluate<T>(InitializerExpression expression)
+        {
+            return (T)Evaluate(expression, ValueHelpers.ToWasmValueType<T>());
         }
 
         /// <summary>
@@ -274,7 +297,7 @@ namespace Wasm.Interpret
                         Variable.Create<object>(
                             globalSpec.Type.ContentType,
                             globalSpec.Type.IsMutable,
-                            Evaluate<object>(globalSpec.InitialValue)));
+                            Evaluate(globalSpec.InitialValue, globalSpec.Type.ContentType)));
                 }
             }
         }

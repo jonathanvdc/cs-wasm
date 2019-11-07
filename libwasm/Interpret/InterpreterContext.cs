@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Wasm.Interpret
 {
@@ -8,18 +9,21 @@ namespace Wasm.Interpret
     public sealed class InterpreterContext
     {
         /// <summary>
-        /// Creates a new interpreter context from the given module.
+        /// Creates a new interpreter context from the given module and
+        /// expected return types.
         /// </summary>
         /// <param name="module">The owning module.</param>
-        public InterpreterContext(ModuleInstance module)
-            : this(module, new Variable[0])
+        /// <param name="returnTypes">The list of expected return types.</param>
+        public InterpreterContext(ModuleInstance module, IReadOnlyList<WasmValueType> returnTypes)
+            : this(module, returnTypes, new Variable[0])
         { }
 
         /// <summary>
-        /// Creates a new interpreter context from the given module and list of
-        /// local variables.
+        /// Creates a new interpreter context from the given module, return types
+        /// and list of local variables.
         /// </summary>
         /// <param name="module">The owning module.</param>
+        /// <param name="returnTypes">The list of expected return types.</param>
         /// <param name="locals">The list of local variables in this context.</param>
         /// <param name="enforceAlignment">
         /// Tells if memory access alignments should be taken to be normative instead
@@ -27,10 +31,12 @@ namespace Wasm.Interpret
         /// </param>
         public InterpreterContext(
             ModuleInstance module,
+            IReadOnlyList<WasmValueType> returnTypes,
             IReadOnlyList<Variable> locals,
             bool enforceAlignment = false)
         {
             this.Module = module;
+            this.ReturnTypes = returnTypes;
             this.Locals = locals;
             this.EnforceAlignment = enforceAlignment;
             this.valStack = new Stack<object>();
@@ -45,6 +51,12 @@ namespace Wasm.Interpret
         public ModuleInstance Module { get; private set; }
 
         /// <summary>
+        /// Gets the list of expected return types.
+        /// </summary>
+        /// <value>The expected return types.</value>
+        public IReadOnlyList<WasmValueType> ReturnTypes { get; private set; }
+
+        /// <summary>
         /// Gets a list of local variables for this interpreter context.
         /// </summary>
         /// <returns>A list of local variables.</returns>
@@ -54,6 +66,22 @@ namespace Wasm.Interpret
         /// The evaluation stack.
         /// </summary>
         private Stack<object> valStack;
+
+        /// <summary>
+        /// Gets or sets the evaluation stack.
+        /// </summary>
+        /// <value>The evaluation stack.</value>
+        public EvaluationStack Stack
+        {
+            get
+            {
+                return new EvaluationStack { stack = valStack };
+            }
+            set
+            {
+                this.valStack = value.stack;
+            }
+        }
 
         /// <summary>
         /// Gets the list of values that have been returned, or <c>null</c> if nothing
@@ -172,15 +200,57 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
-        /// Pushes the given list of values onto the value stack.
+        /// Pushes the given sequence of values onto the value stack.
         /// </summary>
         /// <param name="values">The list of values to push onto the stack.</param>
-        public void Push<T>(IReadOnlyList<T> values)
+        public void Push<T>(IEnumerable<T> values)
         {
-            for (int i = 0; i < values.Count; i++)
+            foreach (var item in values)
             {
-                Push<T>(values[i]);
+                Push<T>(item);
             }
         }
-    } 
+
+        /// <summary>
+        /// Pushes the contents of an evaluation stack onto this context's stack.
+        /// </summary>
+        /// <param name="stack">The stack to push onto this context's evaluation stack.</param>
+        public void Push(EvaluationStack stack)
+        {
+            Push<object>(stack.stack.Reverse());
+        }
+
+        /// <summary>
+        /// Pushes the topmost <paramref name="count"/> elements of <paramref name="stack"/> onto this context's
+        /// evaluation stack.
+        /// </summary>
+        /// <param name="stack">The stack to push onto this context's evaluation stack.</param>
+        /// <param name="count">
+        /// The number of elements to take from <paramref name="stack"/> and push onto this
+        /// context's evaluation stack.
+        /// </param>
+        public void Push(EvaluationStack stack, int count)
+        {
+            Push<object>(stack.stack.Take(count).Reverse());
+        }
+
+        /// <summary>
+        /// Creates an empty evaluation stack.
+        /// </summary>
+        /// <returns>An empty evaluation stack.</returns>
+        public EvaluationStack CreateStack()
+        {
+            return new EvaluationStack { stack = new Stack<object>() };
+        }
+
+        /// <summary>
+        /// A data structure that represents the interpreter's value stack.
+        /// </summary>
+        public struct EvaluationStack
+        {
+            // Internal on purpose so we can keep the 'Stack<object>' an
+            // implementation detail.
+            internal Stack<object> stack;
+        }
+    }
 }

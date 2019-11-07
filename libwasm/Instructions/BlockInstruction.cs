@@ -38,6 +38,12 @@ namespace Wasm.Instructions
         public WasmType Type { get; set; }
 
         /// <summary>
+        /// Gets the block instruction's arity, that is, the number of elements
+        /// it produces.
+        /// </summary>
+        public int Arity => Type == WasmType.Empty ? 0 : 1;
+
+        /// <summary>
         /// Gets this block instruction's contents.
         /// </summary>
         /// <returns>The instruction's contents.</returns>

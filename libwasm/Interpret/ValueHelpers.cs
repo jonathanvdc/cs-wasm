@@ -8,6 +8,45 @@ namespace Wasm.Interpret
     public static class ValueHelpers
     {
         /// <summary>
+        /// Takes a type and maps it to its corresponding WebAssembly value type.
+        /// </summary>
+        /// <param name="type">The type to map to a WebAssembly value type.</param>
+        /// <returns>A WebAssembly value type.</returns>
+        public static WasmValueType ToWasmValueType(Type type)
+        {
+            if (type == typeof(int))
+            {
+                return WasmValueType.Int32;
+            }
+            else if (type == typeof(long))
+            {
+                return WasmValueType.Int64;
+            }
+            else if (type == typeof(float))
+            {
+                return WasmValueType.Float32;
+            }
+            else if (type == typeof(double))
+            {
+                return WasmValueType.Float64;
+            }
+            else
+            {
+                throw new WasmException($"Type '{type}' does not map to a WebAssembly type.");
+            }
+        }
+
+        /// <summary>
+        /// Takes a type and maps it to its corresponding WebAssembly value type.
+        /// </summary>
+        /// <typeparam name="T">The type to map to a WebAssembly value type.</typeparam>
+        /// <returns>A WebAssembly value type.</returns>
+        public static WasmValueType ToWasmValueType<T>()
+        {
+            return ToWasmValueType(typeof(T));
+        }
+
+        /// <summary>
         /// Reinterprets the given 32-bit integer's bits as a 32-bit floating-point
         /// number.
         /// </summary>

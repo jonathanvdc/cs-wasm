@@ -15,6 +15,7 @@ namespace Wasm.Scripts
             "align.wast",
             "block.wast",
             "break-drop.wast",
+            "br_if.wast",
             "comments.wast",
             "endianness.wast",
             "f32.wast",

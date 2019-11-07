@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Wasm.Instructions;
 
 namespace Wasm.Interpret
@@ -34,17 +35,43 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Block(Instruction value, InterpreterContext context)
         {
-            var contents = Operators.Block.CastInstruction(value).Contents;
+            var instruction = Operators.Block.CastInstruction(value);
+            var contents = instruction.Contents;
             var interpreter = context.Module.Interpreter;
+
+            var outerStack = context.Stack;
+            var innerStack = context.Stack = context.CreateStack();
             for (int i = 0; i < contents.Count; i++)
             {
                 interpreter.Interpret(contents[i], context);
                 if (context.BreakRequested)
                 {
+                    // Restore the outer stack.
+                    context.Stack = outerStack;
+                    if (context.BreakDepth == 0)
+                    {
+                        // The buck stops here. Push the topmost n items of the
+                        // inner stack onto the outer stack, where n is the block
+                        // instruction's arity.
+                        context.Push(innerStack, instruction.Arity);
+                    }
+                    else
+                    {
+                        // Otherwise, push the entire inner stack onto the outer stack and
+                        // make the issue of figuring out how many elements to pop the next
+                        // block's problem.
+                        context.Push(innerStack);
+                    }
+
                     context.BreakDepth--;
                     return;
                 }
             }
+
+            // Restore the outer stack.
+            context.Stack = outerStack;
+            // Push the inner stack onto the outer stack.
+            context.Push(innerStack);
         }
 
         /// <summary>
@@ -157,6 +184,11 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Return(Instruction value, InterpreterContext context)
         {
+            // Remove excess values from the evaluation stack stack.
+            var oldStack = context.Stack;
+            context.Stack = context.CreateStack();
+            context.Push(oldStack, context.ReturnTypes.Count);
+
             context.Return();
         }
 

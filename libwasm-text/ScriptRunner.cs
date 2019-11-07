@@ -89,7 +89,7 @@ namespace Wasm.Text
                 var results = RunAction(expression.Tail[0]);
                 var expected = expression.Tail
                     .Skip(1)
-                    .Select(EvaluateConstExpr)
+                    .Zip(results, (expr, val) => EvaluateConstExpr(expr, val.GetType()))
                     .ToArray();
 
                 if (!results.SequenceEqual(expected))
@@ -120,12 +120,17 @@ namespace Wasm.Text
             }
         }
 
-        private object EvaluateConstExpr(SExpression expression)
+        private object EvaluateConstExpr(SExpression expression, WasmValueType resultType)
         {
             var anonModule = new WasmFile();
             var instructions = Assembler.AssembleInstructionExpression(expression, anonModule);
             var inst = ModuleInstance.Instantiate(anonModule, new SpecTestImporter());
-            return inst.Evaluate<object>(new InitializerExpression(instructions));
+            return inst.Evaluate(new InitializerExpression(instructions), resultType);
+        }
+
+        private object EvaluateConstExpr(SExpression expression, Type resultType)
+        {
+            return EvaluateConstExpr(expression, ValueHelpers.ToWasmValueType(resultType));
         }
 
         private IReadOnlyList<object> RunAction(SExpression expression)
@@ -133,12 +138,29 @@ namespace Wasm.Text
             if (expression.IsCallTo("invoke"))
             {
                 var name = Assembler.AssembleString(expression.Tail[0], Log);
-                var args = expression.Tail.Skip(1).Select(EvaluateConstExpr).ToArray();
-                foreach (var inst in moduleInstances)
+                foreach (var inst in Enumerable.Reverse(moduleInstances))
                 {
                     if (inst.ExportedFunctions.TryGetValue(name, out FunctionDefinition def))
                     {
-                        return def.Invoke(args);
+                        var args = expression.Tail
+                            .Skip(1)
+                            .Zip(def.ParameterTypes, (expr, type) => EvaluateConstExpr(expr, type))
+                            .ToArray();
+                        try
+                        {
+                            return def.Invoke(args);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Log(
+                                new LogEntry(
+                                    Severity.Error,
+                                    "unhandled exception",
+                                    $"assertion threw {ex.GetType().Name}",
+                                    new Paragraph(ex.ToString()),
+                                    Assembler.Highlight(expression)));
+                            throw;
+                        }
                     }
                 }
 

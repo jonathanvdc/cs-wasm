@@ -1071,7 +1071,19 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int32TruncUFloat32(Instruction value, InterpreterContext context)
         {
-            context.Push<int>((int)(uint)context.Pop<float>());
+            var val = context.Pop<float>();
+            if (float.IsInfinity(val) || (val < 0f && (uint)val != 0) || val > uint.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (float.IsNaN(val))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                context.Push<int>(unchecked((int)checked((uint)val)));
+            }
         }
 
         /// <summary>
@@ -1091,7 +1103,19 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int32TruncUFloat64(Instruction value, InterpreterContext context)
         {
-            context.Push<int>((int)(uint)context.Pop<double>());
+            var val = context.Pop<double>();
+            if (double.IsInfinity(val) || (val < 0 && (uint)val != 0) || val > uint.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (double.IsNaN(val))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                context.Push<int>(unchecked((int)checked((uint)val)));
+            }
         }
 
         /// <summary>

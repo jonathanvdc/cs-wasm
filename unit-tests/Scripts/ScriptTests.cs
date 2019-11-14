@@ -21,7 +21,7 @@ namespace Wasm.Scripts
             "call_indirect.wast",
             "call.wast",
             "comments.wast",
-            // "const.wast",
+            "const.wast",
             // "conversions.wast",
             "endianness.wast",
             "f32.wast",

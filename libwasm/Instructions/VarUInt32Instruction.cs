@@ -30,7 +30,7 @@ namespace Wasm.Instructions
         public override Operator Op { get { return opValue; } }
 
         /// <summary>
-        /// Gets this instruction's immediate.
+        /// Gets or sets this instruction's immediate.
         /// </summary>
         /// <returns>The immediate value.</returns>
         public uint Immediate { get; set; }

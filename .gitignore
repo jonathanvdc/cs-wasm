@@ -4,3 +4,4 @@ out/
 packages/
 *.userprefs
 *.log
+.vs/

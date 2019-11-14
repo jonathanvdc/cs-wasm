@@ -1,3 +1,6 @@
 [submodule "flame-make-scripts"]
 	path = flame-make-scripts
 	url = https://github.com/jonathanvdc/flame-make-scripts
+[submodule "spec"]
+	path = spec
+	url = https://github.com/WebAssembly/spec

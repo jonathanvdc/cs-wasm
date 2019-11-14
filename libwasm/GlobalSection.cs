@@ -177,7 +177,7 @@ namespace Wasm
     }
 
     /// <summary>
-    /// Describes a global variable's type and initial value.
+    /// Describes a global variable's type, mutability and initial value.
     /// </summary>
     public sealed class GlobalVariable
     {

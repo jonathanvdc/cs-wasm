@@ -43,5 +43,11 @@ namespace Wasm.Interpret
             get { return contents[(int)index]; }
             set { contents[(int)index] = value; }
         }
+
+        /// <summary>
+        /// Gets the number of elements in the table.
+        /// </summary>
+        /// <returns>An element count.</returns>
+        public int Count => contents.Count;
     }
 }

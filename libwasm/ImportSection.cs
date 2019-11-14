@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Wasm.Binary;
@@ -58,61 +57,61 @@ namespace Wasm
         public byte[] ExtraPayload { get; set; }
 
         /// <inheritdoc/>
-        public override void WritePayloadTo(BinaryWasmWriter Writer)
+        public override void WritePayloadTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32((uint)Imports.Count);
+            writer.WriteVarUInt32((uint)Imports.Count);
             foreach (var import in Imports)
             {
-                import.WriteTo(Writer);
+                import.WriteTo(writer);
             }
-            Writer.Writer.Write(ExtraPayload);
+            writer.Writer.Write(ExtraPayload);
         }
 
         /// <summary>
         /// Reads the import section with the given header.
         /// </summary>
-        /// <param name="Header">The section header.</param>
-        /// <param name="Reader">A reader for a binary WebAssembly file.</param>
+        /// <param name="header">The section header.</param>
+        /// <param name="reader">A reader for a binary WebAssembly file.</param>
         /// <returns>The parsed section.</returns>
         public static ImportSection ReadSectionPayload(
-            SectionHeader Header, BinaryWasmReader Reader)
+            SectionHeader header, BinaryWasmReader reader)
         {
-            long startPos = Reader.Position;
+            long startPos = reader.Position;
             // Read the imported values.
-            uint count = Reader.ReadVarUInt32();
+            uint count = reader.ReadVarUInt32();
             var importedVals = new List<ImportedValue>();
             for (uint i = 0; i < count; i++)
             {
-                importedVals.Add(ImportedValue.ReadFrom(Reader));
+                importedVals.Add(ImportedValue.ReadFrom(reader));
             }
 
             // Skip any remaining bytes.
-            var extraPayload = Reader.ReadRemainingPayload(startPos, Header);
+            var extraPayload = reader.ReadRemainingPayload(startPos, header);
             return new ImportSection(importedVals, extraPayload);
         }
 
         /// <inheritdoc/>
-        public override void Dump(TextWriter Writer)
+        public override void Dump(TextWriter writer)
         {
-            Writer.Write(Name.ToString());
-            Writer.Write("; number of entries: ");
-            Writer.Write(Imports.Count);
-            Writer.WriteLine();
+            writer.Write(Name.ToString());
+            writer.Write("; number of entries: ");
+            writer.Write(Imports.Count);
+            writer.WriteLine();
             for (int i = 0; i < Imports.Count; i++)
             {
-                Writer.Write("#");
-                Writer.Write(i);
-                Writer.Write(" -> ");
-                Imports[i].Dump(Writer);
-                Writer.WriteLine();
+                writer.Write("#");
+                writer.Write(i);
+                writer.Write(" -> ");
+                Imports[i].Dump(writer);
+                writer.WriteLine();
             }
             if (ExtraPayload.Length > 0)
             {
-                Writer.Write("Extra payload size: ");
-                Writer.Write(ExtraPayload.Length);
-                Writer.WriteLine();
-                DumpHelpers.DumpBytes(ExtraPayload, Writer);
-                Writer.WriteLine();
+                writer.Write("Extra payload size: ");
+                writer.Write(ExtraPayload.Length);
+                writer.WriteLine();
+                DumpHelpers.DumpBytes(ExtraPayload, writer);
+                writer.WriteLine();
             }
         }
     }
@@ -125,12 +124,12 @@ namespace Wasm
         /// <summary>
         /// Creates an import value from the given pair of names.
         /// </summary>
-        /// <param name="ModuleName">The name of the module from which a value is imported.</param>
-        /// <param name="FieldName">The name of the value that is imported.</param>
-        public ImportedValue(string ModuleName, string FieldName)
+        /// <param name="moduleName">The name of the module from which a value is imported.</param>
+        /// <param name="fieldName">The name of the value that is imported.</param>
+        public ImportedValue(string moduleName, string fieldName)
         {
-            this.ModuleName = ModuleName;
-            this.FieldName = FieldName;
+            this.ModuleName = moduleName;
+            this.FieldName = fieldName;
         }
 
         /// <summary>
@@ -154,61 +153,61 @@ namespace Wasm
         /// <summary>
         /// Writes the contents of this imported value to the given binary WebAssembly writer.
         /// </summary>
-        /// <param name="Writer">A WebAssembly writer.</param>
-        protected abstract void WriteContentsTo(BinaryWasmWriter Writer);
+        /// <param name="writer">A WebAssembly writer.</param>
+        protected abstract void WriteContentsTo(BinaryWasmWriter writer);
 
         /// <summary>
         /// Dumps the contents of this imported value to the given text writer.
         /// </summary>
-        /// <param name="Writer">A text writer.</param>
-        protected abstract void DumpContents(TextWriter Writer);
+        /// <param name="writer">A text writer.</param>
+        protected abstract void DumpContents(TextWriter writer);
 
         /// <summary>
         /// Writes this exported value to the given WebAssembly file writer.
         /// </summary>
-        /// <param name="Writer">The WebAssembly file writer.</param>
-        public void WriteTo(BinaryWasmWriter Writer)
+        /// <param name="writer">The WebAssembly file writer.</param>
+        public void WriteTo(BinaryWasmWriter writer)
         {
-            Writer.WriteString(ModuleName);
-            Writer.WriteString(FieldName);
-            Writer.Writer.Write((byte)Kind);
-            WriteContentsTo(Writer);
+            writer.WriteString(ModuleName);
+            writer.WriteString(FieldName);
+            writer.Writer.Write((byte)Kind);
+            WriteContentsTo(writer);
         }
 
         /// <summary>
         /// Writes a textual representation of this exported value to the given writer.
         /// </summary>
-        /// <param name="Writer">The writer to which text is written.</param>
-        public void Dump(TextWriter Writer)
+        /// <param name="writer">The writer to which text is written.</param>
+        public void Dump(TextWriter writer)
         {
-            Writer.Write(
+            writer.Write(
                 "from \"{0}\" import {1} \"{2}\": ",
                 ModuleName,
                 ((object)Kind).ToString().ToLower(),
                 FieldName);
-            DumpContents(Writer);
+            DumpContents(writer);
         }
 
         /// <summary>
         /// Reads an imported value from the given binary WebAssembly reader.
         /// </summary>
-        /// <param name="Reader">The WebAssembly reader.</param>
+        /// <param name="reader">The WebAssembly reader.</param>
         /// <returns>The imported value that was read.</returns>
-        public static ImportedValue ReadFrom(BinaryWasmReader Reader)
+        public static ImportedValue ReadFrom(BinaryWasmReader reader)
         {
-            string moduleName = Reader.ReadString();
-            string fieldName = Reader.ReadString();
-            var kind = (ExternalKind)Reader.ReadByte();
+            string moduleName = reader.ReadString();
+            string fieldName = reader.ReadString();
+            var kind = (ExternalKind)reader.ReadByte();
             switch (kind)
             {
                 case ExternalKind.Function:
-                    return new ImportedFunction(moduleName, fieldName, Reader.ReadVarUInt32());
+                    return new ImportedFunction(moduleName, fieldName, reader.ReadVarUInt32());
                 case ExternalKind.Global:
-                    return new ImportedGlobal(moduleName, fieldName, GlobalType.ReadFrom(Reader));
+                    return new ImportedGlobal(moduleName, fieldName, GlobalType.ReadFrom(reader));
                 case ExternalKind.Memory:
-                    return new ImportedMemory(moduleName, fieldName, MemoryType.ReadFrom(Reader));
+                    return new ImportedMemory(moduleName, fieldName, MemoryType.ReadFrom(reader));
                 case ExternalKind.Table:
-                    return new ImportedTable(moduleName, fieldName, TableType.ReadFrom(Reader));
+                    return new ImportedTable(moduleName, fieldName, TableType.ReadFrom(reader));
                 default:
                     throw new WasmException("Unknown imported value kind: " + kind);
             }
@@ -223,13 +222,13 @@ namespace Wasm
         /// <summary>
         /// Creates a function import from the given module name, field and function index.
         /// </summary>
-        /// <param name="ModuleName">The name of the module from which a value is imported.</param>
-        /// <param name="FieldName">The name of the value that is imported.</param>
-        /// <param name="TypeIndex">The type index of the function signature.</param>
-        public ImportedFunction(string ModuleName, string FieldName, uint TypeIndex)
-            : base(ModuleName, FieldName)
+        /// <param name="moduleName">The name of the module from which a value is imported.</param>
+        /// <param name="fieldName">The name of the value that is imported.</param>
+        /// <param name="typeIndex">The type index of the function signature.</param>
+        public ImportedFunction(string moduleName, string fieldName, uint typeIndex)
+            : base(moduleName, fieldName)
         {
-            this.TypeIndex = TypeIndex;
+            this.TypeIndex = typeIndex;
         }
 
         /// <summary>
@@ -242,15 +241,15 @@ namespace Wasm
         public override ExternalKind Kind => ExternalKind.Function;
 
         /// <inheritdoc/>
-        protected override void DumpContents(TextWriter Writer)
+        protected override void DumpContents(TextWriter writer)
         {
-            Writer.Write("type #{0}", TypeIndex);
+            writer.Write("type #{0}", TypeIndex);
         }
 
         /// <inheritdoc/>
-        protected override void WriteContentsTo(BinaryWasmWriter Writer)
+        protected override void WriteContentsTo(BinaryWasmWriter writer)
         {
-            Writer.WriteVarUInt32(TypeIndex);
+            writer.WriteVarUInt32(TypeIndex);
         }
     }
 
@@ -262,13 +261,13 @@ namespace Wasm
         /// <summary>
         /// Creates a table import from the given module name, field and table type.
         /// </summary>
-        /// <param name="ModuleName">The name of the module from which a value is imported.</param>
-        /// <param name="FieldName">The name of the value that is imported.</param>
-        /// <param name="Table">A description of the imported table.</param>
-        public ImportedTable(string ModuleName, string FieldName, TableType Table)
-            : base(ModuleName, FieldName)
+        /// <param name="moduleName">The name of the module from which a value is imported.</param>
+        /// <param name="fieldName">The name of the value that is imported.</param>
+        /// <param name="table">A description of the imported table.</param>
+        public ImportedTable(string moduleName, string fieldName, TableType table)
+            : base(moduleName, fieldName)
         {
-            this.Table = Table;
+            this.Table = table;
         }
 
         /// <summary>
@@ -281,15 +280,15 @@ namespace Wasm
         public override ExternalKind Kind => ExternalKind.Table;
 
         /// <inheritdoc/>
-        protected override void DumpContents(TextWriter Writer)
+        protected override void DumpContents(TextWriter writer)
         {
-            Table.Dump(Writer);
+            Table.Dump(writer);
         }
 
         /// <inheritdoc/>
-        protected override void WriteContentsTo(BinaryWasmWriter Writer)
+        protected override void WriteContentsTo(BinaryWasmWriter writer)
         {
-            Table.WriteTo(Writer);
+            Table.WriteTo(writer);
         }
     }
 
@@ -301,13 +300,13 @@ namespace Wasm
         /// <summary>
         /// Creates a memory import from the given module name, field and memory type.
         /// </summary>
-        /// <param name="ModuleName">The name of the module from which a value is imported.</param>
-        /// <param name="FieldName">The name of the value that is imported.</param>
-        /// <param name="Memory">A description of the imported memory.</param>
-        public ImportedMemory(string ModuleName, string FieldName, MemoryType Memory)
-            : base(ModuleName, FieldName)
+        /// <param name="moduleName">The name of the module from which a value is imported.</param>
+        /// <param name="fieldName">The name of the value that is imported.</param>
+        /// <param name="memory">A description of the imported memory.</param>
+        public ImportedMemory(string moduleName, string fieldName, MemoryType memory)
+            : base(moduleName, fieldName)
         {
-            this.Memory = Memory;
+            this.Memory = memory;
         }
 
         /// <summary>
@@ -320,15 +319,15 @@ namespace Wasm
         public override ExternalKind Kind => ExternalKind.Memory;
 
         /// <inheritdoc/>
-        protected override void DumpContents(TextWriter Writer)
+        protected override void DumpContents(TextWriter writer)
         {
-            Memory.Dump(Writer);
+            Memory.Dump(writer);
         }
 
         /// <inheritdoc/>
-        protected override void WriteContentsTo(BinaryWasmWriter Writer)
+        protected override void WriteContentsTo(BinaryWasmWriter writer)
         {
-            Memory.WriteTo(Writer);
+            Memory.WriteTo(writer);
         }
     }
 
@@ -340,13 +339,13 @@ namespace Wasm
         /// <summary>
         /// Creates a global import from the given module name, field and global type.
         /// </summary>
-        /// <param name="ModuleName">The name of the module from which a value is imported.</param>
-        /// <param name="FieldName">The name of the value that is imported.</param>
-        /// <param name="Global">A description of the imported global.</param>
-        public ImportedGlobal(string ModuleName, string FieldName, GlobalType Global)
-            : base(ModuleName, FieldName)
+        /// <param name="moduleName">The name of the module from which a value is imported.</param>
+        /// <param name="fieldName">The name of the value that is imported.</param>
+        /// <param name="global">A description of the imported global.</param>
+        public ImportedGlobal(string moduleName, string fieldName, GlobalType global)
+            : base(moduleName, fieldName)
         {
-            this.Global = Global;
+            this.Global = global;
         }
 
         /// <summary>
@@ -359,15 +358,15 @@ namespace Wasm
         public override ExternalKind Kind => ExternalKind.Global;
 
         /// <inheritdoc/>
-        protected override void DumpContents(TextWriter Writer)
+        protected override void DumpContents(TextWriter writer)
         {
-            Global.Dump(Writer);
+            Global.Dump(writer);
         }
 
         /// <inheritdoc/>
-        protected override void WriteContentsTo(BinaryWasmWriter Writer)
+        protected override void WriteContentsTo(BinaryWasmWriter writer)
         {
-            Global.WriteTo(Writer);
+            Global.WriteTo(writer);
         }
     }
 }

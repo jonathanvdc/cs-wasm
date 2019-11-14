@@ -81,7 +81,7 @@ namespace Wasm.Interpret
             }
 
             // Interpret the function body.
-            var context = new InterpreterContext(Module, locals);
+            var context = new InterpreterContext(Module, ReturnTypes, locals);
             var interpreter = Module.Interpreter;
             foreach (var instruction in body.BodyInstructions)
             {
@@ -104,7 +104,7 @@ namespace Wasm.Interpret
                 {
                     throw new WasmException(
                         "Return type mismatch: function has return type '" +
-                        ((object)Signature.ReturnTypes[i]).ToString() +
+                        Signature.ReturnTypes[i].ToString() +
                         " but is given a return value of type '" +
                         retVals[i].GetType().Name + "'.");
                 }

@@ -206,6 +206,14 @@ namespace Wasm
             writer.Write(")");
         }
 
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            var writer = new StringWriter();
+            Dump(writer);
+            return writer.ToString();
+        }
+
         /// <summary>
         /// Reads a single function type from the given reader.
         /// </summary>

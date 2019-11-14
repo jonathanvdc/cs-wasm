@@ -7,6 +7,9 @@ cache:
   - C:\Users\appveyor\AppData\Local\NuGet\Cache
 
 install:
+  # Clone submodules.
+  - git submodule update --init --recursive
+
   - set VERNUM=0.1.6
   - echo %APPVEYOR_REPO_TAG%
   # Build packages as VERNUM-ci{build}
@@ -40,6 +43,7 @@ after_build:
 
 test_script:
   # Run the tests
+  - unit-tests\bin\Debug\net47\unit-tests.exe 1234
   - compare-test run-tests.test
 
 artifacts:

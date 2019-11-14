@@ -7,8 +7,10 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\libwasm\libwasm.csproj" />
+    <ProjectReference Include="..\libwasm-text\libwasm-text.csproj" />
     <PackageReference Include="Loyc.Essentials" Version="26.8.1" />
     <PackageReference Include="Loyc.Collections" Version="26.8.1" />
     <PackageReference Include="Loyc.Syntax" Version="26.8.1" />
+    <PackageReference Include="Pixie" Version="0.1.9" />
   </ItemGroup>
 </Project>

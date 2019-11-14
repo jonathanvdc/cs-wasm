@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Wasm.Instructions;
 
 namespace Wasm.Interpret
@@ -34,17 +35,43 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Block(Instruction value, InterpreterContext context)
         {
-            var contents = Operators.Block.CastInstruction(value).Contents;
+            var instruction = Operators.Block.CastInstruction(value);
+            var contents = instruction.Contents;
             var interpreter = context.Module.Interpreter;
+
+            var outerStack = context.Stack;
+            var innerStack = context.Stack = context.CreateStack();
             for (int i = 0; i < contents.Count; i++)
             {
                 interpreter.Interpret(contents[i], context);
                 if (context.BreakRequested)
                 {
+                    // Restore the outer stack.
+                    context.Stack = outerStack;
+                    if (context.BreakDepth == 0)
+                    {
+                        // The buck stops here. Push the topmost n items of the
+                        // inner stack onto the outer stack, where n is the block
+                        // instruction's arity.
+                        context.Push(innerStack, instruction.Arity);
+                    }
+                    else
+                    {
+                        // Otherwise, push the entire inner stack onto the outer stack and
+                        // make the issue of figuring out how many elements to pop the next
+                        // block's problem.
+                        context.Push(innerStack);
+                    }
+
                     context.BreakDepth--;
                     return;
                 }
             }
+
+            // Restore the outer stack.
+            context.Stack = outerStack;
+            // Push the inner stack onto the outer stack.
+            context.Push(innerStack);
         }
 
         /// <summary>
@@ -140,7 +167,7 @@ namespace Wasm.Interpret
         {
             var instr = Operators.BrTable.CastInstruction(value);
             int index = context.Pop<int>();
-            if (index < 0 || index > instr.TargetTable.Count)
+            if (index < 0 || index >= instr.TargetTable.Count)
             {
                 context.BreakDepth = (int)instr.DefaultTarget;
             }
@@ -157,6 +184,11 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Return(Instruction value, InterpreterContext context)
         {
+            // Remove excess values from the evaluation stack stack.
+            var oldStack = context.Stack;
+            context.Stack = context.CreateStack();
+            context.Push(oldStack, context.ReturnTypes.Count);
+
             context.Return();
         }
 
@@ -218,7 +250,7 @@ namespace Wasm.Interpret
         public static void CallIndirect(Instruction value, InterpreterContext context)
         {
             var funcDefIndex = context.Pop<int>();
-            var funcDef = context.Module.Functions[funcDefIndex];
+            var funcDef = context.Module.Tables[0][(uint)funcDefIndex];
 
             var args = context.Pop<object>(funcDef.ParameterTypes.Count);
             var results = funcDef.Invoke(args);
@@ -470,8 +502,8 @@ namespace Wasm.Interpret
         public static void Int32Store8(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int32Store8.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<int>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int8;
             memView[pointer] = (sbyte)result;
         }
@@ -484,8 +516,8 @@ namespace Wasm.Interpret
         public static void Int32Store16(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int32Store16.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<int>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int16;
             memView[pointer] = (short)result;
         }
@@ -498,8 +530,8 @@ namespace Wasm.Interpret
         public static void Int32Store(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int32Store.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<int>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int32;
             memView[pointer] = result;
         }
@@ -512,8 +544,8 @@ namespace Wasm.Interpret
         public static void Int64Store8(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int64Store8.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<long>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int8;
             memView[pointer] = (sbyte)result;
         }
@@ -526,8 +558,8 @@ namespace Wasm.Interpret
         public static void Int64Store16(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int64Store16.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<long>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int16;
             memView[pointer] = (short)result;
         }
@@ -540,8 +572,8 @@ namespace Wasm.Interpret
         public static void Int64Store32(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int64Store32.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<long>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int32;
             memView[pointer] = (int)result;
         }
@@ -554,8 +586,8 @@ namespace Wasm.Interpret
         public static void Int64Store(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Int64Store.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<long>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Int64;
             memView[pointer] = result;
         }
@@ -568,8 +600,8 @@ namespace Wasm.Interpret
         public static void Float32Store(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Float32Store.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<float>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Float32;
             memView[pointer] = result;
         }
@@ -582,8 +614,8 @@ namespace Wasm.Interpret
         public static void Float64Store(Instruction value, InterpreterContext context)
         {
             var instr = Operators.Float64Store.CastInstruction(value);
-            var pointer = PopAlignedPointer(instr, context);
             var result = context.Pop<double>();
+            var pointer = PopAlignedPointer(instr, context);
             var memView = context.Module.Memories[0].Float64;
             memView[pointer] = result;
         }
@@ -591,7 +623,10 @@ namespace Wasm.Interpret
         private static uint PopAlignedPointer(MemoryInstruction Instruction, InterpreterContext context)
         {
             var pointer = (uint)context.Pop<int>() + Instruction.Offset;
-            CheckAlignment(pointer, Instruction);
+            if (context.EnforceAlignment)
+            {
+                CheckAlignment(pointer, Instruction);
+            }
             return pointer;
         }
 
@@ -1036,7 +1071,19 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int32TruncUFloat32(Instruction value, InterpreterContext context)
         {
-            context.Push<int>((int)(uint)context.Pop<float>());
+            var val = context.Pop<float>();
+            if (float.IsInfinity(val) || (val < 0f && (uint)val != 0) || val > uint.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (float.IsNaN(val))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                context.Push<int>(unchecked((int)checked((uint)val)));
+            }
         }
 
         /// <summary>
@@ -1056,7 +1103,19 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int32TruncUFloat64(Instruction value, InterpreterContext context)
         {
-            context.Push<int>((int)(uint)context.Pop<double>());
+            var val = context.Pop<double>();
+            if (double.IsInfinity(val) || (val < 0 && (uint)val != 0) || val > uint.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (double.IsNaN(val))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                context.Push<int>(unchecked((int)checked((uint)val)));
+            }
         }
 
         /// <summary>

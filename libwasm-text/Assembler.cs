@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -72,7 +73,6 @@ namespace Wasm.Text
         /// <returns>An assembled module.</returns>
         public WasmFile AssembleModule(SExpression expression)
         {
-            var file = new WasmFile();
             if (!expression.IsCallTo("module"))
             {
                 Log.Log(
@@ -87,6 +87,19 @@ namespace Wasm.Text
             }
 
             var fields = expression.Tail;
+
+            if (fields.Count > 0 && fields[0].IsSpecificKeyword("binary"))
+            {
+                // We encountered a binary module.
+                fields = fields.Skip(1).ToArray();
+                var data = AssembleDataString(fields, Log);
+                using (var stream = new MemoryStream(data))
+                {
+                    return WasmFile.ReadBinary(stream);
+                }
+            }
+
+            var file = new WasmFile();
             var moduleId = AssembleLabelOrNull(ref fields);
             
             if (moduleId != null)
@@ -2378,14 +2391,21 @@ namespace Wasm.Text
 
         private static byte[] AssembleDataString(
             IReadOnlyList<SExpression> tail,
-            ModuleContext context)
+            ILog log)
         {
             var results = new List<byte>();
             foreach (var item in tail)
             {
-                results.AddRange(AssembleByteString(item, context.Log));
+                results.AddRange(AssembleByteString(item, log));
             }
             return results.ToArray();
+        }
+
+        private static byte[] AssembleDataString(
+            IReadOnlyList<SExpression> tail,
+            ModuleContext context)
+        {
+            return AssembleDataString(tail, context.Log);
         }
 
         private static void AssertEmpty(

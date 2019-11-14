@@ -92,7 +92,7 @@ namespace Wasm.Text
                     .Zip(results, (expr, val) => EvaluateConstExpr(expr, val.GetType()))
                     .ToArray();
 
-                if (!results.SequenceEqual(expected))
+                if (expected.Length != results.Count)
                 {
                     Log.Log(
                         new LogEntry(
@@ -104,6 +104,40 @@ namespace Wasm.Text
                             string.Join(", ", expected),
                             ".",
                             Assembler.Highlight(expression)));
+                    return;
+                }
+
+                for (int i = 0; i < expected.Length; i++)
+                {
+                    if (!object.Equals(results[i], expected[i]))
+                    {
+                        if (AlmostEquals(results[i], expected[i]))
+                        {
+                            Log.Log(
+                                new LogEntry(
+                                    Severity.Warning,
+                                    "rounding error",
+                                    "action produced result ",
+                                    results[i].ToString(),
+                                    "; expected ",
+                                    expected[i].ToString(),
+                                    ".",
+                                    Assembler.Highlight(expression)));
+                        }
+                        else
+                        {
+                            Log.Log(
+                                new LogEntry(
+                                    Severity.Error,
+                                    "assertion failed",
+                                    "action produced result ",
+                                    results[i].ToString(),
+                                    "; expected ",
+                                    expected[i].ToString(),
+                                    ".",
+                                    Assembler.Highlight(expression)));
+                        }
+                    }
                 }
             }
             else
@@ -118,6 +152,62 @@ namespace Wasm.Text
                             " was not recognized as a known script command."),
                         Assembler.Highlight(expression)));
             }
+        }
+
+        private static bool AlmostEquals(object value, object expected)
+        {
+            if (value is float && expected is float)
+            {
+                return AlmostEquals((float)value, (float)expected, 1);
+            }
+            else if (value is double && expected is double)
+            {
+                return AlmostEquals((double)value, (double)expected, 1);
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        private static bool AlmostEquals(double left, double right, long representationTolerance)
+        {
+            // Approximate comparison code suggested by Torbjörn Kalin on StackOverflow
+            // (https://stackoverflow.com/questions/10419771/comparing-doubles-with-adaptive-approximately-equal).
+            long leftAsBits = ToBitsTwosComplement(left);
+            long rightAsBits = ToBitsTwosComplement(right);
+            long floatingPointRepresentationsDiff = Math.Abs(leftAsBits - rightAsBits);
+            return (floatingPointRepresentationsDiff <= representationTolerance);
+        }
+
+        private static long ToBitsTwosComplement(double value)
+        {
+            // Approximate comparison code suggested by Torbjörn Kalin on StackOverflow
+            // (https://stackoverflow.com/questions/10419771/comparing-doubles-with-adaptive-approximately-equal).
+            long valueAsLong = Interpret.ValueHelpers.ReinterpretAsInt64(value);
+            return valueAsLong < 0
+                ? (long)(0x8000000000000000 - (ulong)valueAsLong)
+                : valueAsLong;
+        }
+
+        private static bool AlmostEquals(float left, float right, int representationTolerance)
+        {
+            // Approximate comparison code suggested by Torbjörn Kalin on StackOverflow
+            // (https://stackoverflow.com/questions/10419771/comparing-doubles-with-adaptive-approximately-equal).
+            long leftAsBits = ToBitsTwosComplement(left);
+            long rightAsBits = ToBitsTwosComplement(right);
+            long floatingPointRepresentationsDiff = Math.Abs(leftAsBits - rightAsBits);
+            return (floatingPointRepresentationsDiff <= representationTolerance);
+        }
+
+        private static int ToBitsTwosComplement(float value)
+        {
+            // Approximate comparison code suggested by Torbjörn Kalin on StackOverflow
+            // (https://stackoverflow.com/questions/10419771/comparing-doubles-with-adaptive-approximately-equal).
+            int valueAsInt = Interpret.ValueHelpers.ReinterpretAsInt32(value);
+            return valueAsInt < 0
+                ? (int)(0x80000000 - (int)valueAsInt)
+                : valueAsInt;
         }
 
         private object EvaluateConstExpr(SExpression expression, WasmValueType resultType)

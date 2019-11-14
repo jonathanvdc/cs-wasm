@@ -22,7 +22,7 @@ namespace Wasm.Scripts
             "call.wast",
             "comments.wast",
             // "const.wast",
-            "conversions.wast",
+            // "conversions.wast",
             "endianness.wast",
             "f32.wast",
             "f32_cmp.wast",

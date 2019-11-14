@@ -39,16 +39,20 @@ namespace Wasm.Interpret
         public FunctionDefinition ImportFunction(
             ImportedFunction description, FunctionType signature)
         {
-            if (description.FieldName == "print")
+            switch (description.FieldName)
             {
-                return new SpecTestPrintFunctionDefinition(
-                    signature.ParameterTypes,
-                    signature.ReturnTypes,
-                    PrintSuffix);
-            }
-            else
-            {
-                return null;
+                case "print":
+                case "print_i32":
+                case "print_i32_f32":
+                case "print_f64_f64":
+                case "print_f32":
+                case "print_f64":
+                    return new SpecTestPrintFunctionDefinition(
+                        signature.ParameterTypes,
+                        signature.ReturnTypes,
+                        PrintSuffix);
+                default:
+                    return null;
             }
         }
 

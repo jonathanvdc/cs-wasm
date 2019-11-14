@@ -2518,10 +2518,13 @@ namespace Wasm.Text
                 {
                     return (double)expression.Head.Value;
                 }
-                else if (expression.Head.Kind == Lexer.TokenKind.UnsignedInteger
-                    || expression.Head.Kind == Lexer.TokenKind.SignedInteger)
+                else if (expression.Head.Kind == Lexer.TokenKind.SignedInteger)
                 {
-                    return (double)(BigInteger)expression.Head.Value;
+                    return (double)(long)(BigInteger)expression.Head.Value;
+                }
+                else if (expression.Head.Kind == Lexer.TokenKind.UnsignedInteger)
+                {
+                    return (double)(ulong)(BigInteger)expression.Head.Value;
                 }
             }
             context.Log.Log(

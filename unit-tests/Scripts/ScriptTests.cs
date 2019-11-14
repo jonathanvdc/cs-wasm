@@ -24,6 +24,8 @@ namespace Wasm.Scripts
             "comments.wast",
             "const.wast",
             // "conversions.wast",
+            "custom.wast",
+            "data.wast",
             "endianness.wast",
             "f32.wast",
             "f32_cmp.wast",

@@ -13,6 +13,7 @@ namespace Wasm.Scripts
         private static readonly string[] whitelist = new[] {
             "address.wast",
             "align.wast",
+            "binary-leb128.wast",
             "block.wast",
             "break-drop.wast",
             "br_if.wast",

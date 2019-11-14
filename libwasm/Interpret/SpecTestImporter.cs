@@ -26,6 +26,18 @@ namespace Wasm.Interpret
         public SpecTestImporter(string printSuffix)
         {
             this.PrintSuffix = printSuffix;
+            this.globalI32 = Variable.Create<int>(
+                WasmValueType.Int32,
+                false,
+                666);
+            this.globalF32 = Variable.Create<float>(
+                WasmValueType.Float32,
+                false,
+                666.0f);
+            this.globalF64 = Variable.Create<double>(
+                WasmValueType.Float64,
+                false,
+                666.0);
         }
 
         /// <summary>
@@ -34,6 +46,8 @@ namespace Wasm.Interpret
         /// </summary>
         /// <returns>The print suffix.</returns>
         public string PrintSuffix { get; private set; }
+
+        private Variable globalI32, globalF32, globalF64;
 
         /// <inheritdoc/>
         public FunctionDefinition ImportFunction(
@@ -59,41 +73,16 @@ namespace Wasm.Interpret
         /// <inheritdoc/>
         public Variable ImportGlobal(ImportedGlobal description)
         {
-            if (description.FieldName == "global")
+            switch (description.FieldName)
             {
-                switch (description.Global.ContentType)
-                {
-                    case WasmValueType.Int32:
-                        return Variable.Create<int>(
-                            WasmValueType.Int32,
-                            description.Global.IsMutable,
-                            666);
-
-                    case WasmValueType.Int64:
-                        return Variable.Create<long>(
-                            WasmValueType.Int64,
-                            description.Global.IsMutable,
-                            666L);
-
-                    case WasmValueType.Float32:
-                        return Variable.Create<float>(
-                            WasmValueType.Float32,
-                            description.Global.IsMutable,
-                            666.0f);
-
-                    case WasmValueType.Float64:
-                        return Variable.Create<double>(
-                            WasmValueType.Float64,
-                            description.Global.IsMutable,
-                            666.0);
-
-                    default:
-                        return null;
-                }
-            }
-            else
-            {
-                return null;
+                case "global_i32":
+                    return globalI32;
+                case "global_f32":
+                    return globalF32;
+                case "global_f64":
+                    return globalF64;
+                default:
+                    return null;
             }
         }
 

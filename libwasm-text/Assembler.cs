@@ -1657,12 +1657,43 @@ namespace Wasm.Text
             var thenBody = AssembleBlockContents(keyword, ref operands, childContext, out endKw, "else", "end");
             if (endKw == "else")
             {
+                ExpectOptionalLabel(ref operands, context, label);
                 var elseBody = AssembleBlockContents(keyword, ref operands, childContext, out endKw, "end");
+                ExpectOptionalLabel(ref operands, context, label);
                 return Operators.If.Create(resultType, thenBody, elseBody);
             }
             else
             {
+                ExpectOptionalLabel(ref operands, context, label);
                 return Operators.If.Create(resultType, thenBody, Array.Empty<Instruction>());
+            }
+        }
+
+        private static void ExpectOptionalLabel(
+            ref IReadOnlyList<SExpression> operands,
+            InstructionContext context,
+            string expectedLabel)
+        {
+            if (operands.Count == 0)
+            {
+                return;
+            }
+
+            var labelExpr = operands[0];
+            var label = AssembleLabelOrNull(ref operands);
+            if (label != null && label != expectedLabel)
+            {
+                context.ModuleContext.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "unexpected label ",
+                            label,
+                            "; expected either no label or label ",
+                            expectedLabel,
+                            "."),
+                        Highlight(labelExpr)));
             }
         }
 
@@ -1680,6 +1711,10 @@ namespace Wasm.Text
             var insns = requireEnd
                 ? AssembleBlockContents(parent, ref operands, childContext, out endKw, "end")
                 : AssembleBlockContents(parent, ref operands, childContext, out endKw);
+            if (requireEnd)
+            {
+                ExpectOptionalLabel(ref operands, context, label);
+            }
             return blockOperator.Create(resultType, insns);
         }
 

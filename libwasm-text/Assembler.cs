@@ -73,6 +73,19 @@ namespace Wasm.Text
         /// <returns>An assembled module.</returns>
         public WasmFile AssembleModule(SExpression expression)
         {
+            return AssembleModule(expression, out string moduleId);
+        }
+
+        /// <summary>
+        /// Assembles an S-expression representing a module into a WebAssembly module.
+        /// </summary>
+        /// <param name="expression">The expression to assemble.</param>
+        /// <param name="moduleIdOrNull">
+        /// The module's identifier if one is assigned to the module; otherwise, <c>null</c>.
+        /// </param>
+        /// <returns>An assembled module.</returns>
+        public WasmFile AssembleModule(SExpression expression, out string moduleIdOrNull)
+        {
             if (!expression.IsCallTo("module"))
             {
                 Log.Log(
@@ -88,7 +101,7 @@ namespace Wasm.Text
 
             // Parse the module's label, if it has one.
             var fields = expression.Tail;
-            var moduleId = AssembleLabelOrNull(ref fields);
+            moduleIdOrNull = AssembleLabelOrNull(ref fields);
 
             if (fields.Count > 0 && fields[0].IsSpecificKeyword("binary"))
             {
@@ -102,11 +115,11 @@ namespace Wasm.Text
             }
 
             var file = new WasmFile();
-            if (moduleId != null)
+            if (moduleIdOrNull != null)
             {
                 // We encountered a module name. Turn it into a name entry and then skip it
                 // for the purpose of module field analysis.
-                file.ModuleName = moduleId;
+                file.ModuleName = moduleIdOrNull;
             }
 
             // Now assemble the module's fields.
@@ -1477,7 +1490,7 @@ namespace Wasm.Text
             return new InitializerExpression(expressions.SelectMany(x => AssembleExpressionInstruction(x, insnContext)));
         }
 
-        private static string AssembleLabelOrNull(ref IReadOnlyList<SExpression> tail)
+        internal static string AssembleLabelOrNull(ref IReadOnlyList<SExpression> tail)
         {
             string result = null;
             if (tail.Count > 0 && tail[0].IsIdentifier)

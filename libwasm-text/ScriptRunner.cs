@@ -21,6 +21,7 @@ namespace Wasm.Text
             this.Log = log;
             this.Assembler = new Assembler(log);
             this.moduleInstances = new List<ModuleInstance>();
+            this.moduleInstancesByName = new Dictionary<string, ModuleInstance>();
         }
 
         /// <summary>
@@ -36,6 +37,7 @@ namespace Wasm.Text
         public Assembler Assembler { get; private set; }
 
         private List<ModuleInstance> moduleInstances;
+        private Dictionary<string, ModuleInstance> moduleInstancesByName;
 
         /// <summary>
         /// Runs a script, encoded as a sequence of expressions.
@@ -76,9 +78,13 @@ namespace Wasm.Text
         {
             if (expression.IsCallTo("module"))
             {
-                var module = Assembler.AssembleModule(expression);
+                var module = Assembler.AssembleModule(expression, out string moduleId);
                 var instance = Wasm.Interpret.ModuleInstance.Instantiate(module, new SpecTestImporter(), maxMemorySize: 0x1000);
                 moduleInstances.Add(instance);
+                if (moduleId != null)
+                {
+                    moduleInstancesByName[moduleId] = instance;
+                }
                 if (module.StartFunctionIndex.HasValue)
                 {
                     instance.Functions[(int)module.StartFunctionIndex.Value].Invoke(Array.Empty<object>());
@@ -231,65 +237,135 @@ namespace Wasm.Text
         {
             if (expression.IsCallTo("invoke"))
             {
-                var name = Assembler.AssembleString(expression.Tail[0], Log);
-                foreach (var inst in Enumerable.Reverse(moduleInstances))
+                var tail = expression.Tail;
+                var moduleId = Assembler.AssembleLabelOrNull(ref tail);
+                var name = Assembler.AssembleString(tail[0], Log);
+                var args = tail.Skip(1);
+
+                if (moduleId == null)
                 {
-                    if (inst.ExportedFunctions.TryGetValue(name, out FunctionDefinition def))
+                    foreach (var inst in Enumerable.Reverse(moduleInstances))
                     {
-                        var args = expression.Tail
-                            .Skip(1)
-                            .Zip(def.ParameterTypes, (expr, type) => EvaluateConstExpr(expr, type))
-                            .ToArray();
-                        try
+                        if (TryInvokeNamedFunction(inst, name, args, expression, out IReadOnlyList<object> results))
                         {
-                            return def.Invoke(args);
+                            return results;
                         }
-                        catch (Exception ex)
+                    }
+
+                    Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "undefined function",
+                            Quotation.QuoteEvenInBold(
+                                "no function named ",
+                                name,
+                                " is defined here."),
+                            Assembler.Highlight(expression)));
+                    return Array.Empty<object>();
+                }
+                else
+                {
+                    if (moduleInstancesByName.TryGetValue(moduleId, out ModuleInstance inst))
+                    {
+                        if (TryInvokeNamedFunction(inst, name, args, expression, out IReadOnlyList<object> results))
+                        {
+                            return results;
+                        }
+                        else
                         {
                             Log.Log(
                                 new LogEntry(
                                     Severity.Error,
-                                    "unhandled exception",
-                                    $"assertion threw {ex.GetType().Name}",
-                                    new Paragraph(ex.ToString()),
+                                    "undefined function",
+                                    Quotation.QuoteEvenInBold(
+                                        "no function named ",
+                                        name,
+                                        " is defined in module ",
+                                        moduleId,
+                                        "."),
                                     Assembler.Highlight(expression)));
-                            throw;
+                            return Array.Empty<object>();
                         }
                     }
+                    else
+                    {
+                        Log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "undefined module",
+                                Quotation.QuoteEvenInBold(
+                                    "no module named ",
+                                    moduleId,
+                                    " is defined here."),
+                                Assembler.Highlight(expression)));
+                        return Array.Empty<object>();
+                    }
                 }
-
-                Log.Log(
-                    new LogEntry(
-                        Severity.Error,
-                        "undefined function",
-                        Quotation.QuoteEvenInBold(
-                            "no function named ",
-                            name,
-                            " is defined here."),
-                        Assembler.Highlight(expression)));
-                return Array.Empty<object>();
             }
             else if (expression.IsCallTo("get"))
             {
-                var name = Assembler.AssembleString(expression.Tail[0], Log);
-                foreach (var inst in moduleInstances)
+                var tail = expression.Tail;
+                var moduleId = Assembler.AssembleLabelOrNull(ref tail);
+                var name = Assembler.AssembleString(tail[0], Log);
+                if (moduleId == null)
                 {
-                    if (inst.ExportedGlobals.TryGetValue(name, out Variable def))
+                    foreach (var inst in moduleInstances)
                     {
-                        return new[] { def.Get<object>() };
+                        if (inst.ExportedGlobals.TryGetValue(name, out Variable def))
+                        {
+                            return new[] { def.Get<object>() };
+                        }
+                    }
+
+                    Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "undefined global",
+                            Quotation.QuoteEvenInBold(
+                                "no global named ",
+                                name,
+                                " is defined here."),
+                            Assembler.Highlight(expression)));
+                    return Array.Empty<object>();
+                }
+                else
+                {
+                    if (moduleInstancesByName.TryGetValue(moduleId, out ModuleInstance inst))
+                    {
+                        if (inst.ExportedGlobals.TryGetValue(name, out Variable def))
+                        {
+                            return new[] { def.Get<object>() };
+                        }
+                        else
+                        {
+                            Log.Log(
+                                new LogEntry(
+                                    Severity.Error,
+                                    "undefined global",
+                                    Quotation.QuoteEvenInBold(
+                                        "no global named ",
+                                        name,
+                                        " is defined in module ",
+                                        moduleId,
+                                        "."),
+                                    Assembler.Highlight(expression)));
+                            return Array.Empty<object>();
+                        }
+                    }
+                    else
+                    {
+                        Log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "undefined module",
+                                Quotation.QuoteEvenInBold(
+                                    "no module named ",
+                                    moduleId,
+                                    " is defined here."),
+                                Assembler.Highlight(expression)));
+                        return Array.Empty<object>();
                     }
                 }
-
-                Log.Log(
-                    new LogEntry(
-                        Severity.Error,
-                        "undefined global",
-                        Quotation.QuoteEvenInBold(
-                            "no global named ",
-                            name,
-                            " is defined here."),
-                        Assembler.Highlight(expression)));
-                return Array.Empty<object>();
             }
             else
             {
@@ -303,6 +379,42 @@ namespace Wasm.Text
                             " was not recognized as a known script action."),
                         Assembler.Highlight(expression)));
                 return Array.Empty<object>();
+            }
+        }
+
+        private bool TryInvokeNamedFunction(
+            ModuleInstance instance,
+            string name,
+            IEnumerable<SExpression> argumentExpressions,
+            SExpression expression,
+            out IReadOnlyList<object> results)
+        {
+            if (instance.ExportedFunctions.TryGetValue(name, out FunctionDefinition def))
+            {
+                var args = argumentExpressions
+                    .Zip(def.ParameterTypes, (expr, type) => EvaluateConstExpr(expr, type))
+                    .ToArray();
+                try
+                {
+                    results = def.Invoke(args);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "unhandled exception",
+                            $"function invocation threw {ex.GetType().Name}",
+                            new Paragraph(ex.ToString()),
+                            Assembler.Highlight(expression)));
+                    throw;
+                }
+            }
+            else
+            {
+                results = null;
+                return false;
             }
         }
     }

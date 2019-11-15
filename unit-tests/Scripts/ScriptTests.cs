@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Loyc.MiniTest;
@@ -10,64 +11,58 @@ namespace Wasm.Scripts
     [TestFixture]
     public class ScriptTests
     {
-        private static readonly string[] whitelist = new[] {
-            "address.wast",
-            "align.wast",
-            "binary-leb128.wast",
-            "block.wast",
-            "break-drop.wast",
-            "br_if.wast",
-            // "br_table.wast",
-            "br.wast",
-            "call_indirect.wast",
-            "call.wast",
-            "comments.wast",
-            "const.wast",
-            // "conversions.wast",
-            "custom.wast",
-            "data.wast",
-            "endianness.wast",
-            "f32.wast",
-            "f32_cmp.wast",
-            "f64.wast",
-            "f64_cmp.wast",
-            "fac.wast",
-            "forward.wast",
-            "inline-module.wast",
-            "int_exprs.wast",
-            "int_literals.wast",
-            "local_get.wast",
-            "local_set.wast",
-            "nop.wast",
-            "skip-stack-guard-page.wast",
-            "store.wast",
-            "token.wast",
-            "traps.wast",
-            "type.wast",
-            "unreached-invalid.wast",
-            "unwind.wast",
-            "utf8-custom-section-id.wast",
-            "utf8-import-field.wast",
-            "utf8-import-module.wast",
-            "utf8-invalid-encoding.wast"
+        private static readonly string[] blacklist = new[] {
+            "br_table.wast",
+
+            "conversions.wast",
+            "elem.wast",
+            "exports.wast",
+            "f32_bitwise.wast",
+            "f64_bitwise.wast",
+            "float_exprs.wast",
+            "float_literals.wast",
+            "float_memory.wast",
+            "float_misc.wast",
+            "func.wast",
+            "i32.wast",
+            "i64.wast",
+            "imports.wast",
+            "linking.wast",
+            "memory_grow.wast",
+            "memory_trap.wast",
+            "stack.wast",
+            "start.wast"
         };
 
         [Test]
         public void RunSpecScripts()
         {
-            foreach (var name in Directory.EnumerateFiles(Path.Combine("spec", "test", "core")))
+            var failed = new SortedSet<string>();
+            foreach (var name in Directory.EnumerateFiles(Path.Combine("spec", "test", "core")).OrderBy(x => x))
             {
-                if (whitelist.Any(x => name.EndsWith(x)))
+                if (name.EndsWith(".wast") && !blacklist.Any(x => name.EndsWith(x)))
                 {
                     Console.WriteLine($" - {name}");
-                    RunSpecScript(name);
+                    try
+                    {
+                        RunSpecScript(name);
+                    }
+                    catch
+                    {
+                        failed.Add(name.Split('/').Last());
+                    }
                 }
+            }
+            if (failed.Count > 0)
+            {
+                Console.WriteLine("Failed: " + string.Join(", ", failed.Select(x => $"\"{x}\"")));
+                Assert.Fail();
             }
         }
 
         private void RunSpecScript(string scriptPath)
         {
-            var log = new TestLog(new[] { Severity.Error }, Pixie.Terminal.TerminalLog.Acquire());
+            var log = new TestLog(new[] { Severity.Error }, NullLog.Instance);
             var runner = new ScriptRunner(log);
             var scriptText = File.ReadAllText(scriptPath);
             runner.Run(scriptText, scriptPath);

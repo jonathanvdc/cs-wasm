@@ -2126,7 +2126,7 @@ namespace Wasm.Text
                             new LogEntry(
                                 Severity.Error,
                                 "syntax error",
-                                "expected an identifier or an unsigned integer.",
+                                "expected an identifier or unsigned integer.",
                                 Highlight(typeRef.Tail[0])));
                         return result;
                     }

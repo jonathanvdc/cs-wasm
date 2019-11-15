@@ -22,7 +22,6 @@ namespace Wasm.Scripts
             "float_literals.wast",
             "float_memory.wast",
             "float_misc.wast",
-            "imports.wast",
             "linking.wast"
         };
 

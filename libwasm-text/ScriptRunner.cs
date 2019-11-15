@@ -22,6 +22,8 @@ namespace Wasm.Text
             this.Assembler = new Assembler(log);
             this.moduleInstances = new List<ModuleInstance>();
             this.moduleInstancesByName = new Dictionary<string, ModuleInstance>();
+            this.importer = new NamespacedImporter();
+            this.importer.RegisterImporter("spectest", new SpecTestImporter());
         }
 
         /// <summary>
@@ -35,6 +37,8 @@ namespace Wasm.Text
         /// </summary>
         /// <value>A WebAssembly text format assembler.</value>
         public Assembler Assembler { get; private set; }
+
+        private NamespacedImporter importer;
 
         private List<ModuleInstance> moduleInstances;
         private Dictionary<string, ModuleInstance> moduleInstancesByName;
@@ -79,7 +83,7 @@ namespace Wasm.Text
             if (expression.IsCallTo("module"))
             {
                 var module = Assembler.AssembleModule(expression, out string moduleId);
-                var instance = Wasm.Interpret.ModuleInstance.Instantiate(module, new SpecTestImporter(), maxMemorySize: 0x1000);
+                var instance = Wasm.Interpret.ModuleInstance.Instantiate(module, importer, maxMemorySize: 0x1000);
                 moduleInstances.Add(instance);
                 if (moduleId != null)
                 {
@@ -88,6 +92,21 @@ namespace Wasm.Text
                 if (module.StartFunctionIndex.HasValue)
                 {
                     instance.Functions[(int)module.StartFunctionIndex.Value].Invoke(Array.Empty<object>());
+                }
+            }
+            else if (expression.IsCallTo("register"))
+            {
+                var tail = expression.Tail;
+                var name = Assembler.AssembleString(tail[0], Log);
+                tail = tail.Skip(1).ToArray();
+                var moduleId = Assembler.AssembleLabelOrNull(ref tail);
+                if (moduleId == null)
+                {
+                    importer.RegisterImporter(name, new ModuleExportsImporter(moduleInstances[moduleInstances.Count - 1]));
+                }
+                else
+                {
+                    importer.RegisterImporter(name, new ModuleExportsImporter(moduleInstancesByName[moduleId]));
                 }
             }
             else if (expression.IsCallTo("invoke") || expression.IsCallTo("get"))

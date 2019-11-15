@@ -86,7 +86,9 @@ namespace Wasm.Text
                         Highlight(expression)));
             }
 
+            // Parse the module's label, if it has one.
             var fields = expression.Tail;
+            var moduleId = AssembleLabelOrNull(ref fields);
 
             if (fields.Count > 0 && fields[0].IsSpecificKeyword("binary"))
             {
@@ -100,8 +102,6 @@ namespace Wasm.Text
             }
 
             var file = new WasmFile();
-            var moduleId = AssembleLabelOrNull(ref fields);
-            
             if (moduleId != null)
             {
                 // We encountered a module name. Turn it into a name entry and then skip it

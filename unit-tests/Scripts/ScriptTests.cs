@@ -15,7 +15,6 @@ namespace Wasm.Scripts
             "br_table.wast",
 
             "conversions.wast",
-            "elem.wast",
             "f32_bitwise.wast",
             "f64_bitwise.wast",
             "float_exprs.wast",

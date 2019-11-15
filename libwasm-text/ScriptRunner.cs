@@ -79,6 +79,10 @@ namespace Wasm.Text
                 var module = Assembler.AssembleModule(expression);
                 var instance = Wasm.Interpret.ModuleInstance.Instantiate(module, new SpecTestImporter());
                 moduleInstances.Add(instance);
+                if (module.StartFunctionIndex.HasValue)
+                {
+                    instance.Functions[(int)module.StartFunctionIndex.Value].Invoke(Array.Empty<object>());
+                }
             }
             else if (expression.IsCallTo("invoke") || expression.IsCallTo("get"))
             {

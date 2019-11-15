@@ -30,8 +30,7 @@ namespace Wasm.Scripts
             "linking.wast",
             "memory_grow.wast",
             "memory_trap.wast",
-            "stack.wast",
-            "start.wast"
+            "stack.wast"
         };
 
         [Test]

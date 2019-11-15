@@ -184,7 +184,16 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Return(Instruction value, InterpreterContext context)
         {
-            // Remove excess values from the evaluation stack stack.
+            Return(context);
+        }
+
+        /// <summary>
+        /// Executes a 'return' instruction.
+        /// </summary>
+        /// <param name="context">The interpreter's context.</param>
+        public static void Return(InterpreterContext context)
+        {
+            // Remove excess values from the evaluation stack.
             var oldStack = context.Stack;
             context.Stack = context.CreateStack();
             context.Push(oldStack, context.ReturnTypes.Count);

@@ -86,6 +86,13 @@ namespace Wasm.Interpret
             foreach (var instruction in body.BodyInstructions)
             {
                 interpreter.Interpret(instruction, context);
+                if (context.BreakRequested)
+                {
+                    // Functions can use a break to return. This acts exactly like
+                    // a regular return.
+                    OperatorImpls.Return(context);
+                    break;
+                }
             }
             context.Return();
 

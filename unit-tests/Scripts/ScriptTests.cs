@@ -45,6 +45,7 @@ namespace Wasm.Scripts
             "traps.wast",
             "type.wast",
             "unreached-invalid.wast",
+            "unwind.wast",
             "utf8-custom-section-id.wast",
             "utf8-import-field.wast",
             "utf8-import-module.wast",
@@ -66,7 +67,7 @@ namespace Wasm.Scripts
 
         private void RunSpecScript(string scriptPath)
         {
-            var log = new TestLog(new[] { Severity.Error }, NullLog.Instance);
+            var log = new TestLog(new[] { Severity.Error }, Pixie.Terminal.TerminalLog.Acquire());
             var runner = new ScriptRunner(log);
             var scriptText = File.ReadAllText(scriptPath);
             runner.Run(scriptText, scriptPath);

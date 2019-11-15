@@ -141,6 +141,10 @@ namespace Wasm.Interpret
         public static int CountTrailingZeros(int value)
         {
             var uintVal = (uint)value;
+            if (uintVal == 0u)
+            {
+                return 32;
+            }
             int numOfTrailingZeros = 0;
             while ((uintVal & 0x1u) == 0u)
             {
@@ -217,6 +221,11 @@ namespace Wasm.Interpret
         public static int CountTrailingZeros(long value)
         {
             var uintVal = (ulong)value;
+            if (uintVal == 0ul)
+            {
+                return 64;
+            }
+
             int numOfTrailingZeros = 0;
             while ((uintVal & 0x1u) == 0u)
             {

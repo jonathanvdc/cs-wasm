@@ -24,8 +24,6 @@ namespace Wasm.Scripts
             "float_memory.wast",
             "float_misc.wast",
             "func.wast",
-            "i32.wast",
-            "i64.wast",
             "imports.wast",
             "linking.wast",
             "memory_grow.wast",

@@ -25,9 +25,7 @@ namespace Wasm.Scripts
             "float_misc.wast",
             "func.wast",
             "imports.wast",
-            "linking.wast",
-            "memory_grow.wast",
-            "memory_trap.wast"
+            "linking.wast"
         };
 
         [Test]

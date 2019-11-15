@@ -133,31 +133,29 @@ namespace Wasm.Interpret
         }
 
         /// <summary>
-        /// Instantiates the given WebAssembly file. An importer is used to
-        /// resolve module imports.
+        /// Instantiates the given WebAssembly file.
         /// </summary>
         /// <param name="file">The file to instantiate.</param>
-        /// <param name="importer">Resolves module imports.</param>
-        /// <returns>A module instance.</returns>
-        public static ModuleInstance Instantiate(WasmFile file, IImporter importer)
-        {
-            return Instantiate(file, importer, DefaultInstructionInterpreter.Default);
-        }
-
-        /// <summary>
-        /// Instantiates the given WebAssembly file. An importer is used to
-        /// resolve module imports and an interpreter is used to interpret
-        /// instructions.
-        /// </summary>
-        /// <param name="file">The file to instantiate.</param>
-        /// <param name="importer">Resolves module imports.</param>
-        /// <param name="interpreter">Interprets instructions.</param>
+        /// <param name="importer">The importer to use to resolve module imports.</param>
+        /// <param name="interpreter">
+        /// Interprets instructions. A <c>null</c> interpreter indicates that the default interpreter should be used.
+        /// </param>
+        /// <param name="maxMemorySize">
+        /// The maximum size of any memory, in page units. A value of zero
+        /// indicates that there is not maximum memory size.
+        /// </param>
         /// <returns>A module instance.</returns>
         public static ModuleInstance Instantiate(
             WasmFile file,
             IImporter importer,
-            InstructionInterpreter interpreter)
+            InstructionInterpreter interpreter = null,
+            uint maxMemorySize = 0)
         {
+            if (interpreter == null)
+            {
+                interpreter = DefaultInstructionInterpreter.Default;
+            }
+
             var instance = new ModuleInstance(interpreter);
 
             // Extract the function types.
@@ -170,7 +168,7 @@ namespace Wasm.Interpret
             instance.InstantiateGlobals(file);
 
             // Instantiate memories.
-            instance.InstantiateMemories(file);
+            instance.InstantiateMemories(file, maxMemorySize);
 
             // Instantiate function definitions.
             instance.InstantiateFunctionDefs(file, allFuncTypes);
@@ -254,7 +252,7 @@ namespace Wasm.Interpret
                     importType, import.ModuleName, import.FieldName));
         }
 
-        private void InstantiateMemories(WasmFile file)
+        private void InstantiateMemories(WasmFile file, uint maxMemorySize)
         {
             // Create module-defined memories.
             var allMemorySections = file.GetSections<MemorySection>();
@@ -263,7 +261,20 @@ namespace Wasm.Interpret
                 var memorySection = allMemorySections[i];
                 foreach (var memorySpec in memorySection.Memories)
                 {
-                    definedMemories.Add(new LinearMemory(memorySpec.Limits));
+                    if (maxMemorySize == 0)
+                    {
+                        definedMemories.Add(new LinearMemory(memorySpec.Limits));
+                    }
+                    else
+                    {
+                        definedMemories.Add(
+                            new LinearMemory(
+                                new ResizableLimits(
+                                    memorySpec.Limits.Initial,
+                                    memorySpec.Limits.HasMaximum
+                                        ? Math.Min(memorySpec.Limits.Maximum.Value, maxMemorySize)
+                                        : maxMemorySize)));
+                    }
                 }
             }
 

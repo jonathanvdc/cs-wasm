@@ -122,9 +122,23 @@ namespace Wasm.Text
                 file.ModuleName = moduleIdOrNull;
             }
 
-            // Now assemble the module's fields.
+            // First scan ahead for types in the module.
             var context = new ModuleContext(this);
+            var nonTypeFields = new List<SExpression>();
             foreach (var field in fields)
+            {
+                if (field.IsCallTo("type"))
+                {
+                    ModuleFieldAssemblers["type"](field, file, context);
+                }
+                else
+                {
+                    nonTypeFields.Add(field);
+                }
+            }
+
+            // Now assemble the module's other fields.
+            foreach (var field in nonTypeFields)
             {
                 ModuleFieldAssembler fieldAssembler;
                 if (!field.IsCall)

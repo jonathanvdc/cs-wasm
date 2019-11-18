@@ -83,7 +83,11 @@ namespace Wasm.Text
             if (expression.IsCallTo("module"))
             {
                 var module = Assembler.AssembleModule(expression, out string moduleId);
-                var instance = Wasm.Interpret.ModuleInstance.Instantiate(module, importer, maxMemorySize: 0x1000);
+                var instance = Wasm.Interpret.ModuleInstance.Instantiate(
+                    module,
+                    importer,
+                    maxMemorySize: 0x1000);
+
                 moduleInstances.Add(instance);
                 if (moduleId != null)
                 {

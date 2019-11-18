@@ -12,8 +12,6 @@ namespace Wasm.Scripts
     public class ScriptTests
     {
         private static readonly string[] blacklist = new[] {
-            "br_table.wast",
-
             "conversions.wast",
             "f32_bitwise.wast",
             "f64_bitwise.wast",

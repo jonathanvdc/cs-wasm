@@ -1964,20 +1964,33 @@ namespace Wasm.Text
             InstructionContext context)
         {
             var depths = new List<uint>();
+            if (operands.Count == 0)
+            {
+                context.Log.Log(
+                    new LogEntry(
+                        Severity.Error,
+                        "syntax error",
+                        Quotation.QuoteEvenInBold(
+                            "expected a branch target identifier or integer as argument to ",
+                            "br_table",
+                            "; got nothing."),
+                        Highlight(keyword)));
+                return Operators.Nop.Create();
+            }
+
+            int i = 0;
             do
             {
-                if (operands.Count > 0 && (operands[0].IsKeyword || operands[0].IsCall))
+                var immediate = operands[i];
+                if (immediate.IsKeyword || immediate.IsCall)
                 {
                     break;
                 }
 
-                SExpression idOrIndex;
-                if (!AssertPopImmediate(keyword, ref operands, context, out idOrIndex))
-                {
-                    return Operators.Nop.Create();
-                }
-                depths.Add(AssembleLabelOrDepth(idOrIndex, context));
-            } while (operands.Count > 0);
+                depths.Add(AssembleLabelOrDepth(immediate, context));
+                i++;
+            } while (operands.Count > i);
+            operands = operands.Skip(i).ToArray();
 
             return Operators.BrTable.Create(depths.Take(depths.Count - 1), depths[depths.Count - 1]);
         }

@@ -103,7 +103,7 @@ namespace Wasm.Text
         }
 
         /// <summary>
-        /// Transforms the float literal to a double-precision floating point number.
+        /// Transforms a float literal to a double-precision floating point number.
         /// </summary>
         /// <param name="value">A float literal.</param>
         public static explicit operator double(FloatLiteral value)
@@ -112,9 +112,11 @@ namespace Wasm.Text
             switch (value.Kind)
             {
                 case FloatLiteralKind.Infinity:
-                    return value.IsNegative ? double.NegativeInfinity : double.PositiveInfinity;
+                    result = double.PositiveInfinity;
+                    break;
                 case FloatLiteralKind.NaN:
-                    return CreateNaNWithSignificand((long)value.Significand);
+                    result = CreateFloat64NaNWithSignificand((long)value.Significand);
+                    break;
                 case FloatLiteralKind.Number:
                 default:
                     var exp = value.Exponent;
@@ -147,16 +149,72 @@ namespace Wasm.Text
                             result *= expVal;
                         }
                     }
-
-                    if (value.IsNegative)
-                    {
-                        result = -result;
-                    }
-                    return result;
+                    break;
             }
+            if (value.IsNegative)
+            {
+                result = -result;
+            }
+            return result;
         }
 
-        private static double CreateNaNWithSignificand(long significand)
+        /// <summary>
+        /// Transforms a float literal to a single-precision floating point number.
+        /// </summary>
+        /// <param name="value">A float literal.</param>
+        public static explicit operator float(FloatLiteral value)
+        {
+            float result;
+            switch (value.Kind)
+            {
+                case FloatLiteralKind.Infinity:
+                    result = float.PositiveInfinity;
+                    break;
+                case FloatLiteralKind.NaN:
+                    result = CreateFloat32NaNWithSignificand((int)value.Significand);
+                    break;
+                case FloatLiteralKind.Number:
+                default:
+                    var exp = value.Exponent;
+                    if (exp == 0)
+                    {
+                        result = 1.0f;
+                    }
+                    else
+                    {
+                        result = (float)value.Significand;
+
+                        var expVal = 1.0f;
+                        bool negExp = exp < 0;
+                        if (negExp)
+                        {
+                            exp = -exp;
+                        }
+
+                        for (int i = 0; i < exp; i++)
+                        {
+                            expVal *= value.Base;
+                        }
+
+                        if (negExp)
+                        {
+                            result /= expVal;
+                        }
+                        else
+                        {
+                            result *= expVal;
+                        }
+                    }
+                    break;
+            }
+            if (value.IsNegative)
+            {
+                result = -result;
+            }
+            return result;
+        }
+
+        private static double CreateFloat64NaNWithSignificand(long significand)
         {
             // We're going to create a NaN with a special significand.
             long bits = BitConverter.DoubleToInt64Bits(double.NaN);
@@ -164,8 +222,20 @@ namespace Wasm.Text
             // Wipe out the bits originally in the significand.
             bits ^= oldSignificand;
             // Put in our bits.
-            bits |= (long)significand;
+            bits |= significand;
             return BitConverter.Int64BitsToDouble(bits);
+        }
+
+        private static float CreateFloat32NaNWithSignificand(int significand)
+        {
+            // We're going to create a NaN with a special significand.
+            int bits = Interpret.ValueHelpers.ReinterpretAsInt32(float.NaN);
+            int oldSignificand = bits & 0x3fffff;
+            // Wipe out the bits originally in the significand.
+            bits ^= oldSignificand;
+            // Put in our bits.
+            bits |= significand;
+            return Interpret.ValueHelpers.ReinterpretAsFloat32(bits);
         }
     }
 

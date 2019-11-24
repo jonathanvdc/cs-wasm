@@ -347,23 +347,23 @@ namespace Wasm.Text
                 BigInteger hexNum;
                 if (TryReadHexNum(out hexNum))
                 {
-                    result = MaybeNegate(CreateNaNWithSignificand((long)hexNum), negate);
+                    result = FloatLiteral.NaN(negate, (long)hexNum);
                     return true;
                 }
                 else
                 {
-                    result = 0.0;
+                    result = FloatLiteral.NaN(negate);
                     return false;
                 }
             }
             else if (Expect("nan"))
             {
-                result = MaybeNegate(double.NaN, negate);
+                result = FloatLiteral.NaN(negate);
                 return true;
             }
             else if (Expect("inf"))
             {
-                result = MaybeNegate(double.PositiveInfinity, negate);
+                result = MaybeNegate(FloatLiteral.PositiveInfinity, negate);
                 return true;
             }
             else if (Expect("0x"))
@@ -388,7 +388,7 @@ namespace Wasm.Text
             }
         }
 
-        private double MaybeNegate(double v, bool negate)
+        private FloatLiteral MaybeNegate(FloatLiteral v, bool negate)
         {
             return negate ? -v : v;
         }
@@ -398,20 +398,8 @@ namespace Wasm.Text
             return negate ? -v : v;
         }
 
-        private static double CreateNaNWithSignificand(long significand)
-        {
-            // We're going to create a NaN with a special significand.
-            long bits = BitConverter.DoubleToInt64Bits(double.NaN);
-            long oldSignificand = bits & 0xfffffffffffffL;
-            // Wipe out the bits originally in the significand.
-            bits ^= oldSignificand;
-            // Put in our bits.
-            bits |= (long)significand;
-            return BitConverter.Int64BitsToDouble(bits);
-        }
-
         private delegate bool IntegerReader(out BigInteger result);
-        private delegate bool FloatReader(out double result);
+        private delegate bool FloatReader(out FloatLiteral result);
 
         private bool TryReadUnsignedNumber(
             bool negate,
@@ -426,16 +414,17 @@ namespace Wasm.Text
             {
                 if (Expect('.'))
                 {
-                    double frac;
+                    FloatLiteral frac;
                     if (!tryReadFrac(out frac))
                     {
-                        frac = 0.0;
+                        frac = FloatLiteral.Zero(exponent);
                     }
-                    var floatNum = (double)num + frac;
+                    var floatNum = num + frac;
 
                     if (Expect(exponentChar) || Expect(char.ToUpperInvariant(exponentChar)))
                     {
-                        if (!TryAppendExponent(floatNum, exponent, out floatNum))
+                        floatNum = floatNum.ChangeBase(exponent);
+                        if (!TryAppendExponent(floatNum, out floatNum))
                         {
                             result = null;
                             return false;
@@ -446,8 +435,8 @@ namespace Wasm.Text
                 }
                 else if (Expect(exponentChar) || Expect(char.ToUpperInvariant(exponentChar)))
                 {
-                    double floatNum;
-                    if (!TryAppendExponent((double)num, exponent, out floatNum))
+                    FloatLiteral floatNum;
+                    if (!TryAppendExponent(FloatLiteral.Number(num, exponent), out floatNum))
                     {
                         result = null;
                         return false;
@@ -469,9 +458,8 @@ namespace Wasm.Text
         }
 
         private bool TryAppendExponent(
-            double floatNum,
-            int exponent,
-            out double result)
+            FloatLiteral floatNum,
+            out FloatLiteral result)
         {
             bool negateExp = false;
             if (Expect('-'))
@@ -485,12 +473,12 @@ namespace Wasm.Text
             BigInteger exp;
             if (!TryReadNum(out exp))
             {
-                result = 0.0;
+                result = floatNum;
                 return false;
             }
             else
             {
-                result = floatNum * Math.Pow(exponent, (double)MaybeNegate(exp, negateExp));
+                result = floatNum.AddToExponent(MaybeNegate(exp, negateExp));
                 return true;
             }
         }
@@ -517,7 +505,7 @@ namespace Wasm.Text
             // them here as well as in the FP parsing routine.
             if (result == "nan")
             {
-                return new Token(TokenKind.Float, span, double.NaN);
+                return new Token(TokenKind.Float, span, FloatLiteral.NaN(false));
             }
             else if (result.StartsWith("nan:0x", StringComparison.Ordinal))
             {
@@ -539,11 +527,11 @@ namespace Wasm.Text
                         return new Token(TokenKind.Keyword, span, result);
                     }
                 }
-                return new Token(TokenKind.Float, span, CreateNaNWithSignificand(newBits));
+                return new Token(TokenKind.Float, span, FloatLiteral.NaN(false, newBits));
             }
             else if (result == "inf")
             {
-                return new Token(TokenKind.Float, span, double.PositiveInfinity);
+                return new Token(TokenKind.Float, span, FloatLiteral.PositiveInfinity);
             }
             else
             {
@@ -728,7 +716,7 @@ namespace Wasm.Text
             return new Token(TokenKind.Reserved, new SourceSpan(document, start, count), null);
         }
 
-        private bool TryReadHexFrac(out double frac)
+        private bool TryReadHexFrac(out FloatLiteral frac)
         {
             return TryReadFrac(out frac, 16, (i, c) =>
             {
@@ -744,7 +732,7 @@ namespace Wasm.Text
             });
         }
 
-        private bool TryReadFrac(out double frac)
+        private bool TryReadFrac(out FloatLiteral frac)
         {
             return TryReadFrac(out frac, 10, (i, c) =>
             {
@@ -760,7 +748,7 @@ namespace Wasm.Text
         }
 
         private bool TryReadFrac(
-            out double frac,
+            out FloatLiteral frac,
             int fracBase,
             Func<BigInteger, char, BigInteger?> tryAccumulateFracDigit)
         {
@@ -782,12 +770,12 @@ namespace Wasm.Text
             if (parsed)
             {
                 var (i, n) = pair;
-                frac = (double)i / Math.Pow(fracBase, n);
+                frac = FloatLiteral.Number(i, fracBase, -n);
                 return true;
             }
             else
             {
-                frac = 0.0;
+                frac = FloatLiteral.Zero(fracBase);
                 return false;
             }
         }

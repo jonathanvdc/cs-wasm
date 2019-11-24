@@ -14,7 +14,10 @@ namespace Wasm.Scripts
         private static readonly string[] blacklist = new[] {
             "conversions.wast",
             "f32_bitwise.wast",
+            "f32_cmp.wast",
+            "f64.wast",
             "f64_bitwise.wast",
+            "f64_cmp.wast",
             "float_exprs.wast",
             "float_literals.wast",
             "float_memory.wast",

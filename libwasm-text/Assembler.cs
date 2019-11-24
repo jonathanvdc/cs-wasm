@@ -2600,7 +2600,25 @@ namespace Wasm.Text
 
         private static float AssembleFloat32(SExpression expression, ModuleContext context)
         {
-            return (float)AssembleFloat64(expression, context);
+            if (!expression.IsCall)
+            {
+                if (expression.Head.Kind == Lexer.TokenKind.Float)
+                {
+                    return (float)(FloatLiteral)expression.Head.Value;
+                }
+                else if (expression.Head.Kind == Lexer.TokenKind.UnsignedInteger
+                    || expression.Head.Kind == Lexer.TokenKind.SignedInteger)
+                {
+                    return (float)(BigInteger)expression.Head.Value;
+                }
+            }
+            context.Log.Log(
+                new LogEntry(
+                    Severity.Error,
+                    "syntax error",
+                    "expected a floating point number.",
+                    Highlight(expression)));
+            return float.NaN;
         }
 
         private static double AssembleFloat64(
@@ -2611,7 +2629,7 @@ namespace Wasm.Text
             {
                 if (expression.Head.Kind == Lexer.TokenKind.Float)
                 {
-                    return (double)expression.Head.Value;
+                    return (double)(FloatLiteral)expression.Head.Value;
                 }
                 else if (expression.Head.Kind == Lexer.TokenKind.UnsignedInteger
                     || expression.Head.Kind == Lexer.TokenKind.SignedInteger)

@@ -160,6 +160,16 @@ namespace Wasm.Text
             Assert.AreEqual(expected, ParseSingleToken(text).Value);
         }
 
+        private void AssertParsesAs(double expected, string text)
+        {
+            Assert.AreEqual(expected, (double)(FloatLiteral)ParseSingleToken(text).Value);
+        }
+
+        private void AssertParsesAs(float expected, string text)
+        {
+            Assert.AreEqual(expected, (float)(FloatLiteral)ParseSingleToken(text).Value);
+        }
+
         private void AssertParsesAsKind(Lexer.TokenKind kind, string text)
         {
             Assert.AreEqual(kind, ParseSingleToken(text).Kind);

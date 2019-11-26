@@ -258,36 +258,125 @@ namespace Wasm.Text
                     break;
                 case FloatLiteralKind.Number:
                 default:
+                    // To convert a float literal to a float, we need to do the following:
+                    //   1. Convert the literal to base 2.
+                    //   2. Increment the exponent until the fractional part achieves the form
+                    //      required by the IEEE 754 standard.
+
                     var exp = value.Exponent;
-                    if (exp == 0)
+                    var frac = value.Significand;
+
+                    if (frac == 0)
                     {
-                        result = (double)value.Significand;
+                        result = 0;
+                        break;
+                    }
+
+                    // Decompose the base into a binary base that is a factor of the base
+                    // and a remainder, such that `base = 2 ^ binBase * baseRemainder`, where
+                    // binBase is maximal.
+                    var binBase = 0;
+                    var baseRemainder = value.Base;
+                    while (baseRemainder % 2 == 0)
+                    {
+                        binBase++;
+                        baseRemainder /= 2;
+                    }
+
+                    // Now we can make the following observation:
+                    //
+                    //   base ^ exp = (2 ^ binBase * baseRemainder) ^ exp
+                    //              = 2 ^ (binBase * exp) * baseRemainder ^ exp
+                    //
+                    // We hence tentatively set our binary exponent to `binBase * exp`.
+                    var binExp = binBase * (int)exp;
+
+                    // We will now fold `baseRemainder ^ exp` into our fractional part. This is
+                    // easy if `exp` is positive---just multiply the fractional part by `baseRemainder ^ exp`.
+                    bool negExp = exp < 0;
+                    if (negExp)
+                    {
+                        exp = -exp;
+                    }
+
+                    const int doubleBitLength = 52;
+                    int bitLength;
+                    if (negExp)
+                    {
+                        // If `exp` is negative then things are more complicated; we need to ensure that we do
+                        // not lose information due to integer division. For instance, if we were to naively
+                        // convert `1 * 3 ^ 1` to base 2 using the same method as above but with division instead
+                        // of multiplication, then we would get `1 / 3 = 0` as the fractional part of our resulting
+                        // float. That's not what we want.
+                        //
+                        // To avoid these types of mishaps, we will pad the fractional part with zeros and update
+                        // the exponent to compensate.
+
+                        // TODO: is this iterative logic alright or should we pre-pad with zeros?
+                        const int minBitLength = doubleBitLength + 3;
+                        for (BigInteger i = 0; i < exp; i++)
+                        {
+                            if (frac == 0)
+                            {
+                                break;
+                            }
+
+                            bitLength = GetBitLength(frac);
+                            while (bitLength < minBitLength)
+                            {
+                                bitLength++;
+                                frac <<= 1;
+                                binExp--;
+                            }
+                            frac /= baseRemainder;
+                        }
                     }
                     else
                     {
-                        result = (double)value.Significand;
-
-                        var expVal = 1.0;
-                        bool negExp = exp < 0;
-                        if (negExp)
+                        for (BigInteger i = 0; i < exp; i++)
                         {
-                            exp = -exp;
-                        }
-
-                        for (int i = 0; i < exp; i++)
-                        {
-                            expVal *= value.Base;
-                        }
-
-                        if (negExp)
-                        {
-                            result /= expVal;
-                        }
-                        else
-                        {
-                            result *= expVal;
+                            frac *= baseRemainder;
                         }
                     }
+
+                    // TODO: rounding.
+
+                    // At this point, `frac * 2 ^ binExp` equals the absolute value of our float literal.
+                    // However, `frac` and `binExpr` are not yet normalized. To normalize them, we will
+                    // change `frac` until its bit length is exactly equal to the number of bits in the
+                    // fractional part of a double (52) plus one (=53). After that, we drop the first bit
+                    // and keep only the 52 bits that trail it. We increment the exponent by 52.
+
+                    // 1. Make sure the bit length equals 53 exactly.
+                    bitLength = GetBitLength(frac);
+                    int delta = (doubleBitLength + 1) - bitLength;
+                    frac <<= delta;
+                    binExp -= delta;
+
+                    // 2. Increment the exponent.
+                    binExp += doubleBitLength;
+
+                    if (binExp > 1023)
+                    {
+                        // If the exponent is greater than 1023, then we round toward infinity.
+                        result = double.PositiveInfinity;
+                        break;
+                    }
+                    else if (binExp < -1022)
+                    {
+                        // If the exponent is less than -1022, then we round toward zero.
+                        // TODO: subnormals
+                        result = 0;
+                        break;
+                    }
+
+                    // 3. Convert the fractional part to a 64-bit integer and drop the leading one.
+                    var fracLong = (long)frac;
+                    fracLong &= 0x000fffffffffffffL;
+
+                    // Finally, compose the double.
+                    result = CreateNormalFloat64(false, binExp, fracLong);
+
                     break;
             }
             if (value.IsNegative)
@@ -295,6 +384,40 @@ namespace Wasm.Text
                 result = -result;
             }
             return result;
+        }
+
+        private static int GetBitLength(BigInteger value)
+        {
+            int length = 0;
+            while (value > 0)
+            {
+                value /= 2;
+                length++;
+            }
+            return length;
+        }
+
+        /// <summary>
+        /// Creates a double from a sign, an exponent and a significand.
+        /// </summary>
+        /// <param name="isNegative">
+        /// <c>true</c> if the double-precision floating-point number is negated; otherwise, <c>false</c>.
+        /// </param>
+        /// <param name="exponent">
+        /// The exponent to which the number's base (2) is raised.
+        /// </param>
+        /// <param name="fraction">
+        /// The fractional part of the float.
+        /// </param>
+        /// <returns>
+        /// A floating-point number that is equal to (-1)^<paramref name="isNegative"/> * 2^(<paramref name="exponent"/> - 1023) * 1.<paramref name="fraction"/>.
+        /// </returns>
+        private static double CreateNormalFloat64(bool isNegative, int exponent, long fraction)
+        {
+            return Wasm.Interpret.ValueHelpers.ReinterpretAsFloat64(
+                ((isNegative ? 1L : 0L) << 63)
+                | ((long)(exponent + 1023) << 52)
+                | fraction);
         }
 
         /// <summary>

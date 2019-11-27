@@ -311,23 +311,35 @@ namespace Wasm.Text
                         //
                         // To avoid these types of mishaps, we will pad the fractional part with zeros and update
                         // the exponent to compensate.
+                        //
+                        // To find out how many zeros we need to pad the fractional part with, we consider the following:
+                        //   * We want to end up with at least `doubleBitLength + 2` bits of precision (the first bit
+                        //     is always '1' and is implied for normal floats and the last bit is used for rounding).
+                        //   * Dividing by `baseRemainder` will reduce the number of bits in the final number.
+                        //
+                        // We will hence extend the fractional part to `doubleBitLength + 2 + log2(supBaseRemainder) * exp`,
+                        // where `supBaseRemainder` is the smallest power of two greater than `baseRemainder`.
+                        var supBaseRemainder = 1;
+                        var supBaseRemainderLog2 = 0;
+                        while (baseRemainder > supBaseRemainder)
+                        {
+                            supBaseRemainder *= 2;
+                            supBaseRemainderLog2++;
+                        }
 
-                        // TODO: is this iterative logic alright or should we pre-pad with zeros?
-                        const int minBitLength = doubleBitLength + 3;
+                        // Extend the fractional part to at least the desired bit length.
+                        var desiredBitLength = doubleBitLength + 2 + supBaseRemainderLog2 * exp;
+                        bitLength = GetBitLength(frac);
+                        while (bitLength < desiredBitLength)
+                        {
+                            bitLength++;
+                            frac <<= 1;
+                            binExp--;
+                        }
+
+                        // Now repeatedly divide it by `baseRemainder`.
                         for (BigInteger i = 0; i < exp; i++)
                         {
-                            if (frac == 0)
-                            {
-                                break;
-                            }
-
-                            bitLength = GetBitLength(frac);
-                            while (bitLength < minBitLength)
-                            {
-                                bitLength++;
-                                frac <<= 1;
-                                binExp--;
-                            }
                             frac /= baseRemainder;
                         }
                     }

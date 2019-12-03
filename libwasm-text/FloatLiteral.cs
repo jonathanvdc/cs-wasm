@@ -300,6 +300,7 @@ namespace Wasm.Text
                     }
 
                     const int doubleBitLength = 52;
+                    bool nonzeroRemainder = false;
                     int bitLength;
                     if (negExp)
                     {
@@ -338,10 +339,14 @@ namespace Wasm.Text
                         }
 
                         // Now repeatedly divide it by `baseRemainder`.
+                        BigInteger divisor = 1;
                         for (BigInteger i = 0; i < exp; i++)
                         {
-                            frac /= baseRemainder;
+                            divisor *= baseRemainder;
                         }
+                        var oldFrac = frac;
+                        frac = BigInteger.DivRem(frac, divisor, out BigInteger rem);
+                        nonzeroRemainder = rem > 0;
                     }
                     else
                     {
@@ -351,8 +356,6 @@ namespace Wasm.Text
                         }
                     }
 
-                    // TODO: rounding.
-
                     // At this point, `frac * 2 ^ binExp` equals the absolute value of our float literal.
                     // However, `frac` and `binExpr` are not yet normalized. To normalize them, we will
                     // change `frac` until its bit length is exactly equal to the number of bits in the
@@ -360,10 +363,7 @@ namespace Wasm.Text
                     // and keep only the 52 bits that trail it. We increment the exponent by 52.
 
                     // 1. Make sure the bit length equals 53 exactly.
-                    bitLength = GetBitLength(frac);
-                    int delta = (doubleBitLength + 1) - bitLength;
-                    frac <<= delta;
-                    binExp -= delta;
+                    (frac, binExp) = Round(frac, binExp, nonzeroRemainder, doubleBitLength + 1);
 
                     // 2. Increment the exponent.
                     binExp += doubleBitLength;
@@ -398,12 +398,79 @@ namespace Wasm.Text
             return result;
         }
 
+        /// <summary>
+        /// Takes a positive significand and a binary exponent, sets the significand's
+        /// bit length to a particular precision (updating the exponent accordingly
+        /// such that approximately the same number is represented), and rounds
+        /// the significand to produce a number that is as close to the original
+        /// number as possible.
+        /// </summary>
+        /// <param name="significand">A positive significand.</param>
+        /// <param name="exponent">A binary exponent.</param>
+        /// <param name="nonzeroRemainder">
+        /// Tells if the significand has trailing ones not encoded in <paramref name="significand"/>.
+        /// </param>
+        /// <param name="precision">The bit precision of the resulting significand.</param>
+        /// <returns>A (significand, exponent) pair.</returns>
+        private static (BigInteger significand, int exponent) Round(
+            BigInteger significand,
+            int exponent,
+            bool nonzeroRemainder,
+            int precision)
+        {
+            var bitLength = GetBitLength(significand);
+            int delta = precision - bitLength;
+            if (delta >= 0)
+            {
+                // If the significand is insufficiently precise, then we can
+                // just add more bits of precision by appending zero bits,
+                // i.e., shifting to the left.
+                return (significand << delta, exponent - delta);
+            }
+            else
+            {
+                // If the significand is too precise, then we need to eliminate
+                // bits of precision. We also need to round in this step.
+
+                // Rounding implies that we find a minimal range `[lower, upper]` such that
+                // `significand \in [lower, upper]`. Then, we pick either `lower` or `upper`
+                // as our result, depending on which is closer or a tie-breaking round-to-even
+                // rule.
+
+                // Find `lower`, `upper`.
+                delta = -delta;
+                var lower = significand >> delta;
+                var lowerExponent = exponent + delta;
+                var upper = lower + 1;
+                var upperExponent = lowerExponent;
+                if (GetBitLength(upper) == precision + 1)
+                {
+                    upper >>= 1;
+                    upperExponent++;
+                }
+
+                // Now we just need to pick either `lower` or `upper`. The digits in the
+                // significand that are not included in `lower` are decisive here.
+                var lowerRoundingError = significand - (lower << delta);
+                var midpoint = 1 << (delta - 1);
+                if (lowerRoundingError < midpoint
+                    || (lowerRoundingError == midpoint && !nonzeroRemainder && lower % 2 == 0))
+                {
+                    return (lower, lowerExponent);
+                }
+                else
+                {
+                    return (upper, upperExponent);
+                }
+            }
+        }
+
         private static int GetBitLength(BigInteger value)
         {
             int length = 0;
             while (value > 0)
             {
-                value /= 2;
+                value >>= 1;
                 length++;
             }
             return length;

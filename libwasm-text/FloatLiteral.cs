@@ -362,33 +362,43 @@ namespace Wasm.Text
                     // fractional part of a double (52) plus one (=53). After that, we drop the first bit
                     // and keep only the 52 bits that trail it. We increment the exponent by 52.
 
-                    // 1. Make sure the bit length equals 53 exactly.
-                    (frac, binExp) = Round(frac, binExp, nonzeroRemainder, doubleBitLength + 1);
-
                     // 2. Increment the exponent.
                     binExp += doubleBitLength;
 
-                    if (binExp > 1023)
+                    // Make sure the bit length equals 53 exactly.
+                    var (finalFrac, finalBinExp) = Round(frac, binExp, nonzeroRemainder, doubleBitLength + 1);
+
+                    if (finalBinExp > 1023)
                     {
                         // If the exponent is greater than 1023, then we round toward infinity.
                         result = double.PositiveInfinity;
                         break;
                     }
-                    else if (binExp < -1022)
+                    else if (finalBinExp < -1022)
                     {
-                        // If the exponent is less than -1022, then we round toward zero.
-                        // TODO: subnormals
+                        if (finalBinExp >= -1022 - doubleBitLength)
+                        {
+                            // If the exponent is less than -1022 but greater than (-1022 - 52), then
+                            // we'll try to create a subnormal number.
+                            var precision = doubleBitLength;
+                            while (precision > 0)
+                            {
+                                (finalFrac, finalBinExp) = Round(frac, binExp, nonzeroRemainder, precision);
+                                precision--;
+                                if (finalBinExp == -1022)
+                                {
+                                    return CreateNormalFloat64(value.IsNegative, -1023, finalFrac);
+                                }
+                            }
+                        }
+                        // Otherwise, we'll just round toward zero.
                         result = 0;
                         break;
                     }
 
-                    // 3. Convert the fractional part to a 64-bit integer and drop the leading one.
-                    var fracLong = (long)frac;
-                    fracLong &= 0x000fffffffffffffL;
-
-                    // Finally, compose the double.
-                    result = CreateNormalFloat64(false, binExp, fracLong);
-
+                    // Convert the fractional part to a 64-bit integer and drop the
+                    // leading one. Compose the double.
+                    result = CreateNormalFloat64(false, finalBinExp, finalFrac);
                     break;
             }
             if (value.IsNegative)
@@ -474,6 +484,26 @@ namespace Wasm.Text
                 length++;
             }
             return length;
+        }
+
+        /// <summary>
+        /// Creates a double from a sign, an exponent and a significand.
+        /// </summary>
+        /// <param name="isNegative">
+        /// <c>true</c> if the double-precision floating-point number is negated; otherwise, <c>false</c>.
+        /// </param>
+        /// <param name="exponent">
+        /// The exponent to which the number's base (2) is raised.
+        /// </param>
+        /// <param name="fraction">
+        /// The fractional part of the float.
+        /// </param>
+        /// <returns>
+        /// A floating-point number that is equal to (-1)^<paramref name="isNegative"/> * 2^(<paramref name="exponent"/> - 1023) * 1.<paramref name="fraction"/>.
+        /// </returns>
+        private static double CreateNormalFloat64(bool isNegative, int exponent, BigInteger fraction)
+        {
+            return CreateNormalFloat64(isNegative, exponent, (long)fraction & 0x000fffffffffffffL);
         }
 
         /// <summary>

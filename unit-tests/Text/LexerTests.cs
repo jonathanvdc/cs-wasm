@@ -118,6 +118,7 @@ namespace Wasm.Text
             AssertParsesAs(16.0625 * 2, "0x10.10p1");
             AssertParsesAs(16.0625 * 2, "+0x10.10p1");
             AssertParsesAs(-16.0625 * 2, "-0x10.10p1");
+            AssertParsesAs(BitConverter.Int64BitsToDouble(0x0000000000000001), "0x1p-1074");
         }
 
         [Test]

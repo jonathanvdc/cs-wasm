@@ -253,11 +253,10 @@ namespace Wasm.Interpret
 
         // Based on the StackOverflow answer by Deduplicator:
         // https://stackoverflow.com/questions/26576285/how-can-i-get-the-sign-bit-of-a-double
-        private static readonly int float32SignMask =
-            ReinterpretAsInt32(-0.0f) ^ ReinterpretAsInt32(+0.0f);
 
-        private static readonly long float64SignMask =
-            ReinterpretAsInt64(-0.0) ^ ReinterpretAsInt64(+0.0);
+        private static readonly int float32SignMask = unchecked((int)0x80000000);
+
+        private static readonly long float64SignMask = unchecked((long)0x8000000000000000);
 
         /// <summary>
         /// Tests if the sign bit of the given 32-bit floating point value is set,

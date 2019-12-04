@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Pixie;
 using Pixie.Markup;
@@ -23,7 +24,7 @@ namespace Wasm.Text
             this.moduleInstances = new List<ModuleInstance>();
             this.moduleInstancesByName = new Dictionary<string, ModuleInstance>();
             this.importer = new NamespacedImporter();
-            this.importer.RegisterImporter("spectest", new SpecTestImporter());
+            this.importer.RegisterImporter("spectest", new SpecTestImporter(new StringWriter()));
         }
 
         /// <summary>

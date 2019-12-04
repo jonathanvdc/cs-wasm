@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Wasm.Interpret
 {
@@ -16,16 +17,40 @@ namespace Wasm.Interpret
         { }
 
         /// <summary>
-        /// Creates an importer for the 'spectest' environment with
-        /// the given print suffix.
+        /// Creates an importer for the 'spectest' environment.
+        /// </summary>
+        /// <param name="printWriter">
+        /// A text writer to use for print calls.
+        /// </param>
+        public SpecTestImporter(TextWriter printWriter)
+            : this(printWriter.NewLine, printWriter)
+        { }
+
+        /// <summary>
+        /// Creates an importer for the 'spectest' environment.
         /// </summary>
         /// <param name="printSuffix">
-        /// The string that is written to the console at the
+        /// A string that is written to the console at the
         /// end of a print call.
         /// </param>
         public SpecTestImporter(string printSuffix)
+            : this(printSuffix, Console.Out)
+        { }
+
+        /// <summary>
+        /// Creates an importer for the 'spectest' environment.
+        /// </summary>
+        /// <param name="printSuffix">
+        /// A string that is written to <paramref name="printWriter"/> at the
+        /// end of a print call.
+        /// </param>
+        /// <param name="printWriter">
+        /// A text writer to use for print calls.
+        /// </param>
+        public SpecTestImporter(string printSuffix, TextWriter printWriter)
         {
             this.PrintSuffix = printSuffix;
+            this.PrintWriter = printWriter;
             this.globalI32 = Variable.Create<int>(
                 WasmValueType.Int32,
                 false,
@@ -47,6 +72,12 @@ namespace Wasm.Interpret
         /// <returns>The print suffix.</returns>
         public string PrintSuffix { get; private set; }
 
+        /// <summary>
+        /// Gets the text writer that is used for print calls.
+        /// </summary>
+        /// <value>A text writer.</value>
+        public TextWriter PrintWriter { get; private set; }
+
         private Variable globalI32, globalF32, globalF64;
 
         /// <inheritdoc/>
@@ -64,7 +95,8 @@ namespace Wasm.Interpret
                     return new SpecTestPrintFunctionDefinition(
                         signature.ParameterTypes,
                         signature.ReturnTypes,
-                        PrintSuffix);
+                        PrintSuffix,
+                        PrintWriter);
                 default:
                     return null;
             }
@@ -121,11 +153,13 @@ namespace Wasm.Interpret
         public SpecTestPrintFunctionDefinition(
             IReadOnlyList<WasmValueType> parameterTypes,
             IReadOnlyList<WasmValueType> returnTypes,
-            string PrintSuffix)
+            string printSuffix,
+            TextWriter printWriter)
         {
             this.paramTypes = parameterTypes;
             this.retTypes = returnTypes;
-            this.PrintSuffix = PrintSuffix;
+            this.PrintSuffix = printSuffix;
+            this.PrintWriter = printWriter;
         }
 
         private IReadOnlyList<WasmValueType> paramTypes;
@@ -137,6 +171,8 @@ namespace Wasm.Interpret
         /// </summary>
         /// <returns>The print suffix.</returns>
         public string PrintSuffix { get; private set; }
+
+        public TextWriter PrintWriter { get; private set; }
 
         /// <inheritdoc/>
         public override IReadOnlyList<WasmValueType> ParameterTypes => paramTypes;
@@ -151,11 +187,11 @@ namespace Wasm.Interpret
             {
                 if (i > 0)
                 {
-                    Console.Write(" ");
+                    PrintWriter.Write(" ");
                 }
-                Console.Write(arguments[i]);
+                PrintWriter.Write(arguments[i]);
             }
-            Console.Write(PrintSuffix);
+            PrintWriter.Write(PrintSuffix);
 
             var results = new object[ReturnTypes.Count];
             for (int i = 0; i < results.Length; i++)

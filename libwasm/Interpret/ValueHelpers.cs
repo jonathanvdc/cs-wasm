@@ -307,5 +307,27 @@ namespace Wasm.Interpret
             long resultBits = (leftBits & ~float64SignMask) | (rightBits & float64SignMask);
             return ReinterpretAsFloat64(resultBits);
         }
+
+        /// <summary>
+        /// Sets the sign of a 32-bit floating point number.
+        /// </summary>
+        /// <param name="value">A number whose magnitude is preserved and sign is rewritten.</param>
+        /// <param name="isNegative">The sign to assign to <paramref name="value"/>.</param>
+        /// <returns>A number that is equal to <paramref name="value"/> in magnitude and <paramref name="isNegative"/> in sign.</returns>
+        public static float Setsign(float value, bool isNegative)
+        {
+            return Copysign(value, isNegative ? -1.0f : 1.0f);
+        }
+
+        /// <summary>
+        /// Sets the sign of a 64-bit floating point number.
+        /// </summary>
+        /// <param name="value">A number whose magnitude is preserved and sign is rewritten.</param>
+        /// <param name="isNegative">The sign to assign to <paramref name="value"/>.</param>
+        /// <returns>A number that is equal to <paramref name="value"/> in magnitude and <paramref name="isNegative"/> in sign.</returns>
+        public static double Setsign(double value, bool isNegative)
+        {
+            return Copysign(value, isNegative ? -1.0 : 1.0);
+        }
     }
 }

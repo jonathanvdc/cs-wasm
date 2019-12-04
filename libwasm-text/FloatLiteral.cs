@@ -401,11 +401,7 @@ namespace Wasm.Text
                     result = CreateNormalFloat64(false, finalBinExp, finalFrac);
                     break;
             }
-            if (value.IsNegative)
-            {
-                result = -result;
-            }
-            return result;
+            return Interpret.ValueHelpers.Setsign(result, value.IsNegative);
         }
 
         /// <summary>
@@ -551,11 +547,7 @@ namespace Wasm.Text
                 default:
                     return (float)(double)value;
             }
-            if (value.IsNegative)
-            {
-                result = -result;
-            }
-            return result;
+            return Interpret.ValueHelpers.Setsign(result, value.IsNegative);
         }
 
         /// <summary>

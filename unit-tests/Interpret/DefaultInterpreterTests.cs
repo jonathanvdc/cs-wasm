@@ -41,6 +41,8 @@ namespace Wasm.Interpret
             Assert.AreEqual(-42.0, ValueHelpers.Copysign(-42.0, -1.0));
             Assert.AreEqual(42.0, ValueHelpers.Copysign(-42.0, 0.0));
             Assert.AreEqual(-42.0, ValueHelpers.Copysign(-42.0, float64NegativeZero));
+            Assert.AreEqual(42.0, ValueHelpers.Copysign(-42.0, (double)Text.FloatLiteral.NaN(false)));
+            Assert.AreEqual(-42.0, ValueHelpers.Copysign(-42.0, (double)Text.FloatLiteral.NaN(true)));
         }
     }
 }

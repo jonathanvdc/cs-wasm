@@ -100,6 +100,11 @@ namespace Wasm.Text
             AssertParsesAsKind(Lexer.TokenKind.Float, "+0x10.10p1");
             AssertParsesAsKind(Lexer.TokenKind.Float, "-0x10.10p1");
             AssertParsesAs(double.NegativeInfinity, "-inf");
+            AssertParsesAs(+0.0, "0.0");
+            AssertParsesAs(+0.0, "+0.0");
+            AssertParsesAs(-0.0, "-0.0");
+            AssertParsesAs(+0.0, "+0x0p2");
+            AssertParsesAs(-0.0, "-0x0p2");
             AssertParsesAs(10.0, "10.");
             AssertParsesAs(10.10, "10.10");
             AssertParsesAs(10.10, "+10.10");

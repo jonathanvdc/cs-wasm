@@ -48,12 +48,8 @@ namespace Wasm.Interpret
         /// <inheritdoc/>
         public override IReadOnlyList<WasmValueType> ReturnTypes => Signature.ReturnTypes;
 
-        /// <summary>
-        /// Invokes this function with the given argument list.
-        /// </summary>
-        /// <param name="arguments">The list of arguments for this function's parameters.</param>
-        /// <returns>The list of return values.</returns>
-        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments)
+        /// <inheritdoc/>
+        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments, uint callStackDepth = 0)
         {
             var locals = new List<Variable>();
 
@@ -81,7 +77,7 @@ namespace Wasm.Interpret
             }
 
             // Interpret the function body.
-            var context = new InterpreterContext(Module, ReturnTypes, locals);
+            var context = new InterpreterContext(Module, ReturnTypes, locals, Module.Policy, callStackDepth);
             var interpreter = Module.Interpreter;
             foreach (var instruction in body.BodyInstructions)
             {

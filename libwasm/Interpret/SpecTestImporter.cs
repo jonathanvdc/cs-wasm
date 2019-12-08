@@ -181,7 +181,7 @@ namespace Wasm.Interpret
         public override IReadOnlyList<WasmValueType> ReturnTypes => retTypes;
 
         /// <inheritdoc/>
-        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments)
+        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments, uint callStackDepth = 0)
         {
             for (int i = 0; i < arguments.Count; i++)
             {

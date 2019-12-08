@@ -40,7 +40,7 @@ namespace Wasm.Interpret
         public Exception ExceptionToThrow { get; private set; }
 
         /// <inheritdoc/>
-        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments)
+        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments, uint callStackDepth = 0)
         {
             throw ExceptionToThrow;
         }

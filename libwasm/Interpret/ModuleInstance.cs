@@ -8,10 +8,10 @@ namespace Wasm.Interpret
     /// </summary>
     public sealed class ModuleInstance
     {
-
-        private ModuleInstance(InstructionInterpreter interpreter)
+        private ModuleInstance(InstructionInterpreter interpreter, ExecutionPolicy policy)
         {
             this.Interpreter = interpreter;
+            this.Policy = policy;
             this.definedMemories = new List<LinearMemory>();
             this.definedGlobals = new List<Variable>();
             this.definedFuncs = new List<FunctionDefinition>();
@@ -35,6 +35,12 @@ namespace Wasm.Interpret
         private Dictionary<string, Variable> expGlobals;
         private Dictionary<string, FunctionDefinition> expFuncs;
         private Dictionary<string, FunctionTable> expTables;
+
+        /// <summary>
+        /// Gets the execution policy for this module.
+        /// </summary>
+        /// <value>An execution policy.</value>
+        public ExecutionPolicy Policy { get; private set; }
 
         /// <summary>
         /// Gets a read-only list of the memories in this module.
@@ -140,23 +146,27 @@ namespace Wasm.Interpret
         /// <param name="interpreter">
         /// Interprets instructions. A <c>null</c> interpreter indicates that the default interpreter should be used.
         /// </param>
-        /// <param name="maxMemorySize">
-        /// The maximum size of any memory, in page units. A value of zero
-        /// indicates that there is not maximum memory size.
+        /// <param name="policy">
+        /// The execution policy to adhere to for this module.
+        /// A <c>null</c> execution policy indicates that the default policy should be used.
         /// </param>
         /// <returns>A module instance.</returns>
         public static ModuleInstance Instantiate(
             WasmFile file,
             IImporter importer,
             InstructionInterpreter interpreter = null,
-            uint maxMemorySize = 0)
+            ExecutionPolicy policy = null)
         {
             if (interpreter == null)
             {
                 interpreter = DefaultInstructionInterpreter.Default;
             }
+            if (policy == null)
+            {
+                policy = ExecutionPolicy.Create();
+            }
 
-            var instance = new ModuleInstance(interpreter);
+            var instance = new ModuleInstance(interpreter, policy);
 
             // Extract the function types.
             var allFuncTypes = GetFunctionTypes(file);
@@ -168,7 +178,7 @@ namespace Wasm.Interpret
             instance.InstantiateGlobals(file);
 
             // Instantiate memories.
-            instance.InstantiateMemories(file, maxMemorySize);
+            instance.InstantiateMemories(file, policy.MaxMemorySize);
 
             // Instantiate function definitions.
             instance.InstantiateFunctionDefs(file, allFuncTypes);

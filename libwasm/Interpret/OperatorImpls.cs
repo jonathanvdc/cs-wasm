@@ -247,7 +247,7 @@ namespace Wasm.Interpret
             var funcDef = context.Module.Functions[(int)instr.Immediate];
 
             var args = context.Pop<object>(funcDef.ParameterTypes.Count);
-            var results = funcDef.Invoke(args);
+            var results = funcDef.Invoke(args, context.CallStackDepth);
             context.Push<object>(results);
         }
 
@@ -262,7 +262,7 @@ namespace Wasm.Interpret
             var funcDef = context.Module.Tables[0][(uint)funcDefIndex];
 
             var args = context.Pop<object>(funcDef.ParameterTypes.Count);
-            var results = funcDef.Invoke(args);
+            var results = funcDef.Invoke(args, context.CallStackDepth);
             context.Push<object>(results);
         }
 
@@ -637,7 +637,7 @@ namespace Wasm.Interpret
                 throw new WasmException("Memory address overflow.");
             }
             var pointer = (uint)longPtr;
-            if (context.EnforceAlignment)
+            if (context.Policy.EnforceAlignment)
             {
                 CheckAlignment(pointer, Instruction);
             }

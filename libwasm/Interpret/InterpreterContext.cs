@@ -25,23 +25,39 @@ namespace Wasm.Interpret
         /// <param name="module">The owning module.</param>
         /// <param name="returnTypes">The list of expected return types.</param>
         /// <param name="locals">The list of local variables in this context.</param>
-        /// <param name="enforceAlignment">
-        /// Tells if memory access alignments should be taken to be normative instead
-        /// of as hints.
+        public InterpreterContext(
+            ModuleInstance module,
+            IReadOnlyList<WasmValueType> returnTypes,
+            IReadOnlyList<Variable> locals)
+            : this(module, returnTypes, locals, ExecutionPolicy.Create())
+        { }
+
+        /// <summary>
+        /// Creates a new interpreter context from the given module, return types
+        /// and list of local variables.
+        /// </summary>
+        /// <param name="module">The owning module.</param>
+        /// <param name="returnTypes">The list of expected return types.</param>
+        /// <param name="locals">The list of local variables in this context.</param>
+        /// <param name="policy">The execution policy to use.</param>
+        /// <param name="callStackDepth">
+        /// The current depth of the call stack.
         /// </param>
         public InterpreterContext(
             ModuleInstance module,
             IReadOnlyList<WasmValueType> returnTypes,
             IReadOnlyList<Variable> locals,
-            bool enforceAlignment = false)
+            ExecutionPolicy policy,
+            uint callStackDepth = 0)
         {
             this.Module = module;
             this.ReturnTypes = returnTypes;
             this.Locals = locals;
-            this.EnforceAlignment = enforceAlignment;
+            this.Policy = policy;
             this.valStack = new Stack<object>();
             this.ReturnValues = null;
             this.BreakDepth = -1;
+            this.CallStackDepth = callStackDepth;
         }
 
         /// <summary>
@@ -61,6 +77,19 @@ namespace Wasm.Interpret
         /// </summary>
         /// <returns>A list of local variables.</returns>
         public IReadOnlyList<Variable> Locals { get; private set; }
+
+        /// <summary>
+        /// Gets the execution policy associated with this interpreter context.
+        /// </summary>
+        /// <value>An execution policy.</value>
+        public ExecutionPolicy Policy { get; private set; }
+
+        /// <summary>
+        /// Gets the depth of the call stack at which the "frame" is placed for
+        /// the instructions currently being executed.
+        /// </summary>
+        /// <value>A call stack depth.</value>
+        public uint CallStackDepth { get; private set; }
 
         /// <summary>
         /// The evaluation stack.
@@ -90,19 +119,6 @@ namespace Wasm.Interpret
         /// <returns>The list of values that have been returned, or <c>null</c> if nothing
         /// has been returned yet.</returns>
         public IReadOnlyList<object> ReturnValues { get; private set; }
-
-        /// <summary>
-        /// Tells if the alignment specified by memory instructions is to be taken as
-        /// a mandatory alignment to which memory accesses must adhere instead of a mere
-        /// hint.
-        /// </summary>
-        /// <value><c>true</c> if unaligned accesses must throw exceptions; otherwise, <c>false</c>.</value>
-        /// <remarks>
-        /// The WebAssembly specification states that memory instruction alignments do not
-        /// affect execution semantics. In order to comply with the standard, this property
-        /// should be set to <c>false</c> (the default).
-        /// </remarks>
-        public bool EnforceAlignment { get; private set; }
 
         /// <summary>
         /// Gets the number of items that are currently on the evaluation stack.
@@ -252,5 +268,62 @@ namespace Wasm.Interpret
             // implementation detail.
             internal Stack<object> stack;
         }
+    }
+
+    /// <summary>
+    /// A description of an execution policy for WebAssembly modules.
+    /// </summary>
+    public sealed class ExecutionPolicy
+    {
+        private ExecutionPolicy()
+        { }
+
+        /// <summary>
+        /// Creates a new execution policy.
+        /// </summary>
+        /// <param name="maxCallStackDepth">The maximal depth of the call stack.</param>
+        /// <param name="maxMemorySize">
+        /// The maximum size of any memory, in page units. A value of zero
+        /// indicates that there is not maximum memory size.
+        /// </param>
+        /// <param name="enforceAlignment">
+        /// Tells if memory access alignments should be taken to be normative instead
+        /// of as hints.
+        /// </param>
+        public static ExecutionPolicy Create(uint maxCallStackDepth = 512, uint maxMemorySize = 0, bool enforceAlignment = false)
+        {
+            return new ExecutionPolicy()
+            {
+                MaxCallStackDepth = maxCallStackDepth,
+                EnforceAlignment = enforceAlignment,
+                MaxMemorySize = maxMemorySize
+            };
+        }
+
+        /// <summary>
+        /// Tells if the alignment specified by memory instructions is to be taken as
+        /// a mandatory alignment to which memory accesses must adhere instead of a mere
+        /// hint.
+        /// </summary>
+        /// <value><c>true</c> if unaligned accesses must throw exceptions; otherwise, <c>false</c>.</value>
+        /// <remarks>
+        /// The WebAssembly specification states that memory instruction alignments do not
+        /// affect execution semantics. In order to comply with the standard, this property
+        /// should be set to <c>false</c> (the default).
+        /// </remarks>
+        public bool EnforceAlignment { get; private set; }
+
+        /// <summary>
+        /// Gets the maximal depth of the call stack.
+        /// </summary>
+        /// <value>A maximal call stack depth.</value>
+        public uint MaxCallStackDepth { get; private set; }
+
+        /// <summary>
+        /// Gets the maximum size of any memory, in page units. A value of zero
+        /// indicates that there is not maximum memory size.
+        /// </summary>
+        /// <value>The maximum memory size.</value>
+        public uint MaxMemorySize { get; private set; }
     }
 }

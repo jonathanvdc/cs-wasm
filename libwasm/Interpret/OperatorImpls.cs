@@ -631,7 +631,12 @@ namespace Wasm.Interpret
 
         private static uint PopAlignedPointer(MemoryInstruction Instruction, InterpreterContext context)
         {
-            var pointer = (uint)context.Pop<int>() + Instruction.Offset;
+            var longPtr = (ulong)(uint)context.Pop<int>() + Instruction.Offset;
+            if (longPtr > uint.MaxValue)
+            {
+                throw new WasmException("Memory address overflow.");
+            }
+            var pointer = (uint)longPtr;
             if (context.EnforceAlignment)
             {
                 CheckAlignment(pointer, Instruction);

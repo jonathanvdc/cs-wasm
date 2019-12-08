@@ -383,9 +383,10 @@ namespace Wasm.Text
                             var precision = doubleBitLength;
                             while (precision > 0)
                             {
+                                // TODO: get rounding right for subnormals.
                                 (finalFrac, finalBinExp) = Round(frac, binExp, nonzeroRemainder, precision);
                                 precision--;
-                                if (finalBinExp == -1022)
+                                if (finalBinExp >= -1022)
                                 {
                                     return CreateNormalFloat64(value.IsNegative, -1023, finalFrac);
                                 }

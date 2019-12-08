@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!-- NuGet package specification.
+     Run `nuget pack -Version %PKG_VERSION% libwasm-text.nuspec` to create Wasm.Text.x.y.z.nupkg -->
+<package >
+  <metadata>
+    <id>Wasm.Text</id>
+    <version>$version$</version>
+    <authors>Jonathan Van der Cruysse</authors>
+    <owners>Jonathan Van der Cruysse</owners>
+    <projectUrl>https://github.com/jonathanvdc/cs-wasm</projectUrl>
+    <!--<iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>-->
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <summary>A WebAssembly text format assembler library based on cs-wasm. </summary>
+    <description>Wasm.Text is a library that can assemble WebAssembly text format files and scripts.
+    It is based on cs-wasm, a C# library that can read, write, interpret and optimize WebAssembly files.
+    </description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>WebAssembly Wasm Text Format</tags>
+    <dependencies>
+      <dependency id="Wasm" version="$version$" />
+      <dependency id="Pixie" version="0.1.9" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="README.md" target="readme.txt" />
+    <file src="libwasm-text\bin\Release\net47\libwasm-tetx.dll" target="lib\net47\" />
+    <file src="libwasm-text\bin\Release\net47\libwasm-tetx.xml" target="lib\net47\" />
+    <file src="libwasm-text\bin\Release\netstandard2.0\libwasm-text.dll" target="lib\netstandard2.0\" />
+    <file src="libwasm-text\bin\Release\netstandard2.0\libwasm-text.xml" target="lib\netstandard2.0\" />
+  </files>
+</package>

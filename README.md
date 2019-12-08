@@ -184,6 +184,19 @@ WasmFile file;
 file.Optimize();
 ```
 
+### Assembling a text format file
+
+The `cs-wasm` project includes an additional library&mdash;`Wasm.Text`, available as [a separate NuGet package](https://www.nuget.org/packages/Wasm.Text)&mdash;that can assemble WebAssembly text format files and scripts. To assemble a string of textual WebAssembly, add a dependency on that library and do the following:
+```cs
+using Wasm.Text;
+using Pixie.Terminal;
+// ...
+var log = TerminalLog.Acquire();
+WasmFile file = new Assembler(log).AssembleModule("(module)");
+```
+
+The resulting `WasmFile` can be manipulated in all the same ways that a regular `WasmFile` parsed from a binary module can.
+
 ### Other fun stuff
 
 There are lots of things you can do with `cs-wasm`. Drop me a GitHub issue if you'd like a chat.

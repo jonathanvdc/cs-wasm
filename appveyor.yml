@@ -38,8 +38,9 @@ after_build:
   - xcopy wasm-interp\bin\Release\net47\wasm-interp.exe cs-wasm-tools
   - xcopy wasm-opt\bin\Release\net47\wasm-opt.exe cs-wasm-tools
   - 7z a cs-wasm-tools.zip %APPVEYOR_BUILD_FOLDER%\cs-wasm-tools\*
-  # Create the NuGet package
+  # Create the NuGet packages
   - nuget pack -Version %PKG_VERSION% libwasm.nuspec
+  - nuget pack -Version %PKG_VERSION% libwasm-text.nuspec
 
 test_script:
   # Run the tests

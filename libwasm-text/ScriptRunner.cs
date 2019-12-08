@@ -87,7 +87,7 @@ namespace Wasm.Text
                 var instance = Wasm.Interpret.ModuleInstance.Instantiate(
                     module,
                     importer,
-                    maxMemorySize: 0x1000);
+                    policy: ExecutionPolicy.Create(maxMemorySize: 0x1000));
 
                 moduleInstances.Add(instance);
                 if (moduleId != null)

@@ -77,7 +77,7 @@ namespace Wasm.Interpret
             }
 
             // Interpret the function body.
-            var context = new InterpreterContext(Module, ReturnTypes, locals, Module.Policy, callStackDepth);
+            var context = new InterpreterContext(Module, ReturnTypes, locals, Module.Policy, callStackDepth + 1);
             var interpreter = Module.Interpreter;
             foreach (var instruction in body.BodyInstructions)
             {

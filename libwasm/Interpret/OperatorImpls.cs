@@ -247,8 +247,17 @@ namespace Wasm.Interpret
             var funcDef = context.Module.Functions[(int)instr.Immediate];
 
             var args = context.Pop<object>(funcDef.ParameterTypes.Count);
+            CheckForStackOverflow(context);
             var results = funcDef.Invoke(args, context.CallStackDepth);
             context.Push<object>(results);
+        }
+
+        private static void CheckForStackOverflow(InterpreterContext context)
+        {
+            if (context.CallStackDepth >= context.Policy.MaxCallStackDepth)
+            {
+                throw new WasmException("Stack overflow: max call stack depth exceeded.");
+            }
         }
 
         /// <summary>
@@ -262,6 +271,7 @@ namespace Wasm.Interpret
             var funcDef = context.Module.Tables[0][(uint)funcDefIndex];
 
             var args = context.Pop<object>(funcDef.ParameterTypes.Count);
+            CheckForStackOverflow(context);
             var results = funcDef.Invoke(args, context.CallStackDepth);
             context.Push<object>(results);
         }

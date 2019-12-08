@@ -10,10 +10,11 @@ install:
   # Clone submodules.
   - git submodule update --init --recursive
 
-  - set VERNUM=0.1.6
+    # Generate a NuGet package version number.
   - echo %APPVEYOR_REPO_TAG%
-  # Build packages as VERNUM-ci{build}
-  - ps: if ($env:APPVEYOR_REPO_TAG -eq $True) { $env:PKG_VERSION = $env:VERNUM; } else { $env:PKG_VERSION = "$($env:VERNUM)-ci$($env:APPVEYOR_BUILD_NUMBER)"; }
+  - C:\Python34\python.exe Tools\CI\version-number.py %APPVEYOR_BUILD_VERSION% > pkg-version.txt
+  - set /p PKG_VERSION=<pkg-version.txt
+  - echo %PKG_VERSION%
 
   # Grab a compiled version of compare-test and add it to the PATH variable.
   - curl -L https://github.com/jonathanvdc/compare-test/releases/download/v0.1.5/compare-test.zip > compare-test.zip

@@ -174,6 +174,52 @@ namespace Wasm.Text
                     }
                 }
             }
+            else if (expression.IsCallTo("assert_return_canonical_nan"))
+            {
+                var results = RunAction(expression.Tail[0]);
+                bool isCanonicalNaN;
+                if (results.Count != 1)
+                {
+                    Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "assertion failed",
+                            "action produced ",
+                            results.Count.ToString(),
+                            " results (",
+                            string.Join(", ", results),
+                            "); expected a single canonical NaN.",
+                            Assembler.Highlight(expression)));
+                    return;
+                }
+                else if (results[0] is double)
+                {
+                    var val = Interpret.ValueHelpers.ReinterpretAsInt64((double)results[0]);
+                    isCanonicalNaN = val == Interpret.ValueHelpers.ReinterpretAsInt64((double)FloatLiteral.NaN(false))
+                        || val == Interpret.ValueHelpers.ReinterpretAsInt64((double)FloatLiteral.NaN(true));
+                }
+                else if (results[0] is float)
+                {
+                    var val = Interpret.ValueHelpers.ReinterpretAsInt32((float)results[0]);
+                    isCanonicalNaN = val == Interpret.ValueHelpers.ReinterpretAsInt32((float)FloatLiteral.NaN(false))
+                        || val == Interpret.ValueHelpers.ReinterpretAsInt32((float)FloatLiteral.NaN(true));
+                }
+                else
+                {
+                    isCanonicalNaN = false;
+                }
+                if (!isCanonicalNaN)
+                {
+                    Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "assertion failed",
+                            "action produced ",
+                            results[0].ToString(),
+                            "; expected a single canonical NaN.",
+                            Assembler.Highlight(expression)));
+                }
+            }
             else
             {
                 Log.Log(

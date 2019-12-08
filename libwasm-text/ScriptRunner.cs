@@ -220,6 +220,48 @@ namespace Wasm.Text
                             Assembler.Highlight(expression)));
                 }
             }
+            else if (expression.IsCallTo("assert_return_arithmetic_nan"))
+            {
+                var results = RunAction(expression.Tail[0]);
+                bool isNaN;
+                if (results.Count != 1)
+                {
+                    Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "assertion failed",
+                            "action produced ",
+                            results.Count.ToString(),
+                            " results (",
+                            string.Join(", ", results),
+                            "); expected a single NaN.",
+                            Assembler.Highlight(expression)));
+                    return;
+                }
+                else if (results[0] is double)
+                {
+                    isNaN = double.IsNaN((double)results[0]);
+                }
+                else if (results[0] is float)
+                {
+                    isNaN = float.IsNaN((float)results[0]);
+                }
+                else
+                {
+                    isNaN = false;
+                }
+                if (!isNaN)
+                {
+                    Log.Log(
+                        new LogEntry(
+                            Severity.Error,
+                            "assertion failed",
+                            "action produced ",
+                            results[0].ToString(),
+                            "; expected a single NaN.",
+                            Assembler.Highlight(expression)));
+                }
+            }
             else
             {
                 Log.Log(

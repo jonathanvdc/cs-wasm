@@ -338,13 +338,13 @@ namespace Wasm.Interpret
         /// <returns>A 32-bit integer that is the truncated version of <paramref name="value"/>.</returns>
         public static int TruncateToInt32(float value)
         {
-            if (float.IsInfinity(value) || value < int.MinValue || value > int.MaxValue)
+            if (float.IsInfinity(value))
             {
-                throw new WasmException("integer overflow");
+                return ThrowInfinityToInt<int>();
             }
             else if (float.IsNaN(value))
             {
-                throw new WasmException("invalid conversion to integer");
+                return ThrowNaNToInt<int>();
             }
             else
             {
@@ -360,13 +360,13 @@ namespace Wasm.Interpret
         /// <returns>A 32-bit integer that is the truncated version of <paramref name="value"/>.</returns>
         public static uint TruncateToUInt32(float value)
         {
-            if (float.IsInfinity(value) || (value < 0f && (uint)value != 0) || value > uint.MaxValue)
+            if (float.IsInfinity(value))
             {
-                throw new WasmException("integer overflow");
+                return ThrowInfinityToInt<uint>();
             }
             else if (float.IsNaN(value))
             {
-                throw new WasmException("invalid conversion to integer");
+                return ThrowNaNToInt<uint>();
             }
             else
             {
@@ -382,13 +382,13 @@ namespace Wasm.Interpret
         /// <returns>A 32-bit integer that is the truncated version of <paramref name="value"/>.</returns>
         public static int TruncateToInt32(double value)
         {
-            if (double.IsInfinity(value) || value < int.MinValue || value > int.MaxValue)
+            if (double.IsInfinity(value))
             {
-                throw new WasmException("integer overflow");
+                return ThrowInfinityToInt<int>();
             }
             else if (double.IsNaN(value))
             {
-                throw new WasmException("invalid conversion to integer");
+                return ThrowNaNToInt<int>();
             }
             else
             {
@@ -404,13 +404,13 @@ namespace Wasm.Interpret
         /// <returns>A 32-bit integer that is the truncated version of <paramref name="value"/>.</returns>
         public static uint TruncateToUInt32(double value)
         {
-            if (double.IsInfinity(value) || (value < 0 && (uint)value != 0) || value > uint.MaxValue)
+            if (double.IsInfinity(value))
             {
-                throw new WasmException("integer overflow");
+                return ThrowInfinityToInt<uint>();
             }
             else if (double.IsNaN(value))
             {
-                throw new WasmException("invalid conversion to integer");
+                return ThrowNaNToInt<uint>();
             }
             else
             {
@@ -426,13 +426,13 @@ namespace Wasm.Interpret
         /// <returns>A 64-bit integer that is the truncated version of <paramref name="value"/>.</returns>
         public static long TruncateToInt64(float value)
         {
-            if (float.IsInfinity(value) || value < long.MinValue || value > long.MaxValue)
+            if (float.IsInfinity(value))
             {
-                throw new WasmException("integer overflow");
+                return ThrowInfinityToInt<long>();
             }
             else if (float.IsNaN(value))
             {
-                throw new WasmException("invalid conversion to integer");
+                return ThrowNaNToInt<long>();
             }
             else
             {
@@ -450,11 +450,11 @@ namespace Wasm.Interpret
         {
             if (float.IsInfinity(value))
             {
-                throw new WasmException("integer overflow");
+                return ThrowInfinityToInt<ulong>();
             }
             else if (float.IsNaN(value))
             {
-                throw new WasmException("invalid conversion to integer");
+                return ThrowNaNToInt<ulong>();
             }
             else
             {
@@ -470,13 +470,13 @@ namespace Wasm.Interpret
         /// <returns>A 64-bit integer that is the truncated version of <paramref name="value"/>.</returns>
         public static long TruncateToInt64(double value)
         {
-            if (double.IsInfinity(value) || value < long.MinValue || value > long.MaxValue)
+            if (double.IsInfinity(value))
             {
-                throw new WasmException("integer overflow");
+                return ThrowInfinityToInt<long>();
             }
             else if (double.IsNaN(value))
             {
-                throw new WasmException("invalid conversion to integer");
+                return ThrowNaNToInt<long>();
             }
             else
             {
@@ -494,16 +494,30 @@ namespace Wasm.Interpret
         {
             if (double.IsInfinity(value))
             {
-                throw new WasmException("integer overflow");
+                return ThrowInfinityToInt<ulong>();
             }
             else if (double.IsNaN(value))
             {
-                throw new WasmException("invalid conversion to integer");
+                return ThrowNaNToInt<ulong>();
             }
             else
             {
                 return checked((ulong)value);
             }
+        }
+
+        private static T ThrowInfinityToInt<T>()
+        {
+            throw new TrapException(
+                "Cannot convert infinity to an integer.",
+                TrapException.SpecMessages.IntegerOverflow);
+        }
+
+        private static T ThrowNaNToInt<T>()
+        {
+            throw new TrapException(
+                "Cannot convert NaN to an integer.",
+                TrapException.SpecMessages.InvalidConversionToInteger);
         }
     }
 }

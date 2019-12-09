@@ -646,7 +646,9 @@ namespace Wasm.Interpret
             var longPtr = (ulong)(uint)context.Pop<int>() + Instruction.Offset;
             if (longPtr > uint.MaxValue)
             {
-                throw new WasmException("Memory address overflow.");
+                throw new TrapException(
+                    "Memory address overflow.",
+                    TrapException.SpecMessages.OutOfBoundsMemoryAccess);
             }
             var pointer = (uint)longPtr;
             if (context.Policy.EnforceAlignment)
@@ -660,11 +662,12 @@ namespace Wasm.Interpret
         {
             if (Pointer % Instruction.Alignment != 0)
             {
-                throw new WasmException(
+                throw new TrapException(
                     string.Format(
                         "Misaligned memory access at {0}. (alignment: {1})",
                         DumpHelpers.FormatHex(Pointer),
-                        Instruction.Alignment));
+                        Instruction.Alignment),
+                    TrapException.SpecMessages.MisalignedMemoryAccess);
             }
         }
 

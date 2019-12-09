@@ -123,7 +123,9 @@ namespace Wasm.Interpret
         {
             if ((ulong)memory.Count < (ulong)offset + (ulong)length)
             {
-                throw new WasmException("out of bounds memory access");
+                throw new TrapException(
+                    $"Memory access out of bounds: cannot access {length} bytes at offset {offset} in memory with length {memory.Count}.",
+                    TrapException.SpecMessages.OutOfBoundsMemoryAccess);
             }
         }
     }

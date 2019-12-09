@@ -54,6 +54,21 @@ namespace Wasm.Interpret
             /// The error message for when the max execution stack depth is exceeded.
             /// </summary>
             public const string StackOverflow = "stack overflow";
+
+            /// <summary>
+            /// The error message for when integer overflow occurs.
+            /// </summary>
+            public const string IntegerOverflow = "integer overflow";
+
+            /// <summary>
+            /// The error message for when NaN is converted to an integer.
+            /// </summary>
+            public const string InvalidConversionToInteger = "invalid conversion to integer";
+
+            /// <summary>
+            /// The error message for misaligned memory accesses.
+            /// </summary>
+            public const string MisalignedMemoryAccess = "misaligned memory access";
         }
     }
 }

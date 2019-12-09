@@ -118,6 +118,14 @@ namespace Wasm.Interpret
         {
             get { return new LinearMemoryAsFloat64(memory); }
         }
+
+        internal static void CheckBounds(List<byte> memory, uint offset, uint length)
+        {
+            if ((ulong)memory.Count < (ulong)offset + (ulong)length)
+            {
+                throw new WasmException("out of bounds memory access");
+            }
+        }
     }
 
     /// <summary>
@@ -140,10 +148,12 @@ namespace Wasm.Interpret
         {
             get
             {
+                LinearMemory.CheckBounds(mem, offset, 1);
                 return (sbyte)mem[(int)offset];
             }
             set
             {
+                LinearMemory.CheckBounds(mem, offset, 1);
                 mem[(int)offset] = (byte)value;
             }
         }
@@ -169,12 +179,14 @@ namespace Wasm.Interpret
         {
             get
             {
+                LinearMemory.CheckBounds(mem, offset, 2);
                 return (short)(
                     (uint)mem[(int)offset + 1] << 8 |
                     (uint)mem[(int)offset]);
             }
             set
             {
+                LinearMemory.CheckBounds(mem, offset, 2);
                 mem[(int)offset + 1] = (byte)(value >> 8);
                 mem[(int)offset] = (byte)value;
             }
@@ -201,6 +213,7 @@ namespace Wasm.Interpret
         {
             get
             {
+                LinearMemory.CheckBounds(mem, offset, 4);
                 return (int)mem[(int)offset + 3] << 24
                     | (int)mem[(int)offset + 2] << 16
                     | (int)mem[(int)offset + 1] << 8
@@ -208,6 +221,7 @@ namespace Wasm.Interpret
             }
             set
             {
+                LinearMemory.CheckBounds(mem, offset, 4);
                 mem[(int)offset + 3] = (byte)(value >> 24);
                 mem[(int)offset + 2] = (byte)(value >> 16);
                 mem[(int)offset + 1] = (byte)(value >> 8);
@@ -236,6 +250,7 @@ namespace Wasm.Interpret
         {
             get
             {
+                LinearMemory.CheckBounds(mem, offset, 8);
                 return (long)mem[(int)offset + 7] << 56
                     | (long)mem[(int)offset + 6] << 48
                     | (long)mem[(int)offset + 5] << 40
@@ -247,6 +262,7 @@ namespace Wasm.Interpret
             }
             set
             {
+                LinearMemory.CheckBounds(mem, offset, 8);
                 mem[(int)offset + 7] = (byte)(value >> 56);
                 mem[(int)offset + 6] = (byte)(value >> 48);
                 mem[(int)offset + 5] = (byte)(value >> 40);

@@ -1096,7 +1096,7 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int32TruncSFloat32(Instruction value, InterpreterContext context)
         {
-            context.Push<int>((int)context.Pop<float>());
+            context.Push<int>(ValueHelpers.TruncateToInt32(context.Pop<float>()));
         }
 
         /// <summary>
@@ -1116,7 +1116,7 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int32TruncSFloat64(Instruction value, InterpreterContext context)
         {
-            context.Push<int>((int)context.Pop<double>());
+            context.Push<int>(ValueHelpers.TruncateToInt32(context.Pop<double>()));
         }
 
         /// <summary>

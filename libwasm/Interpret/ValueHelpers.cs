@@ -332,6 +332,28 @@ namespace Wasm.Interpret
 
         /// <summary>
         /// Takes a 32-bit floating point number and truncates it to a
+        /// 32-bit signed integer.
+        /// </summary>
+        /// <param name="value">A 32-bit floating point number to truncate.</param>
+        /// <returns>A 32-bit integer that is the truncated version of <paramref name="value"/>.</returns>
+        public static int TruncateToInt32(float value)
+        {
+            if (float.IsInfinity(value) || value < int.MinValue || value > int.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (float.IsNaN(value))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                return checked((int)value);
+            }
+        }
+
+        /// <summary>
+        /// Takes a 32-bit floating point number and truncates it to a
         /// 32-bit unsigned integer.
         /// </summary>
         /// <param name="value">A 32-bit floating point number to truncate.</param>
@@ -349,6 +371,28 @@ namespace Wasm.Interpret
             else
             {
                 return checked((uint)value);
+            }
+        }
+
+        /// <summary>
+        /// Takes a 64-bit floating point number and truncates it to a
+        /// 32-bit signed integer.
+        /// </summary>
+        /// <param name="value">A 64-bit floating point number to truncate.</param>
+        /// <returns>A 32-bit integer that is the truncated version of <paramref name="value"/>.</returns>
+        public static int TruncateToInt32(double value)
+        {
+            if (double.IsInfinity(value) || value < int.MinValue || value > int.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (double.IsNaN(value))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                return checked((int)value);
             }
         }
 

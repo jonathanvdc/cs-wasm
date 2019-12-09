@@ -16,7 +16,7 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Unreachable(Instruction value, InterpreterContext context)
         {
-            throw new WasmException("'unreachable' instruction was reached.");
+            throw new TrapException("An 'unreachable' instruction was reached.", TrapException.SpecMessages.Unreachable);
         }
 
         /// <summary>
@@ -256,7 +256,9 @@ namespace Wasm.Interpret
         {
             if (context.CallStackDepth >= context.Policy.MaxCallStackDepth)
             {
-                throw new WasmException("Stack overflow: max call stack depth exceeded.");
+                throw new TrapException(
+                    "A stack overflow occurred: the max call stack depth was exceeded.",
+                    TrapException.SpecMessages.StackOverflow);
             }
         }
 

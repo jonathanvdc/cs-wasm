@@ -329,5 +329,49 @@ namespace Wasm.Interpret
         {
             return Copysign(value, isNegative ? -1.0 : 1.0);
         }
+
+        /// <summary>
+        /// Takes a 32-bit floating point number and truncates it to a
+        /// 32-bit unsigned integer.
+        /// </summary>
+        /// <param name="value">A 32-bit floating point number to truncate.</param>
+        /// <returns>A 32-bit integer that is the truncated version of <paramref name="value"/>.</returns>
+        public static uint TruncateToUInt32(float value)
+        {
+            if (float.IsInfinity(value) || (value < 0f && (uint)value != 0) || value > uint.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (float.IsNaN(value))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                return checked((uint)value);
+            }
+        }
+
+        /// <summary>
+        /// Takes a 64-bit floating point number and truncates it to a
+        /// 32-bit unsigned integer.
+        /// </summary>
+        /// <param name="value">A 64-bit floating point number to truncate.</param>
+        /// <returns>A 32-bit integer that is the truncated version of <paramref name="value"/>.</returns>
+        public static uint TruncateToUInt32(double value)
+        {
+            if (double.IsInfinity(value) || (value < 0 && (uint)value != 0) || value > uint.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (double.IsNaN(value))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                return checked((uint)value);
+            }
+        }
     }
 }

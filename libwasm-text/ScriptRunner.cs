@@ -174,6 +174,77 @@ namespace Wasm.Text
                     }
                 }
             }
+            else if (expression.IsCallTo("assert_trap"))
+            {
+                var expected = Assembler.AssembleString(expression.Tail[1], Log);
+                bool caught = false;
+                Exception exception = null;
+                try
+                {
+                    if (expression.Tail[0].IsCallTo("module"))
+                    {
+                        Run(expression.Tail[0]);
+                    }
+                    else
+                    {
+                        RunAction(expression.Tail[0], false);
+                    }
+                }
+                catch (WasmException ex)
+                {
+                    caught = true;
+                    exception = ex;
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    caught = expected == "undefined element";
+                    exception = ex;
+                }
+                catch (OverflowException ex)
+                {
+                    caught = expected == "integer overflow";
+                    exception = ex;
+                }
+                catch (DivideByZeroException ex)
+                {
+                    caught = expected == "integer divide by zero";
+                    exception = ex;
+                }
+                catch (PixieException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    caught = false;
+                    exception = ex;
+                }
+
+                if (!caught)
+                {
+                    if (exception == null)
+                    {
+                        Log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "assertion failed",
+                                "action should have trapped, but didn't.",
+                                Assembler.Highlight(expression)));
+                        throw new Exception("Assertion failed");
+                    }
+                    else
+                    {
+                        Log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "assertion failed",
+                                "action trapped as expected, but with an unexpected exception. ",
+                                exception.ToString(),
+                                Assembler.Highlight(expression)));
+                        throw exception;
+                    }
+                }
+            }
             else if (expression.IsCallTo("assert_return_canonical_nan"))
             {
                 var results = RunAction(expression.Tail[0]);
@@ -345,7 +416,7 @@ namespace Wasm.Text
             return EvaluateConstExpr(expression, ValueHelpers.ToWasmValueType(resultType));
         }
 
-        private IReadOnlyList<object> RunAction(SExpression expression)
+        private IReadOnlyList<object> RunAction(SExpression expression, bool reportExceptions = true)
         {
             if (expression.IsCallTo("invoke"))
             {
@@ -358,7 +429,7 @@ namespace Wasm.Text
                 {
                     foreach (var inst in Enumerable.Reverse(moduleInstances))
                     {
-                        if (TryInvokeNamedFunction(inst, name, args, expression, out IReadOnlyList<object> results))
+                        if (TryInvokeNamedFunction(inst, name, args, expression, out IReadOnlyList<object> results, reportExceptions))
                         {
                             return results;
                         }
@@ -379,7 +450,7 @@ namespace Wasm.Text
                 {
                     if (moduleInstancesByName.TryGetValue(moduleId, out ModuleInstance inst))
                     {
-                        if (TryInvokeNamedFunction(inst, name, args, expression, out IReadOnlyList<object> results))
+                        if (TryInvokeNamedFunction(inst, name, args, expression, out IReadOnlyList<object> results, reportExceptions))
                         {
                             return results;
                         }
@@ -499,7 +570,8 @@ namespace Wasm.Text
             string name,
             IEnumerable<SExpression> argumentExpressions,
             SExpression expression,
-            out IReadOnlyList<object> results)
+            out IReadOnlyList<object> results,
+            bool reportExceptions = true)
         {
             if (instance.ExportedFunctions.TryGetValue(name, out FunctionDefinition def))
             {
@@ -513,13 +585,16 @@ namespace Wasm.Text
                 }
                 catch (Exception ex)
                 {
-                    Log.Log(
-                        new LogEntry(
-                            Severity.Error,
-                            "unhandled exception",
-                            $"function invocation threw {ex.GetType().Name}",
-                            new Paragraph(ex.ToString()),
-                            Assembler.Highlight(expression)));
+                    if (reportExceptions)
+                    {
+                        Log.Log(
+                            new LogEntry(
+                                Severity.Error,
+                                "unhandled exception",
+                                $"function invocation threw {ex.GetType().Name}",
+                                new Paragraph(ex.ToString()),
+                                Assembler.Highlight(expression)));
+                    }
                     throw;
                 }
             }

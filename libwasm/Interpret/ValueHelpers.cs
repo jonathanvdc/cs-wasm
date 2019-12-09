@@ -417,5 +417,93 @@ namespace Wasm.Interpret
                 return checked((uint)value);
             }
         }
+
+        /// <summary>
+        /// Takes a 32-bit floating point number and truncates it to a
+        /// 64-bit signed integer.
+        /// </summary>
+        /// <param name="value">A 32-bit floating point number to truncate.</param>
+        /// <returns>A 64-bit integer that is the truncated version of <paramref name="value"/>.</returns>
+        public static long TruncateToInt64(float value)
+        {
+            if (float.IsInfinity(value) || value < long.MinValue || value > long.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (float.IsNaN(value))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                return checked((long)value);
+            }
+        }
+
+        /// <summary>
+        /// Takes a 32-bit floating point number and truncates it to a
+        /// 64-bit unsigned integer.
+        /// </summary>
+        /// <param name="value">A 32-bit floating point number to truncate.</param>
+        /// <returns>A 64-bit integer that is the truncated version of <paramref name="value"/>.</returns>
+        public static ulong TruncateToUInt64(float value)
+        {
+            if (float.IsInfinity(value))
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (float.IsNaN(value))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                return checked((ulong)value);
+            }
+        }
+
+        /// <summary>
+        /// Takes a 64-bit floating point number and truncates it to a
+        /// 64-bit signed integer.
+        /// </summary>
+        /// <param name="value">A 64-bit floating point number to truncate.</param>
+        /// <returns>A 64-bit integer that is the truncated version of <paramref name="value"/>.</returns>
+        public static long TruncateToInt64(double value)
+        {
+            if (double.IsInfinity(value) || value < long.MinValue || value > long.MaxValue)
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (double.IsNaN(value))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                return checked((long)value);
+            }
+        }
+
+        /// <summary>
+        /// Takes a 64-bit floating point number and truncates it to a
+        /// 64-bit unsigned integer.
+        /// </summary>
+        /// <param name="value">A 64-bit floating point number to truncate.</param>
+        /// <returns>A 64-bit integer that is the truncated version of <paramref name="value"/>.</returns>
+        public static ulong TruncateToUInt64(double value)
+        {
+            if (double.IsInfinity(value))
+            {
+                throw new WasmException("integer overflow");
+            }
+            else if (double.IsNaN(value))
+            {
+                throw new WasmException("invalid conversion to integer");
+            }
+            else
+            {
+                return checked((ulong)value);
+            }
+        }
     }
 }

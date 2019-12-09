@@ -1512,7 +1512,7 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int64TruncSFloat32(Instruction value, InterpreterContext context)
         {
-            context.Push<long>((long)context.Pop<float>());
+            context.Push<long>(ValueHelpers.TruncateToInt64(context.Pop<float>()));
         }
 
         /// <summary>
@@ -1522,7 +1522,7 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int64TruncUFloat32(Instruction value, InterpreterContext context)
         {
-            context.Push<long>((long)(ulong)context.Pop<float>());
+            context.Push<long>((long)ValueHelpers.TruncateToUInt64(context.Pop<float>()));
         }
 
         /// <summary>
@@ -1532,7 +1532,7 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int64TruncSFloat64(Instruction value, InterpreterContext context)
         {
-            context.Push<long>((long)context.Pop<double>());
+            context.Push<long>(ValueHelpers.TruncateToInt64(context.Pop<double>()));
         }
 
         /// <summary>
@@ -1542,7 +1542,7 @@ namespace Wasm.Interpret
         /// <param name="context">The interpreter's context.</param>
         public static void Int64TruncUFloat64(Instruction value, InterpreterContext context)
         {
-            context.Push<long>((long)(ulong)context.Pop<double>());
+            context.Push<long>((long)ValueHelpers.TruncateToUInt64(context.Pop<double>()));
         }
 
         /// <summary>

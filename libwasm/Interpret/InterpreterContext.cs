@@ -290,13 +290,21 @@ namespace Wasm.Interpret
         /// Tells if memory access alignments should be taken to be normative instead
         /// of as hints.
         /// </param>
-        public static ExecutionPolicy Create(uint maxCallStackDepth = 512, uint maxMemorySize = 0, bool enforceAlignment = false)
+        /// <param name="translateExceptions">
+        /// Tells if CLR exceptions should be translated to <see cref="TrapException"/> values.
+        /// </param>
+        public static ExecutionPolicy Create(
+            uint maxCallStackDepth = 512,
+            uint maxMemorySize = 0,
+            bool enforceAlignment = false,
+            bool translateExceptions = true)
         {
             return new ExecutionPolicy()
             {
                 MaxCallStackDepth = maxCallStackDepth,
                 EnforceAlignment = enforceAlignment,
-                MaxMemorySize = maxMemorySize
+                MaxMemorySize = maxMemorySize,
+                TranslateExceptions = translateExceptions
             };
         }
 
@@ -325,5 +333,14 @@ namespace Wasm.Interpret
         /// </summary>
         /// <value>The maximum memory size.</value>
         public uint MaxMemorySize { get; private set; }
+
+        /// <summary>
+        /// Tells if CLR exceptions should be translated to <see cref="TrapException"/> values.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if WebAssembly execution should throw only <see cref="TrapException"/> values;
+        /// <c>false</c> if it may also throw other types of exceptions.
+        /// </value>
+        public bool TranslateExceptions { get; private set; }
     }
 }

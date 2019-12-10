@@ -77,9 +77,19 @@ namespace Wasm.Interpret
             public const string IndirectCallTypeMismatch = "indirect call type mismatch";
 
             /// <summary>
-            /// The error message for when an an integer is divided by zero.
+            /// The error message for when an integer is divided by zero.
             /// </summary>
             public const string IntegerDivideByZero = "integer divide by zero";
+
+            /// <summary>
+            /// The error message for when an undefined element of a table is accessed.
+            /// </summary>
+            public const string UndefinedElement = "undefined element";
+
+            /// <summary>
+            /// The error message for when an uninitialized element of a table is accessed.
+            /// </summary>
+            public const string UninitializedElement = "uninitialized element";
         }
     }
 }

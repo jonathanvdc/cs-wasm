@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Wasm.Interpret
 {
@@ -20,7 +19,7 @@ namespace Wasm.Interpret
             var funcDef = new ThrowFunctionDefinition(
                 new WasmValueType[0],
                 new WasmValueType[0],
-                new TrapException("Indirect call target not initialized yet.", "uninitialized element"));
+                new TrapException("Indirect call target not initialized yet.", TrapException.SpecMessages.UninitializedElement));
             for (int i = 0; i < limits.Initial; i++)
             {
                 contents.Add(funcDef);
@@ -40,8 +39,26 @@ namespace Wasm.Interpret
         /// </summary>
         public FunctionDefinition this[uint index]
         {
-            get { return contents[(int)index]; }
-            set { contents[(int)index] = value; }
+            get
+            {
+                CheckBounds(index);
+                return contents[(int)index];
+            }
+            set
+            {
+                CheckBounds(index);
+                contents[(int)index] = value;
+            }
+        }
+
+        private void CheckBounds(uint index)
+        {
+            if (index >= contents.Count)
+            {
+                throw new TrapException(
+                    $"Cannot access element with index {index} in a function table of size {contents.Count}.",
+                    TrapException.SpecMessages.UndefinedElement);
+            }
         }
 
         /// <summary>

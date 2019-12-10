@@ -23,6 +23,7 @@ namespace Wasm.Scripts
         public void RunSpecScripts()
         {
             var failed = new SortedSet<string>();
+            var total = ScriptRunner.TestStatistics.Empty;
             foreach (var name in Directory.EnumerateFiles(Path.Combine("spec", "test", "core")).OrderBy(x => x))
             {
                 if (name.EndsWith(".wast") && !blacklist.Any(x => name.EndsWith(x)))
@@ -30,7 +31,9 @@ namespace Wasm.Scripts
                     Console.WriteLine($" - {name}");
                     try
                     {
-                        RunSpecScript(name);
+                        var tally = RunSpecScript(name);
+                        total += tally;
+                        Console.WriteLine($"    -> {tally}");
                     }
                     catch
                     {
@@ -43,14 +46,15 @@ namespace Wasm.Scripts
                 Console.WriteLine("Failed: " + string.Join(", ", failed.Select(x => $"\"{x}\"")));
                 Assert.Fail();
             }
+            Console.WriteLine($"Total: {total}");
         }
 
-        private void RunSpecScript(string scriptPath)
+        private ScriptRunner.TestStatistics RunSpecScript(string scriptPath)
         {
             var log = new TestLog(new[] { Severity.Error }, NullLog.Instance);
             var runner = new ScriptRunner(log);
             var scriptText = File.ReadAllText(scriptPath);
-            runner.Run(scriptText, scriptPath);
+            return runner.Run(scriptText, scriptPath);
         }
     }
 }

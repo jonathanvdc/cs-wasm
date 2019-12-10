@@ -126,6 +126,13 @@ namespace Wasm.Text
             /// A set of test statistics that represent a single unknown command.
             /// </summary>
             public static readonly TestStatistics SingleUnknown = new TestStatistics(0, 0, 1);
+
+            /// <inheritdoc/>
+            public override string ToString()
+            {
+                return $"total: {TotalCommandCount}, successes: {SuccessfulCommandCount}, " +
+                    $"failures: {FailedCommandCount}, unknown: {UnknownCommandCount}";
+            }
         }
 
         /// <summary>
@@ -247,7 +254,6 @@ namespace Wasm.Text
                                     expected[i].ToString(),
                                     ".",
                                     Assembler.Highlight(expression)));
-                            failures = true;
                         }
                         else
                         {
@@ -435,7 +441,7 @@ namespace Wasm.Text
                             expression.Head.Span.Text,
                             " was not recognized as a known script command."),
                         Assembler.Highlight(expression)));
-                return TestStatistics.SingleFailure;
+                return TestStatistics.SingleUnknown;
             }
         }
 

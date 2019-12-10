@@ -1,6 +1,6 @@
 using System;
-using System.Linq;
 using Wasm.Instructions;
+using Wasm.Optimize;
 
 namespace Wasm.Interpret
 {
@@ -271,6 +271,17 @@ namespace Wasm.Interpret
         {
             var funcDefIndex = context.Pop<int>();
             var funcDef = context.Module.Tables[0][(uint)funcDefIndex];
+
+            var funcType = new FunctionType(funcDef.ParameterTypes, funcDef.ReturnTypes);
+            var instruction = Operators.CallIndirect.CastInstruction(value);
+            var expectedFuncType = context.Module.Types[(int)instruction.TypeIndex];
+            if (!ConstFunctionTypeComparer.Instance.Equals(funcType, expectedFuncType))
+            {
+                throw new TrapException(
+                    $"Indirect function call expected to refer to a function with signature '{funcType}' but " +
+                    $"instead found a function with signature '{expectedFuncType}'",
+                    TrapException.SpecMessages.IndirectCallTypeMismatch);
+            }
 
             var args = context.Pop<object>(funcDef.ParameterTypes.Count);
             CheckForStackOverflow(context);

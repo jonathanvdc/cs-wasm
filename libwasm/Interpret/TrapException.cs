@@ -69,6 +69,12 @@ namespace Wasm.Interpret
             /// The error message for misaligned memory accesses.
             /// </summary>
             public const string MisalignedMemoryAccess = "misaligned memory access";
+
+            /// <summary>
+            /// The error message for when an indirect call's expected type does not match
+            /// the actual type of the function being called.
+            /// </summary>
+            public const string IndirectCallTypeMismatch = "indirect call type mismatch";
         }
     }
 }

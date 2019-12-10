@@ -12,6 +12,7 @@ namespace Wasm.Interpret
         {
             this.Interpreter = interpreter;
             this.Policy = policy;
+            this.definedTypes = new List<FunctionType>();
             this.definedMemories = new List<LinearMemory>();
             this.definedGlobals = new List<Variable>();
             this.definedFuncs = new List<FunctionDefinition>();
@@ -27,6 +28,7 @@ namespace Wasm.Interpret
         /// </summary>
         public InstructionInterpreter Interpreter { get; private set; }
 
+        private List<FunctionType> definedTypes;
         private List<LinearMemory> definedMemories;
         private List<Variable> definedGlobals;
         private List<FunctionDefinition> definedFuncs;
@@ -41,6 +43,11 @@ namespace Wasm.Interpret
         /// </summary>
         /// <value>An execution policy.</value>
         public ExecutionPolicy Policy { get; private set; }
+
+        /// <summary>
+        /// Gets a read-only list of the function types defined in this module.
+        /// </summary>
+        public IReadOnlyList<FunctionType> Types => definedTypes;
 
         /// <summary>
         /// Gets a read-only list of the memories in this module.
@@ -170,6 +177,7 @@ namespace Wasm.Interpret
 
             // Extract the function types.
             var allFuncTypes = GetFunctionTypes(file);
+            instance.definedTypes.AddRange(allFuncTypes);
 
             // Resolve all imports.
             instance.ResolveImports(file, importer, allFuncTypes);

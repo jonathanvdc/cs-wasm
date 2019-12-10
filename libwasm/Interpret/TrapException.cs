@@ -75,6 +75,11 @@ namespace Wasm.Interpret
             /// the actual type of the function being called.
             /// </summary>
             public const string IndirectCallTypeMismatch = "indirect call type mismatch";
+
+            /// <summary>
+            /// The error message for when an an integer is divided by zero.
+            /// </summary>
+            public const string IntegerDivideByZero = "integer divide by zero";
         }
     }
 }

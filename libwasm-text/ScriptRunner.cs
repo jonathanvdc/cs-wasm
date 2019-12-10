@@ -210,11 +210,6 @@ namespace Wasm.Text
                     caught = expected == "integer overflow";
                     exception = ex;
                 }
-                catch (DivideByZeroException ex)
-                {
-                    caught = expected == "integer divide by zero";
-                    exception = ex;
-                }
                 catch (PixieException)
                 {
                     throw;

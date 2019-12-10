@@ -77,20 +77,7 @@ namespace Wasm.Interpret
             }
 
             // Interpret the function body.
-            var context = new InterpreterContext(Module, ReturnTypes, locals, Module.Policy, callStackDepth + 1);
-            var interpreter = Module.Interpreter;
-            foreach (var instruction in body.BodyInstructions)
-            {
-                interpreter.Interpret(instruction, context);
-                if (context.BreakRequested)
-                {
-                    // Functions can use a break to return. This acts exactly like
-                    // a regular return.
-                    OperatorImpls.Return(context);
-                    break;
-                }
-            }
-            context.Return();
+            var context = InterpretBody(callStackDepth, locals);
 
             // Check return types.
             var retVals = context.ReturnValues;
@@ -114,6 +101,44 @@ namespace Wasm.Interpret
             }
 
             return retVals;
+        }
+
+        private InterpreterContext InterpretBody(uint callStackDepth, List<Variable> locals)
+        {
+            if (Module.Policy.TranslateExceptions)
+            {
+                try
+                {
+                    return InterpretBodyImpl(callStackDepth, locals);
+                }
+                catch (DivideByZeroException ex)
+                {
+                    throw new TrapException(ex.Message, TrapException.SpecMessages.IntegerDivideByZero);
+                }
+            }
+            else
+            {
+                return InterpretBodyImpl(callStackDepth, locals);
+            }
+        }
+
+        private InterpreterContext InterpretBodyImpl(uint callStackDepth, List<Variable> locals)
+        {
+            var context = new InterpreterContext(Module, ReturnTypes, locals, Module.Policy, callStackDepth + 1);
+            var interpreter = Module.Interpreter;
+            foreach (var instruction in body.BodyInstructions)
+            {
+                interpreter.Interpret(instruction, context);
+                if (context.BreakRequested)
+                {
+                    // Functions can use a break to return. This acts exactly like
+                    // a regular return.
+                    OperatorImpls.Return(context);
+                    break;
+                }
+            }
+            context.Return();
+            return context;
         }
     }
 }

@@ -195,11 +195,6 @@ namespace Wasm.Text
                     caught = ex.SpecMessage == expected;
                     exception = ex;
                 }
-                catch (WasmException ex)
-                {
-                    caught = true;
-                    exception = ex;
-                }
                 catch (ArgumentOutOfRangeException ex)
                 {
                     caught = expected == "undefined element";

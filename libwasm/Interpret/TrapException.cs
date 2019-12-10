@@ -53,7 +53,7 @@ namespace Wasm.Interpret
             /// <summary>
             /// The error message for when the max execution stack depth is exceeded.
             /// </summary>
-            public const string StackOverflow = "stack overflow";
+            public const string CallStackExhausted = "call stack exhausted";
 
             /// <summary>
             /// The error message for when integer overflow occurs.

@@ -174,7 +174,7 @@ namespace Wasm.Text
                     }
                 }
             }
-            else if (expression.IsCallTo("assert_trap"))
+            else if (expression.IsCallTo("assert_trap") || expression.IsCallTo("assert_exhaustion"))
             {
                 var expected = Assembler.AssembleString(expression.Tail[1], Log);
                 bool caught = false;

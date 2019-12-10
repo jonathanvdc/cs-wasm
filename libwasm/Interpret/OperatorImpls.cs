@@ -258,7 +258,7 @@ namespace Wasm.Interpret
             {
                 throw new TrapException(
                     "A stack overflow occurred: the max call stack depth was exceeded.",
-                    TrapException.SpecMessages.StackOverflow);
+                    TrapException.SpecMessages.CallStackExhausted);
             }
         }
 

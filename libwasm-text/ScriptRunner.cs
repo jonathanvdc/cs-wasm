@@ -190,6 +190,11 @@ namespace Wasm.Text
                         RunAction(expression.Tail[0], false);
                     }
                 }
+                catch (TrapException ex)
+                {
+                    caught = ex.SpecMessage == expected;
+                    exception = ex;
+                }
                 catch (WasmException ex)
                 {
                     caught = true;

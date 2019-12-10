@@ -20,7 +20,7 @@ namespace Wasm.Interpret
             var funcDef = new ThrowFunctionDefinition(
                 new WasmValueType[0],
                 new WasmValueType[0],
-                new WasmException("Indirect call target not initialized yet."));
+                new TrapException("Indirect call target not initialized yet.", "uninitialized element"));
             for (int i = 0; i < limits.Initial; i++)
             {
                 contents.Add(funcDef);

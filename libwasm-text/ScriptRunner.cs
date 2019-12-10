@@ -205,11 +205,6 @@ namespace Wasm.Text
                     caught = expected == "undefined element";
                     exception = ex;
                 }
-                catch (OverflowException ex)
-                {
-                    caught = expected == "integer overflow";
-                    exception = ex;
-                }
                 catch (PixieException)
                 {
                     throw;

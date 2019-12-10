@@ -115,6 +115,10 @@ namespace Wasm.Interpret
                 {
                     throw new TrapException(ex.Message, TrapException.SpecMessages.IntegerDivideByZero);
                 }
+                catch (OverflowException ex)
+                {
+                    throw new TrapException(ex.Message, TrapException.SpecMessages.IntegerOverflow);
+                }
             }
             else
             {

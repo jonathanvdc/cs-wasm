@@ -294,7 +294,7 @@ namespace Wasm.Interpret
         /// Tells if CLR exceptions should be translated to <see cref="TrapException"/> values.
         /// </param>
         public static ExecutionPolicy Create(
-            uint maxCallStackDepth = 512,
+            uint maxCallStackDepth = 256,
             uint maxMemorySize = 0,
             bool enforceAlignment = false,
             bool translateExceptions = true)

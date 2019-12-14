@@ -157,12 +157,16 @@ namespace Wasm.Interpret
         /// The execution policy to adhere to for this module.
         /// A <c>null</c> execution policy indicates that the default policy should be used.
         /// </param>
+        /// <param name="compiler">
+        /// Creates a new instance of a module compiler to use.
+        /// </param>
         /// <returns>A module instance.</returns>
         public static ModuleInstance Instantiate(
             WasmFile file,
             IImporter importer,
             InstructionInterpreter interpreter = null,
-            ExecutionPolicy policy = null)
+            ExecutionPolicy policy = null,
+            Func<ModuleCompiler> compiler = null)
         {
             if (interpreter == null)
             {
@@ -171,6 +175,10 @@ namespace Wasm.Interpret
             if (policy == null)
             {
                 policy = ExecutionPolicy.Create();
+            }
+            if (compiler == null)
+            {
+                compiler = () => new InterpreterCompiler();
             }
 
             var instance = new ModuleInstance(interpreter, policy);
@@ -189,7 +197,7 @@ namespace Wasm.Interpret
             instance.InstantiateMemories(file, policy.MaxMemorySize);
 
             // Instantiate function definitions.
-            instance.InstantiateFunctionDefs(file, allFuncTypes);
+            instance.InstantiateFunctionDefs(file, compiler(), allFuncTypes);
 
             // Instantiate function tables.
             instance.InstantiateTables(file);
@@ -243,7 +251,7 @@ namespace Wasm.Interpret
                         {
                             ThrowCannotResolveImport(import, "function");
                         }
-                        definedFuncs.Add(funcDef);
+                        DefineFunction(funcDef);
                     }
                     else if (import is ImportedTable)
                     {
@@ -351,8 +359,9 @@ namespace Wasm.Interpret
         /// Instantiates all function definitions from the given WebAssembly file.
         /// </summary>
         /// <param name="file">A WebAssembly file.</param>
+        /// <param name="compiler">A compiler to use for instantiating function definitions.</param>
         /// <param name="functionTypes">The list of all function types declared by the WebAssembly file.</param>
-        private void InstantiateFunctionDefs(WasmFile file, List<FunctionType> functionTypes)
+        private void InstantiateFunctionDefs(WasmFile file, ModuleCompiler compiler, List<FunctionType> functionTypes)
         {
             var funcSignatures = new List<FunctionType>();
             var funcBodies = new List<FunctionBody>();
@@ -379,20 +388,20 @@ namespace Wasm.Interpret
                     funcSignatures.Count + " functions and defines " + funcBodies.Count + ".");
             }
 
+            compiler.Initialize(this, definedFuncs.Count, funcSignatures);
             for (int i = 0; i < funcSignatures.Count; i++)
             {
-                DefineFunction(funcSignatures[i], funcBodies[i]);
+                DefineFunction(compiler.Compile(i, funcBodies[i]));
             }
         }
 
         /// <summary>
-        /// Defines a function with the given signature and function body.
+        /// Defines a function.
         /// </summary>
-        /// <param name="signature">The function's signature.</param>
-        /// <param name="body">The function's body.</param>
-        private void DefineFunction(FunctionType signature, FunctionBody body)
+        /// <param name="definition">The function's definition.</param>
+        private void DefineFunction(FunctionDefinition definition)
         {
-            definedFuncs.Add(new WasmFunctionDefinition(signature, body, this));
+            definedFuncs.Add(definition);
         }
 
         /// <summary>

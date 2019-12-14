@@ -8,6 +8,28 @@ namespace Wasm.Interpret
     public static class ValueHelpers
     {
         /// <summary>
+        /// Takes a WebAssembly value type and maps it to its corresponding CLR type.
+        /// </summary>
+        /// <param name="type">The type to map to a CLR type.</param>
+        /// <returns>A CLR type.</returns>
+        public static Type ToClrType(WasmValueType type)
+        {
+            switch (type)
+            {
+                case WasmValueType.Float32:
+                    return typeof(float);
+                case WasmValueType.Float64:
+                    return typeof(double);
+                case WasmValueType.Int32:
+                    return typeof(int);
+                case WasmValueType.Int64:
+                    return typeof(long);
+                default:
+                    throw new WasmException($"Cannot convert unknown WebAssembly type '{type}' to a CLR type.");
+            }
+        }
+
+        /// <summary>
         /// Takes a type and maps it to its corresponding WebAssembly value type.
         /// </summary>
         /// <param name="type">The type to map to a WebAssembly value type.</param>

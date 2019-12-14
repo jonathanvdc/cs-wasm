@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -15,6 +16,8 @@ namespace Wasm.Interpret.Jit
         private IReadOnlyList<FunctionType> types;
         private AssemblyBuilder assembly;
         private IReadOnlyList<MethodBuilder> builders;
+        private TypeBuilder wasmType;
+        private IReadOnlyList<Func<IReadOnlyList<object>, IReadOnlyList<object>>> wrappers;
 
         /// <inheritdoc/>
         public override void Initialize(ModuleInstance module, int offset, IReadOnlyList<FunctionType> types)
@@ -27,14 +30,18 @@ namespace Wasm.Interpret.Jit
                 new AssemblyName("wasm"),
                 AssemblyBuilderAccess.RunAndCollect);
             var wasmModule = assembly.DefineDynamicModule("main");
-            var wasmType = wasmModule.DefineType("CompiledWasm", TypeAttributes.Public | TypeAttributes.Sealed);
+            this.wasmType = wasmModule.DefineType("CompiledWasm", TypeAttributes.Public | TypeAttributes.Sealed);
             var builderList = new List<MethodBuilder>();
+            var wrapperList = new List<Func<IReadOnlyList<object>, IReadOnlyList<object>>>();
             foreach (var signature in types)
             {
                 var methodDef = wasmType.DefineMethod(
                     $"func_{builderList.Count}",
                     MethodAttributes.Public | MethodAttributes.Static);
-                methodDef.SetParameters(signature.ParameterTypes.Select(ValueHelpers.ToClrType).ToArray());
+                methodDef.SetParameters(
+                    new[] { typeof(int) }
+                    .Concat(signature.ParameterTypes.Select(ValueHelpers.ToClrType))
+                    .ToArray());
                 if (signature.ReturnTypes.Count == 0)
                 {
                     methodDef.SetReturnType(typeof(void));
@@ -50,12 +57,55 @@ namespace Wasm.Interpret.Jit
                 builderList.Add(methodDef);
             }
             this.builders = builderList;
+            this.wrappers = wrapperList;
         }
 
         /// <inheritdoc/>
         public override FunctionDefinition Compile(int index, FunctionBody body)
         {
-            throw new System.NotImplementedException();
+            Compile(body, builders[index].GetILGenerator());
+            return new CompiledFunctionDefinition(types[index], builders[index]);
+        }
+
+        private void Compile(FunctionBody body, ILGenerator generator)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    internal sealed class CompiledFunctionDefinition : FunctionDefinition
+    {
+        internal CompiledFunctionDefinition(FunctionType signature, MethodBuilder builder)
+        {
+            this.signature = signature;
+            this.builder = builder;
+        }
+
+        private FunctionType signature;
+        internal MethodBuilder builder;
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<WasmValueType> ParameterTypes => signature.ParameterTypes;
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<WasmValueType> ReturnTypes => signature.ReturnTypes;
+
+        /// <inheritdoc/>
+        public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments, uint callStackDepth = 0)
+        {
+            var result = builder.Invoke(null, new object[] { callStackDepth }.Concat(arguments).ToArray());
+            if (ReturnTypes.Count == 0)
+            {
+                return Array.Empty<object>();
+            }
+            else if (ReturnTypes.Count == 1)
+            {
+                return new[] { result };
+            }
+            else
+            {
+                throw new WasmException("Cannot compile functions with more than one return value.");
+            }
         }
     }
 }

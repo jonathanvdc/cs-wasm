@@ -63,13 +63,30 @@ namespace Wasm.Interpret.Jit
         /// <inheritdoc/>
         public override FunctionDefinition Compile(int index, FunctionBody body)
         {
-            Compile(body, builders[index].GetILGenerator());
+            if (!TryCompile(body, builders[index].GetILGenerator()))
+            {
+                builders[index].CreateMethodBody(Array.Empty<byte>(), 0);
+                MakeInterpreterThunk(index, builders[index].GetILGenerator());
+            }
             return new CompiledFunctionDefinition(types[index], builders[index]);
         }
 
-        private void Compile(FunctionBody body, ILGenerator generator)
+        private void MakeInterpreterThunk(int index, ILGenerator generator)
         {
+
+            // To bridge the divide between JIT-compiled code and the interpreter,
+            // we generate code that packs the parameter list of a JIT-compiled
+            // function as an array of objects and feed that to the interpreter.
+            // We then unpack the list of objects produced by the interpreter and
+            // return.
+
+            // TODO: generate code that actually does this.
             throw new NotImplementedException();
+        }
+
+        private bool TryCompile(FunctionBody body, ILGenerator generator)
+        {
+            return false;
         }
     }
 

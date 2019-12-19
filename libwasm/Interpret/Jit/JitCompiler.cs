@@ -63,25 +63,50 @@ namespace Wasm.Interpret.Jit
         /// <inheritdoc/>
         public override FunctionDefinition Compile(int index, FunctionBody body)
         {
-            if (!TryCompile(body, builders[index].GetILGenerator()))
+            var signature = types[index];
+            var builder = builders[index];
+            var ilGen = builder.GetILGenerator();
+            if (!TryCompile(body, ilGen))
             {
-                builders[index].CreateMethodBody(Array.Empty<byte>(), 0);
-                MakeInterpreterThunk(index, builders[index].GetILGenerator());
+                MakeInterpreterThunk(index, builder, ilGen);
             }
-            return new CompiledFunctionDefinition(types[index], builders[index]);
+            return new CompiledFunctionDefinition(signature, builder);
         }
 
-        private void MakeInterpreterThunk(int index, ILGenerator generator)
+        private void MakeInterpreterThunk(int index, MethodBuilder method, ILGenerator generator)
         {
-
             // To bridge the divide between JIT-compiled code and the interpreter,
             // we generate code that packs the parameter list of a JIT-compiled
             // function as an array of objects and feed that to the interpreter.
             // We then unpack the list of objects produced by the interpreter and
             // return.
 
+            // Step one: create the arguments array.
+            EmitNewArray<object>(
+                generator,
+                method.GetParameters()
+                    .Skip(1)
+                    .Select<ParameterInfo, Action<ILGenerator>>(
+                        (p, i) => gen => gen.Emit(OpCodes.Ldarg, i + 1))
+                    .ToArray());
+
+            // Step two: call the interpreter.
+
             // TODO: generate code that actually does this.
             throw new NotImplementedException();
+        }
+
+        private void EmitNewArray<T>(ILGenerator generator, IReadOnlyList<Action<ILGenerator>> valueGenerators)
+        {
+            generator.Emit(OpCodes.Ldc_I4, valueGenerators.Count);
+            generator.Emit(OpCodes.Newarr, typeof(T));
+            for (int i = 0; i < valueGenerators.Count; i++)
+            {
+                generator.Emit(OpCodes.Dup);
+                generator.Emit(OpCodes.Ldc_I4, i);
+                valueGenerators[i](generator);
+                generator.Emit(OpCodes.Stelem);
+            }
         }
 
         private bool TryCompile(FunctionBody body, ILGenerator generator)

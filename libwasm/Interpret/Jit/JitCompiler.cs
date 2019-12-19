@@ -19,6 +19,8 @@ namespace Wasm.Interpret.Jit
         private TypeBuilder wasmType;
         private IReadOnlyList<Func<IReadOnlyList<object>, IReadOnlyList<object>>> wrappers;
 
+        private int helperFieldIndex;
+
         /// <inheritdoc/>
         public override void Initialize(ModuleInstance module, int offset, IReadOnlyList<FunctionType> types)
         {
@@ -66,14 +68,17 @@ namespace Wasm.Interpret.Jit
             var signature = types[index];
             var builder = builders[index];
             var ilGen = builder.GetILGenerator();
-            if (!TryCompile(body, ilGen))
+            if (TryCompile(body, ilGen))
             {
-                MakeInterpreterThunk(index, builder, ilGen);
+                return new CompiledFunctionDefinition(signature, builder);
             }
-            return new CompiledFunctionDefinition(signature, builder);
+            else
+            {
+                return MakeInterpreterThunk(index, body, ilGen);
+            }
         }
 
-        private void MakeInterpreterThunk(int index, MethodBuilder method, ILGenerator generator)
+        private WasmFunctionDefinition MakeInterpreterThunk(int index, FunctionBody body, ILGenerator generator)
         {
             // To bridge the divide between JIT-compiled code and the interpreter,
             // we generate code that packs the parameter list of a JIT-compiled
@@ -81,19 +86,49 @@ namespace Wasm.Interpret.Jit
             // We then unpack the list of objects produced by the interpreter and
             // return.
 
+            var signature = types[index];
+
             // Step one: create the arguments array.
             EmitNewArray<object>(
                 generator,
-                method.GetParameters()
-                    .Skip(1)
-                    .Select<ParameterInfo, Action<ILGenerator>>(
+                signature.ParameterTypes
+                    .Select<WasmValueType, Action<ILGenerator>>(
                         (p, i) => gen => gen.Emit(OpCodes.Ldarg, i + 1))
                     .ToArray());
 
-            // Step two: call the interpreter.
+            // Load the call stack depth.
+            generator.Emit(OpCodes.Ldarg_0);
 
-            // TODO: generate code that actually does this.
+            // Step two: call the interpreter.
+            var func = new WasmFunctionDefinition(signature, body, module);
+            var field = DefineConstHelperField(func);
+            generator.Emit(OpCodes.Ldsfld, field);
+            generator.Emit(
+                OpCodes.Call,
+                typeof(WasmFunctionDefinition)
+                    .GetMethod("Invoke", new[] { typeof(IReadOnlyList<object>), typeof(uint) }));
+
+            // Step three: unpack the interpreter's return values.
+            EmitUnpackList(signature.ReturnTypes.Count, typeof(IReadOnlyList<object>));
+
+            return func;
+        }
+
+        private void EmitUnpackList(int count, Type type)
+        {
             throw new NotImplementedException();
+        }
+
+        private FieldBuilder DefineConstHelperField<T>(T value)
+        {
+            var field = DefineHelperField(typeof(T));
+            field.SetValue(null, value);
+            return field;
+        }
+
+        private FieldBuilder DefineHelperField(Type type)
+        {
+            return wasmType.DefineField($"helper_{helperFieldIndex++}", type, FieldAttributes.Public | FieldAttributes.Static);
         }
 
         private void EmitNewArray<T>(ILGenerator generator, IReadOnlyList<Action<ILGenerator>> valueGenerators)

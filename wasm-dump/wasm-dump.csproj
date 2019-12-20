@@ -3,7 +3,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>Wasm.Dump</RootNamespace>
     <AssemblyName>wasm-dump</AssemblyName>
-    <TargetFrameworks>net47;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net47;netcoreapp2.1</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\libwasm\libwasm.csproj" />

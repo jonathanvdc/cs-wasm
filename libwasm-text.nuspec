@@ -27,7 +27,7 @@
     <file src="README.md" target="readme.txt" />
     <file src="libwasm-text\bin\Release\net47\libwasm-text.dll" target="lib\net47\" />
     <file src="libwasm-text\bin\Release\net47\libwasm-text.xml" target="lib\net47\" />
-    <file src="libwasm-text\bin\Release\netstandard2.0\libwasm-text.dll" target="lib\netstandard2.0\" />
-    <file src="libwasm-text\bin\Release\netstandard2.0\libwasm-text.xml" target="lib\netstandard2.0\" />
+    <file src="libwasm-text\bin\Release\netstandard2.1\libwasm-text.dll" target="lib\netstandard2.1\" />
+    <file src="libwasm-text\bin\Release\netstandard2.1\libwasm-text.xml" target="lib\netstandard2.1\" />
   </files>
 </package>

@@ -17,10 +17,12 @@ namespace Wasm.Text
         /// Creates a new script runner.
         /// </summary>
         /// <param name="log">A log to send diagnostics to.</param>
-        public ScriptRunner(ILog log)
+        /// <param name="compiler">A compiler to use for compiling modules.</param>
+        public ScriptRunner(ILog log, Func<ModuleCompiler> compiler = null)
         {
             this.Log = log;
             this.Assembler = new Assembler(log);
+            this.Compiler = compiler;
             this.moduleInstances = new List<ModuleInstance>();
             this.moduleInstancesByName = new Dictionary<string, ModuleInstance>();
             this.importer = new NamespacedImporter();
@@ -38,6 +40,12 @@ namespace Wasm.Text
         /// </summary>
         /// <value>A WebAssembly text format assembler.</value>
         public Assembler Assembler { get; private set; }
+
+        /// <summary>
+        /// Gets the type of compiler to use.
+        /// </summary>
+        /// <value>A function that produces a module compiler.</value>
+        public Func<ModuleCompiler> Compiler { get; private set; }
 
         private NamespacedImporter importer;
 
@@ -180,7 +188,8 @@ namespace Wasm.Text
                 var instance = Wasm.Interpret.ModuleInstance.Instantiate(
                     module,
                     importer,
-                    policy: ExecutionPolicy.Create(maxMemorySize: 0x1000));
+                    policy: ExecutionPolicy.Create(maxMemorySize: 0x1000),
+                    compiler: Compiler);
 
                 moduleInstances.Add(instance);
                 if (moduleId != null)

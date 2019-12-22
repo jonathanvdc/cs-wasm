@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using Loyc.MiniTest;
 using Pixie;
+using Wasm.Interpret;
+using Wasm.Interpret.Jit;
 using Wasm.Text;
 
 namespace Wasm.Scripts
@@ -20,7 +22,18 @@ namespace Wasm.Scripts
         };
 
         [Test]
-        public void RunSpecScripts()
+        public void RunSpecScriptsWithInterpreter()
+        {
+            RunSpecScripts("interpreter", null);
+        }
+
+        [Test]
+        public void RunSpecScriptsWithJit()
+        {
+            RunSpecScripts("jit", () => new JitCompiler());
+        }
+
+        public void RunSpecScripts(string compilerName, Func<ModuleCompiler> compiler)
         {
             var failed = new SortedSet<string>();
             var total = ScriptRunner.TestStatistics.Empty;
@@ -28,10 +41,10 @@ namespace Wasm.Scripts
             {
                 if (name.EndsWith(".wast") && !blacklist.Any(x => name.EndsWith(x)))
                 {
-                    Console.WriteLine($" - {name}");
+                    Console.WriteLine($" - {name} ({compilerName})");
                     try
                     {
-                        var tally = RunSpecScript(name);
+                        var tally = RunSpecScript(name, compiler);
                         total += tally;
                         Console.WriteLine($"    -> {tally}");
                     }
@@ -49,10 +62,10 @@ namespace Wasm.Scripts
             Console.WriteLine($"Total: {total}");
         }
 
-        private ScriptRunner.TestStatistics RunSpecScript(string scriptPath)
+        private ScriptRunner.TestStatistics RunSpecScript(string scriptPath, Func<ModuleCompiler> compiler)
         {
             var log = new TestLog(new[] { Severity.Error }, NullLog.Instance);
-            var runner = new ScriptRunner(log);
+            var runner = new ScriptRunner(log, compiler);
             var scriptText = File.ReadAllText(scriptPath);
             return runner.Run(scriptText, scriptPath);
         }

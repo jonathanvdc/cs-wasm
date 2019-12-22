@@ -3,14 +3,42 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using Wasm.Instructions;
 
 namespace Wasm.Interpret.Jit
 {
+    using InstructionImpl = Action<CompilerContext, ILGenerator>;
+
     /// <summary>
     /// A module compiler that compiles WebAssembly instructions to CIL.
     /// </summary>
     public class JitCompiler : ModuleCompiler
     {
+        /// <summary>
+        /// Creates a JIT compiler from the default operator implementations.
+        /// </summary>
+        public JitCompiler()
+            : this(DefaultOperatorImplementations)
+        { }
+
+        /// <summary>
+        /// Creates a JIT compiler from an operator implementation map.
+        /// </summary>
+        /// <param name="operatorImplementations">A mapping of operators to functions that compile instructions.</param>
+        public JitCompiler(
+            IReadOnlyDictionary<Operator, Func<Instruction, InstructionImpl>> operatorImplementations)
+        {
+            this.OperatorImplementations = operatorImplementations; 
+        }
+
+        /// <summary>
+        /// Gets a mapping of operators to functions that compile instances of those operators
+        /// to implementations. <c>null</c> implementations indicate that an operator instance
+        /// cannot be compiled.
+        /// </summary>
+        /// <value>A mapping of operators to functions that compile instructions.</value>
+        public IReadOnlyDictionary<Operator, Func<Instruction, InstructionImpl>> OperatorImplementations { get; private set; }
+
         private ModuleInstance module;
         private int offset;
         private IReadOnlyList<FunctionType> types;
@@ -174,7 +202,52 @@ namespace Wasm.Interpret.Jit
 
         private bool TryCompile(FunctionBody body, ILGenerator generator)
         {
-            return false;
+            var impl = GetImplementationOrNull(body.BodyInstructions);
+            if (impl == null)
+            {
+                return false;
+            }
+            else
+            {
+                var context = new CompilerContext(this);
+                impl(context, generator);
+                generator.Emit(OpCodes.Ret);
+                return true;
+            }
+        }
+
+        private InstructionImpl GetImplementationOrNull(Instruction instruction)
+        {
+            Func<Instruction, InstructionImpl> impl;
+            if (OperatorImplementations.TryGetValue(instruction.Op, out impl))
+            {
+                return impl(instruction);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        private InstructionImpl GetImplementationOrNull(IReadOnlyList<Instruction> instructions)
+        {
+            var impls = new List<InstructionImpl>();
+            foreach (var instruction in instructions)
+            {
+                var instructionImpl = GetImplementationOrNull(instruction);
+                if (instructionImpl == null)
+                {
+                    return null;
+                }
+                impls.Add(instructionImpl);
+            }
+            return (context, gen) =>
+            {
+                foreach (var impl in impls)
+                {
+                    impl(context, gen);
+                }
+            };
         }
 
         /// <inheritdoc/>
@@ -197,6 +270,15 @@ namespace Wasm.Interpret.Jit
             }
             functionDefinitions = null;
         }
+
+        /// <summary>
+        /// The default mapping of operators to their implementations.
+        /// </summary>
+        public static readonly IReadOnlyDictionary<Operator, Func<Instruction, InstructionImpl>> DefaultOperatorImplementations =
+            new Dictionary<Operator, Func<Instruction, InstructionImpl>>()
+        {
+            { Operators.Int32Const, JitOperatorImpls.Int32Const }
+        };
     }
 
     internal sealed class CompiledFunctionDefinition : FunctionDefinition

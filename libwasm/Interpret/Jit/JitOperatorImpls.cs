@@ -23,5 +23,44 @@ namespace Wasm.Interpret.Jit
                 gen.Emit(OpCodes.Ldc_I4, immediate);
             };
         }
+
+        /// <summary>
+        /// Compiles an 'i64.const' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int64Const(Instruction instruction)
+        {
+            var immediate = Operators.Int64Const.CastInstruction(instruction).Immediate;
+            return (context, gen) =>
+            {
+                gen.Emit(OpCodes.Ldc_I8, immediate);
+            };
+        }
+
+        /// <summary>
+        /// Compiles an 'f32.const' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Float32Const(Instruction instruction)
+        {
+            var immediate = Operators.Float32Const.CastInstruction(instruction).Immediate;
+            return (context, gen) =>
+            {
+                gen.Emit(OpCodes.Ldc_R4, immediate);
+            };
+        }
+
+        /// <summary>
+        /// Compiles an 'f64.const' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Float64Const(Instruction instruction)
+        {
+            var immediate = Operators.Float64Const.CastInstruction(instruction).Immediate;
+            return (context, gen) =>
+            {
+                gen.Emit(OpCodes.Ldc_R8, immediate);
+            };
+        }
     }
 }

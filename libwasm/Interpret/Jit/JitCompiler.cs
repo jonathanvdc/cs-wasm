@@ -277,7 +277,10 @@ namespace Wasm.Interpret.Jit
         public static readonly IReadOnlyDictionary<Operator, Func<Instruction, InstructionImpl>> DefaultOperatorImplementations =
             new Dictionary<Operator, Func<Instruction, InstructionImpl>>()
         {
-            { Operators.Int32Const, JitOperatorImpls.Int32Const }
+            { Operators.Int32Const, JitOperatorImpls.Int32Const },
+            { Operators.Int64Const, JitOperatorImpls.Int64Const },
+            { Operators.Float32Const, JitOperatorImpls.Float32Const },
+            { Operators.Float64Const, JitOperatorImpls.Float64Const }
         };
     }
 

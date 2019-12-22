@@ -101,7 +101,7 @@ namespace Wasm.Interpret.Jit
             var signature = types[index];
             var builder = builders[index];
             var ilGen = builder.GetILGenerator();
-            if (TryCompile(body, ilGen))
+            if (TryCompile(signature, body, ilGen))
             {
                 var result = new CompiledFunctionDefinition(signature, builder);
                 functionDefinitions.Add(result);
@@ -200,7 +200,7 @@ namespace Wasm.Interpret.Jit
             }
         }
 
-        private bool TryCompile(FunctionBody body, ILGenerator generator)
+        private bool TryCompile(FunctionType signature, FunctionBody body, ILGenerator generator)
         {
             var impl = GetImplementationOrNull(body.BodyInstructions);
             if (impl == null)
@@ -209,7 +209,16 @@ namespace Wasm.Interpret.Jit
             }
             else
             {
-                var context = new CompilerContext(this);
+                var locals = new Dictionary<uint, LocalBuilder>();
+                uint localIndex = (uint)signature.ParameterTypes.Count;
+                foreach (var item in body.Locals)
+                {
+                    for (uint i = 0; i < item.LocalCount; i++)
+                    {
+                        locals[localIndex++] = generator.DeclareLocal(ValueHelpers.ToClrType(item.LocalType));
+                    }
+                }
+                var context = new CompilerContext(this, signature.ParameterTypes, locals);
                 impl(context, generator);
                 generator.Emit(OpCodes.Ret);
                 return true;
@@ -277,6 +286,7 @@ namespace Wasm.Interpret.Jit
         public static readonly IReadOnlyDictionary<Operator, Func<Instruction, InstructionImpl>> DefaultOperatorImplementations =
             new Dictionary<Operator, Func<Instruction, InstructionImpl>>()
         {
+            { Operators.GetLocal, JitOperatorImpls.GetLocal },
             { Operators.Int32Const, JitOperatorImpls.Int32Const },
             { Operators.Int64Const, JitOperatorImpls.Int64Const },
             { Operators.Float32Const, JitOperatorImpls.Float32Const },

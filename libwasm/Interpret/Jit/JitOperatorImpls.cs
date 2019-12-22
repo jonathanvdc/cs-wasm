@@ -97,5 +97,25 @@ namespace Wasm.Interpret.Jit
                 gen.Emit(OpCodes.Ldc_R8, immediate);
             };
         }
+
+        /// <summary>
+        /// Compiles a 'get_local' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl GetLocal(Instruction instruction)
+        {
+            var index = Operators.GetLocal.CastInstruction(instruction).Immediate;
+            return (context, gen) =>
+            {
+                if (index < context.ParameterTypes.Count)
+                {
+                    gen.Emit(OpCodes.Ldarg, (int)index + 1);
+                }
+                else
+                {
+                    gen.Emit(OpCodes.Ldloc, context.Locals[index]);
+                }
+            };
+        }
     }
 }

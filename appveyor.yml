@@ -1,7 +1,7 @@
 version: 0.1.7.{build}
 
 image:
-  - Visual Studio 2017
+  - Visual Studio 2019
 
 cache:
   - C:\Users\appveyor\AppData\Local\NuGet\Cache

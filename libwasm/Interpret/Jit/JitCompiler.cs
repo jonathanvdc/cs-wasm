@@ -18,8 +18,10 @@ namespace Wasm.Interpret.Jit
         private IReadOnlyList<MethodBuilder> builders;
         private TypeBuilder wasmType;
         private IReadOnlyList<Func<IReadOnlyList<object>, IReadOnlyList<object>>> wrappers;
+        private List<CompiledFunctionDefinition> functionDefinitions;
 
         private int helperFieldIndex;
+        private Dictionary<FieldInfo, object> constFieldValues;
 
         /// <inheritdoc/>
         public override void Initialize(ModuleInstance module, int offset, IReadOnlyList<FunctionType> types)
@@ -27,6 +29,9 @@ namespace Wasm.Interpret.Jit
             this.module = module;
             this.offset = offset;
             this.types = types;
+            this.helperFieldIndex = 0;
+            this.constFieldValues = new Dictionary<FieldInfo, object>();
+            this.functionDefinitions = new List<CompiledFunctionDefinition>();
 
             this.assembly = AssemblyBuilder.DefineDynamicAssembly(
                 new AssemblyName("wasm"),
@@ -41,7 +46,7 @@ namespace Wasm.Interpret.Jit
                     $"func_{builderList.Count}",
                     MethodAttributes.Public | MethodAttributes.Static);
                 methodDef.SetParameters(
-                    new[] { typeof(int) }
+                    new[] { typeof(uint) }
                     .Concat(signature.ParameterTypes.Select(ValueHelpers.ToClrType))
                     .ToArray());
                 if (signature.ReturnTypes.Count == 0)
@@ -70,7 +75,9 @@ namespace Wasm.Interpret.Jit
             var ilGen = builder.GetILGenerator();
             if (TryCompile(body, ilGen))
             {
-                return new CompiledFunctionDefinition(signature, builder);
+                var result = new CompiledFunctionDefinition(signature, builder);
+                functionDefinitions.Add(result);
+                return result;
             }
             else
             {
@@ -88,41 +95,62 @@ namespace Wasm.Interpret.Jit
 
             var signature = types[index];
 
-            // Step one: create the arguments array.
+            // Create an interpreted function definition and push it onto the stack.
+            var func = new WasmFunctionDefinition(signature, body, module);
+            var field = DefineConstHelperField(func);
+            generator.Emit(OpCodes.Ldsfld, field);
+
+            // Create the arguments array.
             EmitNewArray<object>(
                 generator,
                 signature.ParameterTypes
                     .Select<WasmValueType, Action<ILGenerator>>(
-                        (p, i) => gen => gen.Emit(OpCodes.Ldarg, i + 1))
+                        (p, i) => gen =>
+                        {
+                            gen.Emit(OpCodes.Ldarg, i + 1);
+                            gen.Emit(OpCodes.Box, ValueHelpers.ToClrType(p));
+                        })
                     .ToArray());
 
             // Load the call stack depth.
             generator.Emit(OpCodes.Ldarg_0);
 
-            // Step two: call the interpreter.
-            var func = new WasmFunctionDefinition(signature, body, module);
-            var field = DefineConstHelperField(func);
-            generator.Emit(OpCodes.Ldsfld, field);
+            // Call the interpreter.
             generator.Emit(
                 OpCodes.Call,
                 typeof(WasmFunctionDefinition)
                     .GetMethod("Invoke", new[] { typeof(IReadOnlyList<object>), typeof(uint) }));
 
-            // Step three: unpack the interpreter's return values.
-            EmitUnpackList(signature.ReturnTypes.Count, typeof(IReadOnlyList<object>));
+            // Unpack the interpreter's return values.
+            EmitUnpackList(
+                generator,
+                signature.ReturnTypes.Select(ValueHelpers.ToClrType).ToArray(),
+                typeof(IReadOnlyList<object>));
+
+            // Finally, return.
+            generator.Emit(OpCodes.Ret);
 
             return func;
         }
 
-        private void EmitUnpackList(int count, Type type)
+        private void EmitUnpackList(ILGenerator generator, IReadOnlyList<Type> elementTypes, Type type)
         {
-            throw new NotImplementedException();
+            var itemGetter = type.GetProperties().First(x => x.GetIndexParameters().Length > 0).GetMethod;
+            var local = generator.DeclareLocal(type);
+            generator.Emit(OpCodes.Stloc, local);
+            for (int i = 0; i < elementTypes.Count; i++)
+            {
+                generator.Emit(OpCodes.Ldloc, local);
+                generator.Emit(OpCodes.Ldc_I4, i);
+                generator.Emit(OpCodes.Callvirt, itemGetter);
+                generator.Emit(OpCodes.Unbox_Any, elementTypes[i]);
+            }
         }
 
         private FieldBuilder DefineConstHelperField<T>(T value)
         {
             var field = DefineHelperField(typeof(T));
-            field.SetValue(null, value);
+            constFieldValues[field] = value;
             return field;
         }
 
@@ -140,7 +168,7 @@ namespace Wasm.Interpret.Jit
                 generator.Emit(OpCodes.Dup);
                 generator.Emit(OpCodes.Ldc_I4, i);
                 valueGenerators[i](generator);
-                generator.Emit(OpCodes.Stelem);
+                generator.Emit(OpCodes.Stelem, typeof(T));
             }
         }
 
@@ -148,18 +176,39 @@ namespace Wasm.Interpret.Jit
         {
             return false;
         }
+
+        /// <inheritdoc/>
+        public override void Finish()
+        {
+            // Create the type.
+            var realType = wasmType.CreateType();
+
+            // Populate its fields.
+            foreach (var pair in constFieldValues)
+            {
+                realType.GetField(pair.Key.Name).SetValue(null, pair.Value);
+            }
+            constFieldValues = null;
+
+            // Rewrite function definitions.
+            foreach (var functionDef in functionDefinitions)
+            {
+                functionDef.method = realType.GetMethod(functionDef.method.Name);
+            }
+            functionDefinitions = null;
+        }
     }
 
     internal sealed class CompiledFunctionDefinition : FunctionDefinition
     {
-        internal CompiledFunctionDefinition(FunctionType signature, MethodBuilder builder)
+        internal CompiledFunctionDefinition(FunctionType signature, MethodInfo method)
         {
             this.signature = signature;
-            this.builder = builder;
+            this.method = method;
         }
 
         private FunctionType signature;
-        internal MethodBuilder builder;
+        internal MethodInfo method;
 
         /// <inheritdoc/>
         public override IReadOnlyList<WasmValueType> ParameterTypes => signature.ParameterTypes;
@@ -170,7 +219,15 @@ namespace Wasm.Interpret.Jit
         /// <inheritdoc/>
         public override IReadOnlyList<object> Invoke(IReadOnlyList<object> arguments, uint callStackDepth = 0)
         {
-            var result = builder.Invoke(null, new object[] { callStackDepth }.Concat(arguments).ToArray());
+            object result;
+            try
+            {
+                result = method.Invoke(null, new object[] { callStackDepth }.Concat(arguments).ToArray());
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw ex.InnerException;
+            }
             if (ReturnTypes.Count == 0)
             {
                 return Array.Empty<object>();

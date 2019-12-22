@@ -393,6 +393,7 @@ namespace Wasm.Interpret
             {
                 DefineFunction(compiler.Compile(i, funcBodies[i]));
             }
+            compiler.Finish();
         }
 
         /// <summary>

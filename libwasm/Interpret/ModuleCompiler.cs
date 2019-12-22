@@ -22,6 +22,11 @@ namespace Wasm.Interpret
         /// <param name="body">The function body to compile.</param>
         /// <returns>A compiled function that runs <paramref name="body"/>.</returns>
         public abstract FunctionDefinition Compile(int index, FunctionBody body);
+
+        /// <summary>
+        /// Finalizes the module's code generation.
+        /// </summary>
+        public abstract void Finish();
     }
 
     /// <summary>
@@ -44,6 +49,11 @@ namespace Wasm.Interpret
         public override FunctionDefinition Compile(int index, FunctionBody body)
         {
             return new WasmFunctionDefinition(types[index], body, module);
+        }
+
+        /// <inheritdoc/>
+        public override void Finish()
+        {
         }
     }
 }

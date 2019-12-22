@@ -1,5 +1,5 @@
 language: csharp
-dist: trusty
+dist: bionic
 script:
   # Restore NuGet packages.
   - nuget restore cs-wasm.sln

@@ -11,6 +11,41 @@ namespace Wasm.Interpret.Jit
     /// </summary>
     public static class JitOperatorImpls
     {
+        private static InstructionImpl ImplementAsOpCode(OpCode op)
+        {
+            return (context, gen) =>
+            {
+                gen.Emit(op);
+            };
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.add' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Add(Instruction instruction)
+        {
+            return ImplementAsOpCode(OpCodes.Add);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.sub' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Sub(Instruction instruction)
+        {
+            return ImplementAsOpCode(OpCodes.Sub);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.mul' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Mul(Instruction instruction)
+        {
+            return ImplementAsOpCode(OpCodes.Mul);
+        }
+
         /// <summary>
         /// Compiles an 'i32.const' instruction.
         /// </summary>

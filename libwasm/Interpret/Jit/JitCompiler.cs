@@ -287,6 +287,9 @@ namespace Wasm.Interpret.Jit
             new Dictionary<Operator, Func<Instruction, InstructionImpl>>()
         {
             { Operators.GetLocal, JitOperatorImpls.GetLocal },
+            { Operators.SetLocal, JitOperatorImpls.SetLocal },
+            { Operators.TeeLocal, JitOperatorImpls.TeeLocal },
+
             { Operators.Int32Const, JitOperatorImpls.Int32Const },
             { Operators.Int64Const, JitOperatorImpls.Int64Const },
             { Operators.Float32Const, JitOperatorImpls.Float32Const },

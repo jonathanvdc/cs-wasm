@@ -117,5 +117,38 @@ namespace Wasm.Interpret.Jit
                 }
             };
         }
+
+        /// <summary>
+        /// Compiles a 'set_local' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl SetLocal(Instruction instruction)
+        {
+            var index = Operators.SetLocal.CastInstruction(instruction).Immediate;
+            return (context, gen) =>
+            {
+                if (index < context.ParameterTypes.Count)
+                {
+                    gen.Emit(OpCodes.Starg, (int)index + 1);
+                }
+                else
+                {
+                    gen.Emit(OpCodes.Stloc, context.Locals[index]);
+                }
+            };
+        }
+
+        /// <summary>
+        /// Compiles a 'tee_local' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl TeeLocal(Instruction instruction)
+        {
+            return (context, gen) =>
+            {
+                gen.Emit(OpCodes.Dup);
+                SetLocal(instruction)(context, gen);
+            };
+        }
     }
 }

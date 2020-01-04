@@ -210,15 +210,17 @@ namespace Wasm.Interpret.Jit
             else
             {
                 var locals = new Dictionary<uint, LocalBuilder>();
+                var localTypes = new List<WasmValueType>(signature.ParameterTypes);
                 uint localIndex = (uint)signature.ParameterTypes.Count;
                 foreach (var item in body.Locals)
                 {
                     for (uint i = 0; i < item.LocalCount; i++)
                     {
                         locals[localIndex++] = generator.DeclareLocal(ValueHelpers.ToClrType(item.LocalType));
+                        localTypes.Add(item.LocalType);
                     }
                 }
-                var context = new CompilerContext(this, signature.ParameterTypes, locals);
+                var context = new CompilerContext(this, localTypes, signature.ParameterTypes.Count, locals);
                 impl(context, generator);
                 generator.Emit(OpCodes.Ret);
                 return true;

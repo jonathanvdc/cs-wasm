@@ -11,12 +11,29 @@ namespace Wasm.Interpret.Jit
     /// </summary>
     public static class JitOperatorImpls
     {
-        private static InstructionImpl ImplementAsOpCode(OpCode op)
+        private static InstructionImpl ImplementAsOpCode(OpCode op, WasmValueType? resultType = null, params WasmValueType[] parameterTypes)
         {
             return (context, gen) =>
             {
+                var paramTypesOnStack = context.Pop(parameterTypes.Length);
+                for (int i = 0; i < parameterTypes.Length; i++)
+                {
+                    if (parameterTypes[i] != paramTypesOnStack[i])
+                    {
+                        throw new InvalidOperationException($"Expected type '{parameterTypes[i]}' on stack, but got type '{paramTypesOnStack[i]}' instead.");
+                    }
+                }
                 gen.Emit(op);
+                if (resultType.HasValue)
+                {
+                    context.Push(resultType.Value);
+                }
             };
+        }
+
+        private static InstructionImpl ImplementAsBinaryOpCode(OpCode op, WasmValueType type)
+        {
+            return ImplementAsOpCode(op, type, type, type);
         }
 
         /// <summary>
@@ -25,7 +42,7 @@ namespace Wasm.Interpret.Jit
         /// <param name="instruction">The instruction to compile to an implementation.</param>
         public static InstructionImpl Int32Add(Instruction instruction)
         {
-            return ImplementAsOpCode(OpCodes.Add);
+            return ImplementAsBinaryOpCode(OpCodes.Add, WasmValueType.Int32);
         }
 
         /// <summary>
@@ -34,7 +51,7 @@ namespace Wasm.Interpret.Jit
         /// <param name="instruction">The instruction to compile to an implementation.</param>
         public static InstructionImpl Int32Sub(Instruction instruction)
         {
-            return ImplementAsOpCode(OpCodes.Sub);
+            return ImplementAsBinaryOpCode(OpCodes.Sub, WasmValueType.Int32);
         }
 
         /// <summary>
@@ -43,7 +60,7 @@ namespace Wasm.Interpret.Jit
         /// <param name="instruction">The instruction to compile to an implementation.</param>
         public static InstructionImpl Int32Mul(Instruction instruction)
         {
-            return ImplementAsOpCode(OpCodes.Mul);
+            return ImplementAsBinaryOpCode(OpCodes.Mul, WasmValueType.Int32);
         }
 
         /// <summary>
@@ -56,6 +73,7 @@ namespace Wasm.Interpret.Jit
             return (context, gen) =>
             {
                 gen.Emit(OpCodes.Ldc_I4, immediate);
+                context.Push(WasmValueType.Int32);
             };
         }
 
@@ -69,6 +87,7 @@ namespace Wasm.Interpret.Jit
             return (context, gen) =>
             {
                 gen.Emit(OpCodes.Ldc_I8, immediate);
+                context.Push(WasmValueType.Int64);
             };
         }
 
@@ -82,6 +101,7 @@ namespace Wasm.Interpret.Jit
             return (context, gen) =>
             {
                 gen.Emit(OpCodes.Ldc_R4, immediate);
+                context.Push(WasmValueType.Float32);
             };
         }
 
@@ -95,6 +115,7 @@ namespace Wasm.Interpret.Jit
             return (context, gen) =>
             {
                 gen.Emit(OpCodes.Ldc_R8, immediate);
+                context.Push(WasmValueType.Float64);
             };
         }
 
@@ -107,7 +128,7 @@ namespace Wasm.Interpret.Jit
             var index = Operators.GetLocal.CastInstruction(instruction).Immediate;
             return (context, gen) =>
             {
-                if (index < context.ParameterTypes.Count)
+                if (index < context.ParameterCount)
                 {
                     gen.Emit(OpCodes.Ldarg, (int)index + 1);
                 }
@@ -115,6 +136,7 @@ namespace Wasm.Interpret.Jit
                 {
                     gen.Emit(OpCodes.Ldloc, context.Locals[index]);
                 }
+                context.Push(context.LocalTypes[(int)index]);
             };
         }
 
@@ -127,7 +149,7 @@ namespace Wasm.Interpret.Jit
             var index = Operators.SetLocal.CastInstruction(instruction).Immediate;
             return (context, gen) =>
             {
-                if (index < context.ParameterTypes.Count)
+                if (index < context.ParameterCount)
                 {
                     gen.Emit(OpCodes.Starg, (int)index + 1);
                 }
@@ -147,6 +169,9 @@ namespace Wasm.Interpret.Jit
             return (context, gen) =>
             {
                 gen.Emit(OpCodes.Dup);
+                var type = context.Pop();
+                context.Push(type);
+                context.Push(type);
                 SetLocal(instruction)(context, gen);
             };
         }

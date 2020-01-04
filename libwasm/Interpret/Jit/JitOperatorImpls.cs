@@ -91,6 +91,33 @@ namespace Wasm.Interpret.Jit
         }
 
         /// <summary>
+        /// Compiles an 'i32.shl' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Shl(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Shl, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.shl_s' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32ShrS(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Shr, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.shl_u' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32ShrU(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Shr_Un, WasmValueType.Int32);
+        }
+
+        /// <summary>
         /// Compiles an 'i32.const' instruction.
         /// </summary>
         /// <param name="instruction">The instruction to compile to an implementation.</param>

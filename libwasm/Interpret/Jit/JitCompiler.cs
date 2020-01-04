@@ -301,7 +301,10 @@ namespace Wasm.Interpret.Jit
             { Operators.Int32Mul, JitOperatorImpls.Int32Mul },
             { Operators.Int32And, JitOperatorImpls.Int32And },
             { Operators.Int32Or, JitOperatorImpls.Int32Or },
-            { Operators.Int32Xor, JitOperatorImpls.Int32Xor }
+            { Operators.Int32Xor, JitOperatorImpls.Int32Xor },
+            { Operators.Int32Shl, JitOperatorImpls.Int32Shl },
+            { Operators.Int32ShrS, JitOperatorImpls.Int32ShrS },
+            { Operators.Int32ShrU, JitOperatorImpls.Int32ShrU }
         };
     }
 

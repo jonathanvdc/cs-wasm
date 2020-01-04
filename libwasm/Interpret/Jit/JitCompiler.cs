@@ -298,7 +298,10 @@ namespace Wasm.Interpret.Jit
             { Operators.Float64Const, JitOperatorImpls.Float64Const },
             { Operators.Int32Add, JitOperatorImpls.Int32Add },
             { Operators.Int32Sub, JitOperatorImpls.Int32Sub },
-            { Operators.Int32Mul, JitOperatorImpls.Int32Mul }
+            { Operators.Int32Mul, JitOperatorImpls.Int32Mul },
+            { Operators.Int32And, JitOperatorImpls.Int32And },
+            { Operators.Int32Or, JitOperatorImpls.Int32Or },
+            { Operators.Int32Xor, JitOperatorImpls.Int32Xor }
         };
     }
 

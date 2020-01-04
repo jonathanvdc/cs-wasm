@@ -64,6 +64,33 @@ namespace Wasm.Interpret.Jit
         }
 
         /// <summary>
+        /// Compiles an 'i32.and' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32And(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.And, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.or' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Or(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Or, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.xor' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Xor(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Xor, WasmValueType.Int32);
+        }
+
+        /// <summary>
         /// Compiles an 'i32.const' instruction.
         /// </summary>
         /// <param name="instruction">The instruction to compile to an implementation.</param>

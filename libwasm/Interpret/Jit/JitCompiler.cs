@@ -39,11 +39,11 @@ namespace Wasm.Interpret.Jit
         /// <value>A mapping of operators to functions that compile instructions.</value>
         public IReadOnlyDictionary<Operator, Func<Instruction, InstructionImpl>> OperatorImplementations { get; private set; }
 
-        private ModuleInstance module;
-        private int offset;
-        private IReadOnlyList<FunctionType> types;
+        internal ModuleInstance module;
+        internal int offset;
+        internal IReadOnlyList<FunctionType> types;
         private AssemblyBuilder assembly;
-        private IReadOnlyList<MethodBuilder> builders;
+        internal IReadOnlyList<MethodBuilder> builders;
         private TypeBuilder wasmType;
         private IReadOnlyList<Func<IReadOnlyList<object>, IReadOnlyList<object>>> wrappers;
         private List<CompiledFunctionDefinition> functionDefinitions;
@@ -74,8 +74,8 @@ namespace Wasm.Interpret.Jit
                     $"func_{builderList.Count}",
                     MethodAttributes.Public | MethodAttributes.Static);
                 methodDef.SetParameters(
-                    new[] { typeof(uint) }
-                    .Concat(signature.ParameterTypes.Select(ValueHelpers.ToClrType))
+                    signature.ParameterTypes.Select(ValueHelpers.ToClrType)
+                    .Concat(new[] { typeof(uint) })
                     .ToArray());
                 if (signature.ReturnTypes.Count == 0)
                 {
@@ -115,53 +115,98 @@ namespace Wasm.Interpret.Jit
 
         private WasmFunctionDefinition MakeInterpreterThunk(int index, FunctionBody body, ILGenerator generator)
         {
+            var signature = types[index];
+
+            // Create an interpreted function definition.
+            var func = new WasmFunctionDefinition(signature, body, module);
+
+            // Call it.
+            EmitExternalCall(
+                generator,
+                signature.ParameterTypes.Count,
+                func,
+                signature.ParameterTypes
+                    .Select<WasmValueType, Func<ILGenerator, Type>>(
+                        (p, i) => gen =>
+                        {
+                            gen.Emit(OpCodes.Ldarg, i);
+                            return ValueHelpers.ToClrType(p);
+                        })
+                    .ToArray());
+
+            // Return.
+            generator.Emit(OpCodes.Ret);
+
+            return func;
+        }
+
+        internal void EmitExternalCall(ILGenerator generator, int callerParameterCount, FunctionDefinition callee, IReadOnlyList<Func<ILGenerator, Type>> arguments)
+        {
+            var signature = new FunctionType(callee.ParameterTypes, callee.ReturnTypes);
+
+            // Create a function definition field, fill it and push its value onto the stack.
+            var field = DefineConstHelperField(callee);
+            generator.Emit(OpCodes.Ldsfld, field);
+
+            // Call it.
+            EmitExternalCall(generator, callerParameterCount, signature, callee.GetType(), arguments);
+        }
+
+        internal static void EmitExternalCall(ILGenerator generator, int callerParameterCount, FunctionType signature, Type calleeType, IReadOnlyList<Func<ILGenerator, Type>> arguments)
+        {
             // To bridge the divide between JIT-compiled code and the interpreter,
             // we generate code that packs the parameter list of a JIT-compiled
             // function as an array of objects and feed that to the interpreter.
-            // We then unpack the list of objects produced by the interpreter and
-            // return.
-
-            var signature = types[index];
-
-            // Create an interpreted function definition and push it onto the stack.
-            var func = new WasmFunctionDefinition(signature, body, module);
-            var field = DefineConstHelperField(func);
-            generator.Emit(OpCodes.Ldsfld, field);
+            // We then unpack the list of objects produced by the interpreter.
 
             // Create the arguments array.
             EmitNewArray<object>(
                 generator,
-                signature.ParameterTypes
-                    .Select<WasmValueType, Action<ILGenerator>>(
-                        (p, i) => gen =>
+                arguments
+                    .Select<Func<ILGenerator, Type>, Action<ILGenerator>>(
+                        arg => gen =>
                         {
-                            gen.Emit(OpCodes.Ldarg, i + 1);
-                            gen.Emit(OpCodes.Box, ValueHelpers.ToClrType(p));
+                            gen.Emit(OpCodes.Box, arg(gen));
                         })
                     .ToArray());
 
             // Load the call stack depth.
-            generator.Emit(OpCodes.Ldarg_0);
+            generator.Emit(OpCodes.Ldarg, callerParameterCount);
 
             // Call the interpreter.
-            generator.Emit(
-                OpCodes.Call,
-                typeof(WasmFunctionDefinition)
-                    .GetMethod("Invoke", new[] { typeof(IReadOnlyList<object>), typeof(uint) }));
+            var callee = calleeType
+                .GetMethod("Invoke", new[] { typeof(IReadOnlyList<object>), typeof(uint) });
+
+            if (callee.IsPublic && calleeType.IsPublic)
+            {
+                generator.Emit(OpCodes.Call, callee);
+            }
+            else
+            {
+                generator.Emit(
+                    OpCodes.Callvirt,
+                    typeof(FunctionDefinition)
+                        .GetMethod("Invoke", new[] { typeof(IReadOnlyList<object>), typeof(uint) }));
+            }
 
             // Unpack the interpreter's return values.
             EmitUnpackList(
                 generator,
                 signature.ReturnTypes.Select(ValueHelpers.ToClrType).ToArray(),
                 typeof(IReadOnlyList<object>));
-
-            // Finally, return.
-            generator.Emit(OpCodes.Ret);
-
-            return func;
         }
 
-        private void EmitUnpackList(ILGenerator generator, IReadOnlyList<Type> elementTypes, Type type)
+        private static bool IsGloballyAccessible(MethodInfo method)
+        {
+            return method.IsPublic && IsGloballyAccessible(method.DeclaringType);
+        }
+
+        private static bool IsGloballyAccessible(Type type)
+        {
+            return type.IsPublic || (type.IsNestedPublic && IsGloballyAccessible(type.DeclaringType));
+        }
+
+        private static void EmitUnpackList(ILGenerator generator, IReadOnlyList<Type> elementTypes, Type type)
         {
             var itemGetter = type.GetProperties().First(x => x.GetIndexParameters().Length > 0).GetMethod;
             var local = generator.DeclareLocal(type);
@@ -175,9 +220,9 @@ namespace Wasm.Interpret.Jit
             }
         }
 
-        private FieldBuilder DefineConstHelperField<T>(T value)
+        private FieldBuilder DefineConstHelperField(object value)
         {
-            var field = DefineHelperField(typeof(T));
+            var field = DefineHelperField(value.GetType());
             constFieldValues[field] = value;
             return field;
         }
@@ -187,7 +232,7 @@ namespace Wasm.Interpret.Jit
             return wasmType.DefineField($"helper_{helperFieldIndex++}", type, FieldAttributes.Public | FieldAttributes.Static);
         }
 
-        private void EmitNewArray<T>(ILGenerator generator, IReadOnlyList<Action<ILGenerator>> valueGenerators)
+        private static void EmitNewArray<T>(ILGenerator generator, IReadOnlyList<Action<ILGenerator>> valueGenerators)
         {
             generator.Emit(OpCodes.Ldc_I4, valueGenerators.Count);
             generator.Emit(OpCodes.Newarr, typeof(T));
@@ -221,7 +266,17 @@ namespace Wasm.Interpret.Jit
                     }
                 }
                 var context = new CompilerContext(this, localTypes, signature.ParameterTypes.Count, locals);
+
+                // Increment the call stack depth.
+                generator.Emit(OpCodes.Ldarg, signature.ParameterTypes.Count);
+                generator.Emit(OpCodes.Ldc_I4_1);
+                generator.Emit(OpCodes.Add);
+                generator.Emit(OpCodes.Starg, signature.ParameterTypes.Count);
+
+                // Emit the method body.
                 impl(context, generator);
+
+                // Return.
                 generator.Emit(OpCodes.Ret);
                 return true;
             }
@@ -291,6 +346,7 @@ namespace Wasm.Interpret.Jit
             { Operators.Nop, JitOperatorImpls.Nop },
             { Operators.Drop, JitOperatorImpls.Drop },
             { Operators.Select, JitOperatorImpls.Select },
+            { Operators.Call, JitOperatorImpls.Call },
 
             { Operators.GetLocal, JitOperatorImpls.GetLocal },
             { Operators.SetLocal, JitOperatorImpls.SetLocal },
@@ -391,7 +447,7 @@ namespace Wasm.Interpret.Jit
             object result;
             try
             {
-                result = method.Invoke(null, new object[] { callStackDepth }.Concat(arguments).ToArray());
+                result = method.Invoke(null, arguments.Concat(new object[] { callStackDepth }).ToArray());
             }
             catch (TargetInvocationException ex)
             {

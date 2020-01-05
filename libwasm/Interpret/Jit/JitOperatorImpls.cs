@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -785,6 +786,79 @@ namespace Wasm.Interpret.Jit
         }
 
         /// <summary>
+        /// Compiles a 'call' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Call(Instruction instruction)
+        {
+            var callInsn = Operators.Call.CastInstruction(instruction);
+            var index = (int)callInsn.Immediate;
+            return (context, gen) =>
+            {
+                // Check for stack overflow.
+                var successLabel = gen.DefineLabel();
+                gen.Emit(OpCodes.Ldarg, context.ParameterCount);
+                gen.Emit(OpCodes.Ldc_I4, (int)context.Compiler.module.Policy.MaxCallStackDepth);
+                gen.Emit(OpCodes.Blt_Un, successLabel);
+                gen.Emit(OpCodes.Ldstr, "A stack overflow occurred: the max call stack depth was exceeded");
+                gen.Emit(OpCodes.Ldstr, TrapException.SpecMessages.CallStackExhausted);
+                gen.Emit(OpCodes.Newobj, typeof(TrapException).GetConstructor(new[] { typeof(string), typeof(string) }));
+                gen.Emit(OpCodes.Throw);
+                gen.MarkLabel(successLabel);
+
+                FunctionType signature;
+                if (index < context.Compiler.offset)
+                {
+                    // If we're calling an import, then things get interesting. Basically, we have to emit
+                    // a call to the import's Invoke method instead of calling the import directly as
+                    // we can do with compiled methods.
+                    var callee = context.Compiler.module.Functions[index];
+                    signature = new FunctionType(callee.ParameterTypes, callee.ReturnTypes);
+                    var args = new List<Func<ILGenerator, Type>>();
+                    foreach (var item in callee.ParameterTypes.Reverse())
+                    {
+                        var loc = gen.DeclareLocal(ValueHelpers.ToClrType(item));
+                        gen.Emit(OpCodes.Stloc, loc);
+                        args.Add(generator =>
+                        {
+                            generator.Emit(OpCodes.Ldloc, loc);
+                            return loc.LocalType;
+                        });
+                    }
+                    args.Reverse();
+                    context.Compiler.EmitExternalCall(gen, context.ParameterCount, callee, args);
+                }
+                else
+                {
+                    // Push the call stack depth onto the evaluation stack.
+                    gen.Emit(OpCodes.Ldarg, context.ParameterCount);
+
+                    // Emit the call.
+                    signature = context.Compiler.types[index - context.Compiler.offset];
+                    var callee = context.Compiler.builders[index - context.Compiler.offset];
+                    gen.Emit(OpCodes.Call, callee);
+                }
+
+                // Pop and check argument types.
+                var parameterTypes = signature.ParameterTypes;
+                var paramTypesOnStack = context.Pop(parameterTypes.Count);
+                for (int i = 0; i < parameterTypes.Count; i++)
+                {
+                    if (parameterTypes[i] != paramTypesOnStack[i])
+                    {
+                        throw new InvalidOperationException($"Expected type '{parameterTypes[i]}' on stack for function call, but got type '{paramTypesOnStack[i]}' instead.");
+                    }
+                }
+
+                // Update the type stack.
+                foreach (var item in signature.ReturnTypes)
+                {
+                    context.Push(item);
+                }
+            };
+        }
+
+        /// <summary>
         /// Compiles a 'get_local' instruction.
         /// </summary>
         /// <param name="instruction">The instruction to compile to an implementation.</param>
@@ -795,7 +869,7 @@ namespace Wasm.Interpret.Jit
             {
                 if (index < context.ParameterCount)
                 {
-                    gen.Emit(OpCodes.Ldarg, (int)index + 1);
+                    gen.Emit(OpCodes.Ldarg, (int)index);
                 }
                 else
                 {
@@ -816,7 +890,7 @@ namespace Wasm.Interpret.Jit
             {
                 if (index < context.ParameterCount)
                 {
-                    gen.Emit(OpCodes.Starg, (int)index + 1);
+                    gen.Emit(OpCodes.Starg, (int)index);
                 }
                 else
                 {

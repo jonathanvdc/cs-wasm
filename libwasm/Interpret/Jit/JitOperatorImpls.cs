@@ -54,9 +54,25 @@ namespace Wasm.Interpret.Jit
             };
         }
 
+        private static InstructionImpl Chain(params InstructionImpl[] impls)
+        {
+            return (context, gen) =>
+            {
+                foreach (var impl in impls)
+                {
+                    impl(context, gen);
+                }
+            };
+        }
+
         private static InstructionImpl ImplementAsBinaryOpCode(OpCode op, WasmValueType type)
         {
             return ImplementAsOpCode(op, type, type, type);
+        }
+
+        private static InstructionImpl ImplementAsUnaryOpCode(OpCode op, WasmValueType type)
+        {
+            return ImplementAsOpCode(op, type, type);
         }
 
         /// <summary>
@@ -66,6 +82,30 @@ namespace Wasm.Interpret.Jit
         public static InstructionImpl Int32Add(Instruction instruction)
         {
             return ImplementAsBinaryOpCode(OpCodes.Add, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.clz' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Clz(Instruction instruction)
+        {
+            return ImplementAsCall(
+                typeof(ValueHelpers).GetMethod(
+                    nameof(ValueHelpers.CountLeadingZeros),
+                    new[] { typeof(int) }));
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.ctz' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Ctz(Instruction instruction)
+        {
+            return ImplementAsCall(
+                typeof(ValueHelpers).GetMethod(
+                    nameof(ValueHelpers.CountTrailingZeros),
+                    new[] { typeof(int) }));
         }
 
         /// <summary>
@@ -102,6 +142,105 @@ namespace Wasm.Interpret.Jit
         public static InstructionImpl Int32DivU(Instruction instruction)
         {
             return ImplementAsBinaryOpCode(OpCodes.Div_Un, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.eq' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Eq(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Ceq, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.eqz' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Eqz(Instruction instruction)
+        {
+            return Chain(Int32Const(Operators.Int32Const.Create(0)), Int32Eq(instruction));
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.ne' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Ne(Instruction instruction)
+        {
+            return Chain(Int32Eq(instruction), Int32Eqz(instruction));
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.ge_s' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32GeS(Instruction instruction)
+        {
+            return Chain(Int32LtS(instruction), Int32Eqz(instruction));
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.ge_u' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32GeU(Instruction instruction)
+        {
+            return Chain(Int32LtU(instruction), Int32Eqz(instruction));
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.le_s' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32LeS(Instruction instruction)
+        {
+            return Chain(Int32GtS(instruction), Int32Eqz(instruction));
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.le_u' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32LeU(Instruction instruction)
+        {
+            return Chain(Int32GtU(instruction), Int32Eqz(instruction));
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.lt_s' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32LtS(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Clt, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.lt_u' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32LtU(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Clt_Un, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.gt_s' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32GtS(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Cgt, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.gt_u' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32GtU(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Cgt_Un, WasmValueType.Int32);
         }
 
         /// <summary>

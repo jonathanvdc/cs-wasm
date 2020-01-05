@@ -298,18 +298,31 @@ namespace Wasm.Interpret.Jit
             { Operators.Float64Const, JitOperatorImpls.Float64Const },
 
             { Operators.Int32Add, JitOperatorImpls.Int32Add },
-            { Operators.Int32Sub, JitOperatorImpls.Int32Sub },
-            { Operators.Int32Mul, JitOperatorImpls.Int32Mul },
+            { Operators.Int32And, JitOperatorImpls.Int32And },
+            { Operators.Int32Clz, JitOperatorImpls.Int32Clz },
+            { Operators.Int32Ctz, JitOperatorImpls.Int32Ctz },
             { Operators.Int32DivS, JitOperatorImpls.Int32DivS },
             { Operators.Int32DivU, JitOperatorImpls.Int32DivU },
+            { Operators.Int32Eq, JitOperatorImpls.Int32Eq },
+            { Operators.Int32Eqz, JitOperatorImpls.Int32Eqz },
+            { Operators.Int32GeS, JitOperatorImpls.Int32GeS },
+            { Operators.Int32GeU, JitOperatorImpls.Int32GeU },
+            { Operators.Int32GtS, JitOperatorImpls.Int32GtS },
+            { Operators.Int32GtU, JitOperatorImpls.Int32GtU },
+            { Operators.Int32LeS, JitOperatorImpls.Int32LeS },
+            { Operators.Int32LeU, JitOperatorImpls.Int32LeU },
+            { Operators.Int32LtS, JitOperatorImpls.Int32LtS },
+            { Operators.Int32LtU, JitOperatorImpls.Int32LtU },
+            { Operators.Int32Mul, JitOperatorImpls.Int32Mul },
+            { Operators.Int32Ne, JitOperatorImpls.Int32Ne },
+            { Operators.Int32Or, JitOperatorImpls.Int32Or },
             { Operators.Int32RemS, JitOperatorImpls.Int32RemS },
             { Operators.Int32RemU, JitOperatorImpls.Int32RemU },
-            { Operators.Int32And, JitOperatorImpls.Int32And },
-            { Operators.Int32Or, JitOperatorImpls.Int32Or },
-            { Operators.Int32Xor, JitOperatorImpls.Int32Xor },
             { Operators.Int32Shl, JitOperatorImpls.Int32Shl },
             { Operators.Int32ShrS, JitOperatorImpls.Int32ShrS },
-            { Operators.Int32ShrU, JitOperatorImpls.Int32ShrU }
+            { Operators.Int32ShrU, JitOperatorImpls.Int32ShrU },
+            { Operators.Int32Sub, JitOperatorImpls.Int32Sub },
+            { Operators.Int32Xor, JitOperatorImpls.Int32Xor }
         };
     }
 

@@ -734,6 +734,28 @@ namespace Wasm.Interpret.Jit
         }
 
         /// <summary>
+        /// Compiles a 'nop' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Nop(Instruction instruction)
+        {
+            return (context, gen) => { };
+        }
+
+        /// <summary>
+        /// Compiles a 'drop' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Drop(Instruction instruction)
+        {
+            return (context, gen) =>
+            {
+                context.Pop();
+                gen.Emit(OpCodes.Pop);
+            };
+        }
+
+        /// <summary>
         /// Compiles a 'get_local' instruction.
         /// </summary>
         /// <param name="instruction">The instruction to compile to an implementation.</param>

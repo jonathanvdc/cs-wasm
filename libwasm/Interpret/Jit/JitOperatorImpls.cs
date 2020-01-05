@@ -265,6 +265,30 @@ namespace Wasm.Interpret.Jit
         }
 
         /// <summary>
+        /// Compiles an 'i32.rotl' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Rotl(Instruction instruction)
+        {
+            return ImplementAsCall(
+                typeof(ValueHelpers).GetMethod(
+                    nameof(ValueHelpers.RotateLeft),
+                    new[] { typeof(int), typeof(int) }));
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.rotr' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Rotr(Instruction instruction)
+        {
+            return ImplementAsCall(
+                typeof(ValueHelpers).GetMethod(
+                    nameof(ValueHelpers.RotateRight),
+                    new[] { typeof(int), typeof(int) }));
+        }
+
+        /// <summary>
         /// Compiles an 'i32.and' instruction.
         /// </summary>
         /// <param name="instruction">The instruction to compile to an implementation.</param>
@@ -280,6 +304,18 @@ namespace Wasm.Interpret.Jit
         public static InstructionImpl Int32Or(Instruction instruction)
         {
             return ImplementAsBinaryOpCode(OpCodes.Or, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.popcnt' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32Popcnt(Instruction instruction)
+        {
+            return ImplementAsCall(
+                typeof(ValueHelpers).GetMethod(
+                    nameof(ValueHelpers.PopCount),
+                    new[] { typeof(int) }));
         }
 
         /// <summary>

@@ -756,6 +756,35 @@ namespace Wasm.Interpret.Jit
         }
 
         /// <summary>
+        /// Compiles a 'select' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Select(Instruction instruction)
+        {
+            return (context, gen) =>
+            {
+                context.Pop();
+                var rhsType = context.Pop();
+                var lhsType = context.Pop();
+                var ifLabel = gen.DefineLabel();
+                var endLabel = gen.DefineLabel();
+                gen.Emit(OpCodes.Brtrue, ifLabel);
+
+                var rhsLocal = gen.DeclareLocal(ValueHelpers.ToClrType(rhsType));
+                gen.Emit(OpCodes.Stloc, rhsLocal);
+                gen.Emit(OpCodes.Pop);
+                gen.Emit(OpCodes.Ldloc, rhsLocal);
+                gen.Emit(OpCodes.Br, endLabel);
+
+                gen.MarkLabel(ifLabel);
+                gen.Emit(OpCodes.Pop);
+
+                gen.MarkLabel(endLabel);
+                context.Push(lhsType);
+            };
+        }
+
+        /// <summary>
         /// Compiles a 'get_local' instruction.
         /// </summary>
         /// <param name="instruction">The instruction to compile to an implementation.</param>

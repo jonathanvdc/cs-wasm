@@ -290,6 +290,7 @@ namespace Wasm.Interpret.Jit
         {
             { Operators.Nop, JitOperatorImpls.Nop },
             { Operators.Drop, JitOperatorImpls.Drop },
+            { Operators.Select, JitOperatorImpls.Select },
 
             { Operators.GetLocal, JitOperatorImpls.GetLocal },
             { Operators.SetLocal, JitOperatorImpls.SetLocal },

@@ -825,18 +825,7 @@ namespace Wasm.Interpret
         {
             var rhs = context.Pop<int>();
             var lhs = context.Pop<int>();
-            if (lhs == int.MinValue && rhs == -1)
-            {
-                // We need to check for this corner case. As per the OpCodes.Rem docs:
-                //
-                //     Note that on the Intel-based platforms an OverflowException is thrown when computing (minint rem -1).
-                //
-                context.Push<int>(0);
-            }
-            else
-            {
-                context.Push<int>(lhs % rhs);
-            }
+            context.Push<int>(ValueHelpers.RemS(lhs, rhs));
         }
 
         /// <summary>

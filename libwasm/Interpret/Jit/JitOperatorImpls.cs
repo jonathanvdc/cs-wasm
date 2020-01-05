@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using Wasm.Instructions;
 
@@ -27,6 +29,27 @@ namespace Wasm.Interpret.Jit
                 if (resultType.HasValue)
                 {
                     context.Push(resultType.Value);
+                }
+            };
+        }
+
+        private static InstructionImpl ImplementAsCall(MethodInfo callee)
+        {
+            return (context, gen) =>
+            {
+                var parameterTypes = callee.GetParameters().Select(p => ValueHelpers.ToWasmValueType(p.ParameterType)).ToArray();
+                var paramTypesOnStack = context.Pop(parameterTypes.Length);
+                for (int i = 0; i < parameterTypes.Length; i++)
+                {
+                    if (parameterTypes[i] != paramTypesOnStack[i])
+                    {
+                        throw new InvalidOperationException($"Expected type '{parameterTypes[i]}' on stack, but got type '{paramTypesOnStack[i]}' instead.");
+                    }
+                }
+                gen.Emit(OpCodes.Call, callee);
+                if (callee.ReturnType != null && callee.ReturnType != typeof(void))
+                {
+                    context.Push(ValueHelpers.ToWasmValueType(callee.ReturnType));
                 }
             };
         }
@@ -61,6 +84,45 @@ namespace Wasm.Interpret.Jit
         public static InstructionImpl Int32Mul(Instruction instruction)
         {
             return ImplementAsBinaryOpCode(OpCodes.Mul, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.div_s' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32DivS(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Div, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.div_u' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32DivU(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Div_Un, WasmValueType.Int32);
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.rem_s' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32RemS(Instruction instruction)
+        {
+            return ImplementAsCall(
+                typeof(ValueHelpers).GetMethod(
+                    nameof(ValueHelpers.RemS),
+                    new[] { typeof(int), typeof(int) }));
+        }
+
+        /// <summary>
+        /// Compiles an 'i32.rem_u' instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction to compile to an implementation.</param>
+        public static InstructionImpl Int32RemU(Instruction instruction)
+        {
+            return ImplementAsBinaryOpCode(OpCodes.Rem_Un, WasmValueType.Int32);
         }
 
         /// <summary>

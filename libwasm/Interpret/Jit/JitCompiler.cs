@@ -103,7 +103,7 @@ namespace Wasm.Interpret.Jit
             var ilGen = builder.GetILGenerator();
             if (TryCompile(signature, body, ilGen))
             {
-                var result = new CompiledFunctionDefinition(signature, builder);
+                var result = new CompiledFunctionDefinition(signature, builder, module.Policy.TranslateExceptions);
                 functionDefinitions.Add(result);
                 return result;
             }
@@ -296,9 +296,14 @@ namespace Wasm.Interpret.Jit
             { Operators.Int64Const, JitOperatorImpls.Int64Const },
             { Operators.Float32Const, JitOperatorImpls.Float32Const },
             { Operators.Float64Const, JitOperatorImpls.Float64Const },
+
             { Operators.Int32Add, JitOperatorImpls.Int32Add },
             { Operators.Int32Sub, JitOperatorImpls.Int32Sub },
             { Operators.Int32Mul, JitOperatorImpls.Int32Mul },
+            { Operators.Int32DivS, JitOperatorImpls.Int32DivS },
+            { Operators.Int32DivU, JitOperatorImpls.Int32DivU },
+            { Operators.Int32RemS, JitOperatorImpls.Int32RemS },
+            { Operators.Int32RemU, JitOperatorImpls.Int32RemU },
             { Operators.Int32And, JitOperatorImpls.Int32And },
             { Operators.Int32Or, JitOperatorImpls.Int32Or },
             { Operators.Int32Xor, JitOperatorImpls.Int32Xor },
@@ -310,14 +315,16 @@ namespace Wasm.Interpret.Jit
 
     internal sealed class CompiledFunctionDefinition : FunctionDefinition
     {
-        internal CompiledFunctionDefinition(FunctionType signature, MethodInfo method)
+        internal CompiledFunctionDefinition(FunctionType signature, MethodInfo method, bool translateExceptions)
         {
             this.signature = signature;
             this.method = method;
+            this.translateExceptions = translateExceptions;
         }
 
         private FunctionType signature;
         internal MethodInfo method;
+        private bool translateExceptions;
 
         /// <inheritdoc/>
         public override IReadOnlyList<WasmValueType> ParameterTypes => signature.ParameterTypes;
@@ -335,8 +342,28 @@ namespace Wasm.Interpret.Jit
             }
             catch (TargetInvocationException ex)
             {
-                throw ex.InnerException;
+                var inner = ex.InnerException;
+                if (translateExceptions && TryTranslateException(inner, out Exception translate))
+                {
+                    throw translate;
+                }
+                else
+                {
+                    throw inner;
+                }
             }
+            catch (Exception ex)
+            {
+                if (translateExceptions && TryTranslateException(ex, out Exception translate))
+                {
+                    throw translate;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
             if (ReturnTypes.Count == 0)
             {
                 return Array.Empty<object>();
@@ -348,6 +375,25 @@ namespace Wasm.Interpret.Jit
             else
             {
                 throw new WasmException("Cannot compile functions with more than one return value.");
+            }
+        }
+
+        private static bool TryTranslateException(Exception original, out Exception translated)
+        {
+            if (original.GetType() == typeof(DivideByZeroException))
+            {
+                translated = new TrapException(original.Message, TrapException.SpecMessages.IntegerDivideByZero);
+                return true;
+            }
+            else if (original.GetType() == typeof(OverflowException))
+            {
+                translated = new TrapException(original.Message, TrapException.SpecMessages.IntegerOverflow);
+                return true;
+            }
+            else
+            {
+                translated = null;
+                return false;
             }
         }
     }

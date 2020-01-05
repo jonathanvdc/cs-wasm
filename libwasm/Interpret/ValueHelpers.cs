@@ -551,6 +551,29 @@ namespace Wasm.Interpret
             }
         }
 
+        /// <summary>
+        /// Computes the remainder of two signed 64-bit integers, as specified by
+        /// the WebAssembly spec.
+        /// </summary>
+        /// <param name="lhs">A first integer.</param>
+        /// <param name="rhs">A second integer.</param>
+        /// <returns>The remainder after division of <paramref name="lhs"/> and <paramref name="rhs"/>.</returns>
+        public static long RemS(long lhs, long rhs)
+        {
+            if (lhs == long.MinValue && rhs == -1)
+            {
+                // We need to check for this corner case. As per the OpCodes.Rem docs:
+                //
+                //     Note that on the Intel-based platforms an OverflowException is thrown when computing (minint rem -1).
+                //
+                return 0;
+            }
+            else
+            {
+                return lhs % rhs;
+            }
+        }
+
         private static T ThrowInfinityToInt<T>()
         {
             throw new TrapException(
